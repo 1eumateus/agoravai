@@ -1,0 +1,62 @@
+import { createWebHistory, createRouter } from 'vue-router'
+import { checkToken } from "../stores/checkToken";
+
+const routes = [
+  {
+    path: '/:pathMatch(.*)*',
+    name: "NotFound",
+    component: () => import('../views/NotFound.vue')
+  },
+  {
+    path: '/',
+    name: "Home",
+    component: () => import('../views/Home.vue')
+  },
+  {
+    path: '/login',
+    name: "Login",
+    component: () => import('../views/Login.vue')
+  },
+
+  {
+    path: '/perfil',
+    name: "Perfil",
+    component: () => import('../views/Perfil/index.vue')
+  },
+
+]
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+})
+
+router.beforeEach(async (to, from, next) => {
+  const res = await checkToken();
+  const tokenValido = res.valid;
+  const userType = res.tipo;
+
+  if (to.name !== "Login" && !tokenValido) {
+    next({ name: "Login" });
+  }
+  else if (tokenValido && to.name === "Login") {
+    next({ name: "Perfil" });
+  }
+  else if (tokenValido && userType === 'user') {
+    let routesForUser = [
+      'Home',
+      'Perfil',
+      'NotFound',
+    ];
+    if (routesForUser.includes(to.name)) {
+      next();
+    } else {
+      next({ name: "NotFound" });
+    }
+  }
+  else {
+    next();
+  }
+});
+
+export default router;
