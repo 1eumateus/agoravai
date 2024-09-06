@@ -1,0 +1,65 @@
+import Swal from "sweetalert2";
+// toast
+import { useToast } from "vue-toast-notification";
+import "vue-toast-notification/dist/theme-sugar.css";
+
+async function popupDelete() {
+  return Swal.fire({
+    title: "Tem certeza que quer deletar este item?",
+    icon: "warning",
+    showCancelButton: true,
+    cancelButtonColor: "#d33",
+    cancelButtonText: "Não",
+    confirmButtonColor: "#209f56",
+    confirmButtonText: "Sim",
+  }).then((result) => {
+    return result.isConfirmed;
+  });
+}
+
+function popupInfo() {
+  const $toast = useToast();
+  const style_toast = { duration: 3000, style: { fontWeight: "bold" } };
+  return {
+    success: (message) => {
+      $toast.success(message, style_toast);
+    },
+    warning: (message) => {
+      $toast.warning(message, style_toast);
+    },
+    error: (message) => {
+      $toast.error(message, style_toast);
+    },
+    info: (message) => {
+      $toast.info(message, style_toast);
+    },
+  };
+}
+
+function formatMask() {
+  return {
+    money: (value) => {
+      if (!value) return "R$ 0,00";
+      value = value.toString();
+      const num = value.replace(/[^\d]/g, "");
+      const filledValue = num.padStart(3, "0");
+      const reais = filledValue.slice(0, -2).replace(/^0+/, "") || "0";
+      const centavos = filledValue.slice(-2).padStart(2, "0");
+      return `R$ ${reais},${centavos}`;
+    },
+    showMoney: (value) => {
+      if (!value) return "R$ 0,00";
+      return new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(value);
+    },
+
+    removeMoney: (value) => {
+      if (!value) return 0;
+      return parseFloat(value.replace(/[^\d,]/g, "").replace(",", "."));
+    },
+  };
+}
+
+export { popupDelete, popupInfo, formatMask };
