@@ -1,4 +1,9 @@
 <template>
+    <EditarPerfil
+        :form="form"
+        @modal:open="recarregar($event)"
+        v-if="openEditarPerfil"
+    />
    <main class="flex-grow relative ">
         <section class="mx-auto max-w-5xl p-[14px] flex flex-col gap-[8px]">
             
@@ -18,7 +23,7 @@
                         viewBox="0 0 256 256">
                         <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-59.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,131.52,0Z"></path>
                     </svg>
-                    <div class="flex flex-col">
+                    <div class="flex flex-col gap-[4px]">
                         <label class="text-[16px] font-bold">
                             {{ form.nome }} {{ form.sobrenome }}
                         </label>
@@ -28,14 +33,28 @@
                         <label class="text-[16px] ">
                             {{ form.disponibilidade || 'Não disponível' }}
                         </label>
+                        <div class="flex gap-[8px]">
+                            <a :href="form.linkedin" 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                class="text-blue-500 hover:text-blue-800" v-if="form.linkedin">
+                                <PhLinkedinLogo :size="20"/>
+                            </a>
+                            <a :href="form.github" 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                class="text-gray-800 hover:text-gray-900" v-if="form.github">
+                                <PhGithubLogo :size="20" />
+                            </a>
+                        </div>
                     </div>
                 </section>
                 <section class="flex flex-col items-end justify-between gap-[8px]">
-                    <label class=" font-bold text-[14px] bg-gray-300 hover:bg-gray-400 py-[8px] px-[12px] rounded-md cursor-pointer">
+                    <button type="button" :onClick="()=> openEditarPerfil = true" class=" font-bold text-[14px] bg-gray-300 hover:bg-gray-400 py-[8px] px-[12px] rounded-md cursor-pointer">
                         Editar
-                    </label>
+                    </button>
                     <label class="text-[16px] ">
-                        {{ form.universidade || 'Sem universidade' }} 
+                        {{ form.instituicao || 'Sem instituição' }} 
                     </label>
                 </section>
                 
@@ -56,8 +75,12 @@
 </template>
 
 <script setup>
-import { onMounted, reactive } from "vue";
+import { PhLinkedinLogo, PhGithubLogo } from '@phosphor-icons/vue';
+import { onMounted, reactive, ref } from "vue";
 import api from "@/api.js";
+import EditarPerfil from './EditarPerfil.vue'
+
+const openEditarPerfil = ref(false)
 
 const props = defineProps({
     emailUser: {
@@ -70,12 +93,17 @@ const props = defineProps({
     },
 })
 
+const emits = defineEmits(['modal:open']);
+
 const form = reactive({
     _id: false,
     nome: "",
+    sobrenome: "",
+    email: "",
+    descricao: "",
+    github: "",
+    linkedin: "",
     senha: "",
-    despesas: [],
-    orcamentos: [],
     tipo: null,
     ativo: true,
 });
@@ -87,8 +115,13 @@ async function start() {
     .then((res)=>{
         Object.assign(form, res.data.usuario)
     }).catch((e)=>{
-        console.log(e)
+        popupInfo().warning('Erro ao procurar usuário.');
     })
+}
+
+function recarregar(event){
+    openEditarPerfil.value = event
+    start()
 }
 
 onMounted(start);

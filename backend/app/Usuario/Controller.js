@@ -55,14 +55,15 @@ async function criar(req, res) {
 
 async function editar(req, res) {
     try {
-        console.log(req.body)
         let editar = await Model.findOne({ _id: req.body._id });
+       
         if (!editar) {
             return res.status(404).json({ error: "Usuário não encontrado" });
         }
-
+        
         let hashSenha = '';
         if (req.body.senha !== "") {
+            console.log('senah editada')
             hashSenha = await bcrypt.hash(req.body.senha, 10);
             editar.senha = hashSenha;
         }
@@ -70,9 +71,13 @@ async function editar(req, res) {
         editar.nome = req.body.nome;
         editar.sobrenome = req.body.sobrenome;
         editar.email = req.body.email;
+        editar.descricao = req.body.descricao;
+        editar.github = req.body.github;
+        editar.linkedin = req.body.linkedin;
+        editar.disponibilidade = req.body.disponibilidade;
         editar.telefone = req.body.telefone;
+        editar.instituicao = req.body.instituicao
         editar.tipo = req.body.tipo;
-
         await editar.save();
         res.status(200).json({ msg: "Usuário editado com sucesso." });
     } catch (error) {
@@ -94,7 +99,6 @@ async function deletar(req, res) {
 
 async function pegarPorEmail(req, res) {
     try {
-        console.log(req.params.email)
         const usuario = await Model.findOne({ email: req.params.email });
         if(!usuario){   
             return res.sendStatus(404)
