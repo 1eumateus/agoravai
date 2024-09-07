@@ -4,15 +4,15 @@
             <label class="text-[40px] font-bold">
                 Logo
             </label>
-            <router-link to="/" >
+            <router-link to="/" class="hidden md:block lg:block">
                 Início
             </router-link>
-            <router-link to="/" >
+            <router-link to="/" class="hidden md:block lg:block">
                 Meus trabalhos
             </router-link>
         </section>
 
-        <dropdown-menu mode="click" :overlay="false">
+        <dropdown-menu mode="click" :overlay="false" class="hidden md:block lg:block">
             <template #trigger >
               <div class="cursor-pointer"> Configurações </div>
             </template>

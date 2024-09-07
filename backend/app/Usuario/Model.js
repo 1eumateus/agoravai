@@ -18,6 +18,26 @@ const modelSchema = new Schema({
         type: String,
         required: false,
     },
+    descricao: {
+        type: String,
+        required: false,
+    },
+    disponibilidade: {
+        type: String,
+        required: false,
+    },
+    instituicao: {
+        type: String,
+        required: false,
+    },
+    github: {
+        type: String,
+        required: false,
+    },
+    linkedin: {
+        type: String,
+        required: false,
+    },
     senha: {
         type: String,
         required: true

@@ -7,6 +7,6 @@ router.get("/", listar);
 router.get("/pegarPorEmail/:email", pegarPorEmail);
 router.post("/criar", criar);
 router.delete("/:id", deletar);
-router.put("/:id", editar);
+router.put("/editar", editar);
 
 export default router;
