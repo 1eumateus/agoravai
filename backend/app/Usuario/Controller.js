@@ -76,7 +76,8 @@ async function editar(req, res) {
         editar.linkedin = req.body.linkedin;
         editar.disponibilidade = req.body.disponibilidade;
         editar.telefone = req.body.telefone;
-        editar.instituicao = req.body.instituicao
+        editar.instituicao = req.body.instituicao;
+        editar.interesse = req.body.interesse;
         editar.tipo = req.body.tipo;
         await editar.save();
         res.status(200).json({ msg: "Usuário editado com sucesso." });

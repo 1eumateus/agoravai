@@ -1,7 +1,24 @@
 <template>
     <div class="fixed inset-0 z-40 flex items-center justify-center bg-gray-600 bg-opacity-50">
             <main class="w-full md:w-[720px] lg:w-[720px] p-[24px] h-screen md:max-h-[720px] lg:max-h-[720px] overflow-y-auto bg-white rounded-md flex flex-col gap-[24px]">
+               
                 <section class="grid grid-cols-1 gap-[14px]">
+                    <div class="flex items-center justify-between border-b border-gray-300">
+                        <label class="text-[24px] font-bold" for="nome">
+                           Editar informações
+                        </label>
+                        <button 
+                        type="button" 
+                        :onClick="()=> emits('modal:open', false)" 
+                        class="cursor-pointer"
+                    >
+                        <PhX :size="18" class="fill-gray-700 hover:fill-black" />
+                    </button>
+                       
+                    </div>
+                    <label class="text-[18px] font-bold" for="nome">
+                        Informações principais
+                    </label>
                     <section class="grid grid-cols-2 gap-[10px]">
                         <div class="flex flex-col gap-[4px]">
                             <div class="flex items-center gap-[10px]">
@@ -28,57 +45,20 @@
                         </div>
 
                     </section>
-                    <div class="flex flex-col gap-[4px]">
-                        <div>
-                            <label class="text-[18px]" for="email">Email</label>
-                        </div>
-                        <input 
-                            v-model="form.email" 
-                            type="email" 
-                            id="email" 
-                            class="p-[8px] border border-black" 
-                            placeholder="ex.: exemplo@exemplo.com"
-                        />
-                    </div>
 
                     <div class="flex flex-col gap-[4px]">
                         <div>
-                            <label class="text-[18px]" for="instituicao">Instituição de ensino</label>
+                            <label class="text-[18px]" for="interesse">
+                                Área de interesse
+                            </label>
                         </div>
                         <input 
-                            v-model="form.instituicao" 
+                            v-model="form.interesse" 
                             type="text" 
-                            id="instituicao" 
+                            id="interesse" 
                             class="p-[8px] border border-black" 
-                            placeholder="ex.: Universidade Federal do Pará"
-                        />
-                    </div>
-
-                    <div class="flex flex-col gap-[4px]">
-                        <div class="flex items-center gap-[10px]">
-                            <label class="text-[18px]" for="linkedin">LinkedIn </label>
-                            <label class="text-gray-600" for="linkedin">Opcional</label>
-                        </div>
-                        <input 
-                            v-model="form.linkedin" 
-                            id="linkedin" 
-                            class="p-[8px] border border-black" 
-                            placeholder="ex.: https://www.linkedin.com/"
-                            maxlength="90"
-                        />
-                    </div>
-
-                    <div class="flex flex-col gap-[4px]">
-                        <div class="flex items-center gap-[10px]">
-                            <label class="text-[18px]" for="github">GitHub </label>
-                            <label class="text-gray-600" for="github">Opcional</label>
-                        </div>
-                        <input 
-                            v-model="form.github" 
-                            id="github" 
-                            class="p-[8px] border border-black" 
-                            placeholder="ex.: https://github.com/"
-                            maxlength="90"
+                            placeholder="ex.: Inteligência artificial, desenvolvimento web e automação"
+                            maxlength="65"
                         />
                     </div>
 
@@ -133,6 +113,19 @@
                         </div>
                     </div>
 
+                    <div class="flex flex-col gap-[4px]">
+                        <div>
+                            <label class="text-[18px]" for="instituicao">Instituição de ensino</label>
+                        </div>
+                        <input 
+                            v-model="form.instituicao" 
+                            type="text" 
+                            id="instituicao" 
+                            class="p-[8px] border border-black" 
+                            placeholder="ex.: Universidade Federal do Pará"
+                        />
+                    </div>
+
                     <div class="flex flex-col gap-[4px] ">
                         <div class="flex items-center gap-[10px]">
                             <label class="text-[18px]" for="formdescricao">Descrição </label>
@@ -146,10 +139,57 @@
                             maxlength="100"
                         >
                         </textarea>
-                    </div>   
+                    </div>  
+
+                    <label class="text-[18px] font-bold" for="nome">
+                        Informações de contato
+                    </label>
+
+                    <div class="flex flex-col gap-[4px]">
+                        <div>
+                            <label class="text-[18px]" for="email">Email</label>
+                        </div>
+                        <input 
+                            v-model="form.email" 
+                            type="email" 
+                            id="email" 
+                            class="p-[8px] border border-black" 
+                            placeholder="ex.: exemplo@exemplo.com"
+                        />
+                    </div>
+
+                    
+
+                    <div class="flex flex-col gap-[4px]">
+                        <div class="flex items-center gap-[10px]">
+                            <label class="text-[18px]" for="linkedin">LinkedIn </label>
+                            <label class="text-gray-600" for="linkedin">Opcional</label>
+                        </div>
+                        <input 
+                            v-model="form.linkedin" 
+                            id="linkedin" 
+                            class="p-[8px] border border-black" 
+                            placeholder="ex.: https://www.linkedin.com/"
+                            maxlength="90"
+                        />
+                    </div>
+
+                    <div class="flex flex-col gap-[4px]">
+                        <div class="flex items-center gap-[10px]">
+                            <label class="text-[18px]" for="github">GitHub </label>
+                            <label class="text-gray-600" for="github">Opcional</label>
+                        </div>
+                        <input 
+                            v-model="form.github" 
+                            id="github" 
+                            class="p-[8px] border border-black" 
+                            placeholder="ex.: https://github.com/"
+                            maxlength="90"
+                        />
+                    </div> 
 
                 </section>
-                <section class="flex justify-between gap-[24px]">
+                <section class="flex justify-between gap-[24px] border-t border-gray-300 py-[10px]">
                     <button 
                         type="button" 
                         :onClick="()=> emits('modal:open', false)" 
@@ -169,6 +209,7 @@
 </template>
 
 <script setup>
+import { PhX } from '@phosphor-icons/vue';
 import { onMounted, reactive } from "vue";
 import api from "@/api.js";
 import { popupInfo } from '../../stores/util.js';
