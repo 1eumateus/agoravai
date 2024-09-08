@@ -30,6 +30,10 @@ const modelSchema = new Schema({
         type: String,
         required: false,
     },
+    interesse: {
+        type: String,
+        required: false,
+    },
     github: {
         type: String,
         required: false,

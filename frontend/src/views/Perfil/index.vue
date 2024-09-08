@@ -27,12 +27,23 @@
                         <label class="text-[16px] font-bold">
                             {{ form.nome }} {{ form.sobrenome }}
                         </label>
-                        <label class="text-[16px] ">
-                            {{ form.area || 'Sem área de interesse' }}
-                        </label>
-                        <label class="text-[16px] ">
-                            {{ form.disponibilidade || 'Não disponível' }}
-                        </label>
+                        <div>
+                            <label class="text-[14px] font-bold">
+                                Interesses: 
+                            </label>
+                            <label class="text-[14px] ">
+                                {{ form.interesse || 'Sem área de interesse' }}
+                            </label>
+                        </div>
+                        <div>
+                            <label class="text-[14px] font-bold">
+                                Disponibilidade: 
+                            </label>
+                            <label class="text-[14px] ">
+                                {{ form.disponibilidade || 'Não disponível' }}
+                            </label>
+                        </div>
+                       
                         <div class="flex gap-[8px]">
                             <a :href="form.linkedin" 
                                 target="_blank" 
@@ -50,10 +61,14 @@
                     </div>
                 </section>
                 <section class="flex flex-col items-end justify-between gap-[8px]">
-                    <button type="button" :onClick="()=> openEditarPerfil = true" class=" font-bold text-[14px] bg-gray-300 hover:bg-gray-400 py-[8px] px-[12px] rounded-md cursor-pointer">
-                        Editar
+                    <button 
+                        type="button" 
+                        :onClick="()=> openEditarPerfil = true" 
+                        class="cursor-pointer"
+                    >
+                        <PhPencil :size="20" />
                     </button>
-                    <label class="text-[16px] ">
+                    <label class="text-[14px] ">
                         {{ form.instituicao || 'Sem instituição' }} 
                     </label>
                 </section>
@@ -62,11 +77,22 @@
 
             <div class="flex items-end gap-[8px] border rounded-md p-[8px]">
                 <div class="flex flex-col">
-                    <label class="text-[16px] font-bold">
-                        Descrição:
+                    <label class="text-[14px] font-bold">
+                        Descrição
                     </label>
-                    <label class="text-[16px] ">
+                    <label class="text-[14px] ">
                        {{ form.descricao || 'Sem descrição.' }}
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex items-end gap-[8px] border rounded-md p-[8px]">
+                <div class="flex flex-col">
+                    <label class="text-[14px] font-bold">
+                        Projetos
+                    </label>
+                    <label class="text-[14px] ">
+                      Sem projetos.
                     </label>
                 </div>
             </div>
@@ -75,7 +101,7 @@
 </template>
 
 <script setup>
-import { PhLinkedinLogo, PhGithubLogo } from '@phosphor-icons/vue';
+import { PhLinkedinLogo, PhGithubLogo, PhPencil  } from '@phosphor-icons/vue';
 import { onMounted, reactive, ref } from "vue";
 import api from "@/api.js";
 import EditarPerfil from './EditarPerfil.vue'
