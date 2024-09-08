@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
 const modelSchema = new Schema({
+    ativo: {
+        type: Boolean,
+        default: true,
+    },
     nome: {
         type: String,
         required: true
@@ -14,7 +18,7 @@ const modelSchema = new Schema({
         type: String,
         required: true
     },
-    telefone: {
+    celular: {
         type: String,
         required: false,
     },
@@ -24,6 +28,7 @@ const modelSchema = new Schema({
     },
     disponibilidade: {
         type: String,
+        default: 'indisponível',
         required: false,
     },
     instituicao: {

@@ -1,7 +1,6 @@
 <template>
     <div class="fixed inset-0 z-40 flex items-center justify-center bg-gray-600 bg-opacity-50">
             <main class="w-full md:w-[720px] lg:w-[720px] p-[24px] h-screen md:max-h-[720px] lg:max-h-[720px] overflow-y-auto bg-white rounded-md flex flex-col gap-[24px]">
-               
                 <section class="grid grid-cols-1 gap-[14px]">
                     <div class="flex items-center justify-between border-b border-gray-300">
                         <label class="text-[24px] font-bold" for="nome">
@@ -29,6 +28,7 @@
                                 id="nome" 
                                 class="p-[8px] border border-black" 
                                 placeholder="ex.: Davi"
+                                maxlength="12"
                             />
                         </div>
                         <div class="flex flex-col gap-[4px]">
@@ -41,6 +41,7 @@
                                 id="sobrenome" 
                                 class="p-[8px] border border-black" 
                                 placeholder="ex.: Barroso"
+                                 maxlength="12"
                             />
                         </div>
 
@@ -67,6 +68,14 @@
                             <label class="text-[18px]" for="formdisponibilidade">Disponibilidade </label>
                         </div>
                         <div class="flex items-center flex-wrap gap-[14px]">
+                            <label class="flex items-center p-[10px] gap-[10px] border border-black rounded-md">
+                                <input 
+                                    type="radio"
+                                    v-model="form.disponibilidade" 
+                                    value="indisponível"
+                                />Indisponível
+                            </label>
+
                             <label class="flex items-center p-[10px] gap-[10px] border border-black rounded-md">
                                 <input 
                                     type="radio"
@@ -158,7 +167,20 @@
                         />
                     </div>
 
-                    
+                    <div class="flex flex-col gap-[4px]">
+                        <div>
+                            <label class="text-[18px]" for="celular">Celular</label>
+                        </div>
+                        <input 
+                            v-model="form.celular" 
+                            type="text" 
+                            id="celular" 
+                            class="p-[8px] border border-black" 
+                            placeholder="ex.: (00) 90000-0000"
+                            :maxLength="15"
+                            @input="form.celular = formatMask.tel(form.celular)"
+                        />
+                    </div>
 
                     <div class="flex flex-col gap-[4px]">
                         <div class="flex items-center gap-[10px]">
@@ -212,7 +234,7 @@
 import { PhX } from '@phosphor-icons/vue';
 import { onMounted, reactive } from "vue";
 import api from "@/api.js";
-import { popupInfo } from '../../stores/util.js';
+import { popupInfo, formatMask } from '../../stores/util.js';
 
 const emits = defineEmits(['modal:open']);
 
@@ -224,6 +246,7 @@ const form = reactive({
     descricao: "",
     github: "",
     linkedin: "",
+    celular: "",
     disponibilidade: "",
     senha: "",
     tipo: null,
@@ -243,7 +266,15 @@ function start(){
 }
 
 async function salvar(){
-    console.log(form._id)
+
+    if(form.linkedin && !validateLinkedin(form.linkedin)){
+        return popupInfo().warning('Linkedin inválido.');
+    }
+
+    if(form.github && !validateGithub(form.github)){
+        return popupInfo().warning('Github inválido.');
+    }
+    
     await api.put(`/usuario/editar`, form)
     .then(()=>{
         popupInfo().success('Usuário editado com sucesso.');
@@ -251,6 +282,16 @@ async function salvar(){
     }).catch((e)=>{
         popupInfo().warning('Erro ao editar usuário.');
     })
+}
+
+function validateGithub(link) {
+    const githubPattern = /^https:\/\/github\.com\/[A-z0-9_-]+\/?$/;
+    return githubPattern.test(link);
+}
+
+function validateLinkedin(link) {
+    const linkedinPattern = /^https:\/\/(www\.)?linkedin\.com\/in\/[A-z0-9_-]+\/?$/;
+    return linkedinPattern.test(link);
 }
 
 onMounted(start);

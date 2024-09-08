@@ -1,12 +1,6 @@
 <template>
-    <EditarPerfil
-        :form="form"
-        @modal:open="recarregar($event)"
-        v-if="openEditarPerfil"
-    />
    <main class="flex-grow relative ">
         <section class="mx-auto max-w-5xl p-[14px] flex flex-col gap-[8px]">
-            
             <div class="flex flex-col">
                 <label class="text-[10px] font-bold uppercase">
                     {{ form.tipo }}
@@ -15,13 +9,6 @@
                     <label class="text-[28px] font-bold">
                         {{ form.tipo !=='admin' ? ' Perfil público': 'Perfil privado' }}
                     </label>
-                    <button 
-                        type="button" 
-                        :onClick="()=> openEditarPerfil = true" 
-                        class="cursor-pointer"
-                    >
-                        <PhPencil :size="20" />
-                    </button>
                 </div>
             </div>
 
@@ -55,7 +42,7 @@
                     </div>
                 </section>
 
-                <section class="flex flex-col gap-[8px] border rounded-md border-gray-300 p-[10px] col-span-2">
+                <section class="flex flex-col justify-between gap-[8px] border rounded-md border-gray-300 p-[10px] col-span-2">
                     <label class="text-[18px] font-bold">
                         {{ form.descricao || 'Sem descrição.' }}
                     </label>
@@ -86,6 +73,18 @@
                             </label>
                         </div>
                    </div>
+                   <div class="flex justify-end">
+                        <button 
+                            v-if="form.disponibilidade !== 'indisponível'"
+                            class=" font-bold text-[14px] bg-green-300 hover:bg-green-400 py-[8px] px-[12px] rounded-md cursor-pointer">
+                            Solicitar orientação
+                        </button>
+                        <button 
+                            v-else
+                            class=" font-bold text-[14px] bg-red-300 py-[8px] px-[12px] rounded-md cursor-not-allowed">
+                            Indisponivel
+                        </button>
+                   </div>
                 </section>
             </div>
         </section>
@@ -93,22 +92,11 @@
 </template>
 
 <script setup>
-import { PhLinkedinLogo, PhGithubLogo, PhPencil  } from '@phosphor-icons/vue';
+import { PhLinkedinLogo, PhGithubLogo  } from '@phosphor-icons/vue';
 import { onMounted, reactive, ref } from "vue";
 import api from "@/api.js";
-import EditarPerfil from './EditarPerfil.vue'
 import { popupInfo } from '../../stores/util.js';
-
-const openEditarPerfil = ref(false)
-
-const props = defineProps({
-    idUser: {
-        type: String,
-        required: false, 
-    },
-})
-
-const emits = defineEmits(['modal:open']);
+import { useRouter, useRoute } from "vue-router";
 
 const form = reactive({
     _id: false,
@@ -124,18 +112,16 @@ const form = reactive({
 });
 
 async function start() {
-    const idUser = props?.idUser;
-    await api.get(`/usuario/${idUser}`)
-    .then((res)=>{
-        Object.assign(form, res.data.usuario)
-    }).catch((e)=>{
-        popupInfo().warning('Erro ao procurar usuário.');
-    })
-}
-
-function recarregar(event){
-    openEditarPerfil.value = event
-    start()
+    const route = useRoute();
+    if (route?.params?.id) {
+        form._id = route.params.id;
+        await api.get(`/usuario/${form._id}`)
+        .then((res)=>{
+            Object.assign(form, res.data.usuario)
+        }).catch((e)=>{
+            popupInfo().warning('Erro ao procurar usuário.');
+        })
+    }
 }
 
 onMounted(start);

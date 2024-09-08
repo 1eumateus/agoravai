@@ -5,7 +5,7 @@ export function checkToken() {
     if (token) {
         return api.get('/login/getUser')
         .then((res) => {
-            return {valid: true, tipo: res.data.tipo, email:res.data.email};
+            return {valid: true, tipo: res.data.tipo, id:res.data.id};
         }).catch(() => {
             localStorage.removeItem('token');
             window.location.reload();

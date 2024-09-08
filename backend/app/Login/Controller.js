@@ -46,12 +46,14 @@ async function getUser(req, res) {
     
     if (token == null) return res.sendStatus(401);
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, usuario) => {
+    jwt.verify(token, process.env.JWT_SECRET, async(err, usuario) => {
         if (err) return res.sendStatus(403);
+        const user = await Usuario.findOne({ _id: usuario._id });
+        if(!user?.ativo) return res.sendStatus(404);
         res.status(200).json({ 
             tipo: usuario.tipo, 
             nome: usuario.nome, 
-            email: usuario.email 
+            id: usuario._id 
         });
     });
 }

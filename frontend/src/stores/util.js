@@ -36,9 +36,8 @@ function popupInfo() {
   };
 }
 
-function formatMask() {
-  return {
-    money: (value) => {
+export const formatMask = {
+    money (value)  {
       if (!value) return "R$ 0,00";
       value = value.toString();
       const num = value.replace(/[^\d]/g, "");
@@ -47,7 +46,7 @@ function formatMask() {
       const centavos = filledValue.slice(-2).padStart(2, "0");
       return `R$ ${reais},${centavos}`;
     },
-    showMoney: (value) => {
+    showMoney (value)  {
       if (!value) return "R$ 0,00";
       return new Intl.NumberFormat("pt-BR", {
         style: "currency",
@@ -55,11 +54,18 @@ function formatMask() {
       }).format(value);
     },
 
-    removeMoney: (value) => {
+    removeMoney(value)  {
       if (!value) return 0;
       return parseFloat(value.replace(/[^\d,]/g, "").replace(",", "."));
     },
-  };
+    tel(value) {
+      if (!value) return '';
+      return value
+          .replace(/\D+/g, '')
+          .replace(/(\d{2})(\d)/, '($1) $2')
+          .replace(/(\d{4})(\d)/, '$1-$2')
+          .replace(/(\d{4})-(\d)(\d{4})/, '$1$2-$3')
+          .replace(/(-\d{4})\d+?$/, '$1');
+  },
 }
-
-export { popupDelete, popupInfo, formatMask };
+export {popupInfo, popupDelete}

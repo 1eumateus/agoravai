@@ -2,7 +2,7 @@
 
   <Menu v-if="tokenValid" :user="userType"></Menu>
   <router-view
-    :emailUser="emailUser"
+    :idUser="idUser"
   />
   <Rodape v-if="tokenValid"></Rodape>
 
@@ -16,7 +16,7 @@ import { onMounted, ref } from "vue";
 
 const tokenValid = ref(false);
 const userType = ref('user');
-const emailUser = ref('');
+const idUser = ref('');
 
 function start() {
   verifyToken()
@@ -26,7 +26,7 @@ async function verifyToken() {
   const res = await checkToken();
   tokenValid.value = res.valid;
   userType.value = res.tipo;
-  emailUser.value = res.email
+  idUser.value = res.id
 }
 
 onMounted(start);
