@@ -24,10 +24,17 @@
                             class="px-[14px] py-[8px] hover:bg-gray-400 w-full rounded-md" >
                             Perfil
                         </router-link>
+                        <router-link 
+                            to="/usuarios" 
+                            class="px-[14px] py-[8px] hover:bg-gray-400 w-full rounded-md"
+                            v-if="user === 'admin'"
+                            >
+                            Usuários 
+                        </router-link>
                         <button 
                             type="button" 
                             @click="logout" 
-                            class="px-[14px] py-[8px] hover:bg-gray-400 w-full rounded-md" >
+                            class="flex px-[14px] py-[8px] hover:bg-gray-400 w-full rounded-md" >
                             Sair
                         </button>
                     </div>

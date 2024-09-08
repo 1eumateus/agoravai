@@ -2,7 +2,7 @@
     <main class="flex-grow relative ">
         <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 h-full w-full gap-[2px] md:gap-[40px] lg:gap-[40px] divide-x divide-y">
             
-            <div class="flex flex-col justify-center gap-[24px] px-[10px] md:px-[90px] lg:px-[90px]">
+            <div class="flex flex-col justify-center gap-[24px] px-[10px] lg:px-[90px]">
                 <label class="text-[56px] font-bold">
                     Bem vindo
                 </label>
@@ -13,9 +13,9 @@
                 </label>
             </div>
 
-            <div class="flex flex-col justify-center gap-[24px] px-[10px] md:px-[90px] lg:px-[90px]">
+            <div class="flex flex-col justify-center gap-[24px] px-[10px] lg:px-[90px]">
                 
-                <div class="flex flex-col border border-gray-200 rounded-md p-[20px] gap-[24px]"> 
+                <div class="flex flex-col border-none lg:border lg:border-gray-200 rounded-md p-[20px] gap-[24px]"> 
                     <h1 class="text-[30px] font-bold">
                         {{ showRegister ? 'Cadastre-se' : 'Entrar' }}
                     </h1>
@@ -47,9 +47,9 @@
 
                     </section>
 
-                    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-[10px]" v-else>
+                    <section class="grid grid-cols-1 lg:grid-cols-2 gap-[10px]" v-else>
                         
-                        <div class="flex flex-col gap-[4px] col-span-1 md:col-span-2 lg:col-span-2">
+                        <div class="flex flex-col gap-[4px] col-span-1 lg:col-span-2">
                             <div class="flex items-center gap-[10px]">
                                 <label class="text-[18px] " for="registrartipo">Eu sou</label>
                             </div>
@@ -88,7 +88,7 @@
                             />
                         </div>
 
-                        <div class="flex flex-col gap-[4px] col-span-1 md:col-span-2 lg:col-span-2">
+                        <div class="flex flex-col gap-[4px] col-span-1 lg:col-span-2">
                             <div>
                                 <label class="text-[18px]" for="registraremail">Email</label>
                             </div>
@@ -114,7 +114,7 @@
                             />
                         </div> -->
 
-                        <div class="flex flex-col gap-[4px] col-span-1 md:col-span-2 lg:col-span-2">
+                        <div class="flex flex-col gap-[4px] col-span-1 lg:col-span-2">
                             <div class="flex items-center gap-[10px]">
                                 <label class="text-[18px]" for="registrarsenha">Senha </label>
                             </div>
@@ -126,7 +126,7 @@
                             />
                         </div>
 
-                        <div class="flex flex-col gap-[4px] col-span-1 md:col-span-2 lg:col-span-2">
+                        <div class="flex flex-col gap-[4px] col-span-1 lg:col-span-2">
                             <div class="flex items-center gap-[10px]">
                                 <label class="text-[18px]" for="confirmarSenha">Confirmar senha </label>
                             </div>
@@ -182,7 +182,6 @@ const form = reactive({
 })
 
 async function login() {
-    console.log(form)
     if (form.email === "") {
         popupInfo().warning('Informe email.');
         return;

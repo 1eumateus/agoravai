@@ -24,6 +24,18 @@ const routes = [
     component: () => import('../views/Perfil/index.vue')
   },
 
+  {
+    path: '/usuarios',
+    name: "Usuarios",
+    component: () => import('../views/Usuarios/index.vue')
+  },
+
+  {
+    path: '/professor/:id',
+    name: "Professor",
+    component: () => import('../views/Professor/index.vue')
+  },
+
 ]
 
 const router = createRouter({
@@ -42,10 +54,11 @@ router.beforeEach(async (to, from, next) => {
   else if (tokenValido && to.name === "Login") {
     next({ name: "Perfil" });
   }
-  else if (tokenValido && userType === 'user') {
+  else if (tokenValido && userType !== 'admin') {
     let routesForUser = [
       'Home',
       'Perfil',
+      'Professor',
       'NotFound',
     ];
     if (routesForUser.includes(to.name)) {

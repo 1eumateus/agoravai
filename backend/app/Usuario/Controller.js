@@ -5,12 +5,37 @@ import jwt from "jsonwebtoken";
 async function listar(req, res) {
     try {
         const token = req.headers.authorization;
-        const userID = jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        const filtro = {ativo: true}
+        const {userID, userTipo }= jwt.verify(token, process.env.JWT_SECRET, (err, usuario) => {
             if (err) return false;
-            return decoded.id;
+            return {userID: usuario._id, userTipo: usuario.tipo};
         });
         if (!userID) return res.status(400);
-        const item = await Model.find({});
+
+        if(userTipo === 'aluno'){
+            filtro.tipo = {$nin: ['admin', 'aluno']}
+        }else if(userTipo === 'professor'){
+           return res.status(200).json({item:[]})
+        }
+        const search = req.query.search || false;
+        if (search) {
+            filtro.nome = { $regex: search, $options: "i" };
+        }
+
+        const item = await Model.aggregate([
+            { $match: filtro },  
+            {
+                $project: {    
+                    _id: 1,       
+                    nome: 1,
+                    sobrenome: 1,
+                    descricao: 1,
+                    disponibilidade: 1,
+                    interesse: 1
+                }
+            }
+        ]);
+
         res.status(200).json({ item });
     } catch (error) {
         return res.sendStatus(400);
@@ -20,16 +45,17 @@ async function listar(req, res) {
 async function criar(req, res) {
     try {
         console.log(req.body)
-        let isNew = await Model.findOne({ email: req.body.email });
+        let isNew = await Model.findOne({ ativo: true, email: req.body.email });
         if (isNew) return res.sendStatus(400).json({ msg: "Usuário já cadastrado." });
 
         const hashSenha = await bcrypt.hash(req.body.senha, 10);
 
         const novo = new Model({
             nome: req.body.nome,
+            ativo: true,
             sobrenome: req.body.sobrenome,
             email: req.body.email,
-            telefone: req.body.telefone,
+            celular: req.body.celular,
             tipo: req.body.tipo,
             senha: hashSenha,
         });
@@ -39,6 +65,7 @@ async function criar(req, res) {
         const token = jwt.sign(
             {
                 _id: novo._id,
+                ativo: novo.ativo,
                 nome: novo.nome,
                 email: novo.email,
                 tipo: novo.tipo,
@@ -55,12 +82,12 @@ async function criar(req, res) {
 
 async function editar(req, res) {
     try {
-        let editar = await Model.findOne({ _id: req.body._id });
+        let editar = await Model.findOne({ ativo:true, _id: req.body._id });
        
         if (!editar) {
             return res.status(404).json({ error: "Usuário não encontrado" });
         }
-        
+        console.log('encontrado')
         let hashSenha = '';
         if (req.body.senha !== "") {
             console.log('senah editada')
@@ -75,10 +102,11 @@ async function editar(req, res) {
         editar.github = req.body.github;
         editar.linkedin = req.body.linkedin;
         editar.disponibilidade = req.body.disponibilidade;
-        editar.telefone = req.body.telefone;
+        editar.celular = req.body.celular;
         editar.instituicao = req.body.instituicao;
         editar.interesse = req.body.interesse;
         editar.tipo = req.body.tipo;
+        editar.ativo = true;
         await editar.save();
         res.status(200).json({ msg: "Usuário editado com sucesso." });
     } catch (error) {
@@ -88,27 +116,49 @@ async function editar(req, res) {
 
 async function deletar(req, res) {
     try {
-        const query = await Model.deleteOne({ _id: req.params.id });
-        if (query.deletedCount == 0) {
+        const usuario = await Model.findOne({ ativo:true, _id: req.params.id });
+        if (!usuario) {
             return res.status(404).json({ error: "Usuário não encontrado" });
         }
-        res.status(200).json({ success: true });
+        usuario.ativo = false;
+        await usuario.save();
+        res.status(200);
     } catch (error) {
         return res.sendStatus(400);
     }
 }
 
-async function pegarPorEmail(req, res) {
+async function pegarPorId(req, res) {
     try {
-        const usuario = await Model.findOne({ email: req.params.email });
-        if(!usuario){   
-            return res.sendStatus(404)
+        const token = req.headers.authorization;
+        const filtro = { ativo: true, _id: req.params.id };
+
+        const { userID, userTipo } = jwt.verify(token, process.env.JWT_SECRET, (err, usuario) => {
+            if (err) return false;
+            return { userID: usuario._id, userTipo: usuario.tipo };
+        });
+
+        if (!userID) return res.status(400);
+
+        if (userTipo !== 'admin') {
+            filtro.tipo = { $nin: ['admin'] };
         }
-        res.json({usuario: usuario});
+
+        let selectFields = {};
+        if (userTipo === 'aluno' || userTipo === 'professor') {
+            selectFields = { senha: 0 };
+        }
+
+        const usuario = await Model.findOne(filtro).select(selectFields);
+        if (!usuario) {
+            return res.sendStatus(404); 
+        }
+
+        res.json({ usuario: usuario });
     } catch (error) {
-        return res.sendStatus(400);
+        return res.sendStatus(400); 
     }
 }
 
 
-export { listar, criar, deletar, editar, pegarPorEmail };
+export { listar, criar, deletar, editar, pegarPorId };

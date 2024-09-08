@@ -1,17 +1,23 @@
 <template>
    <main class="flex-grow relative " >
-        <section class="mx-auto max-w-7xl p-[10px]"> 
-            <section class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-[24px]">
-                <section class="flex flex-col gap-[16px]">
-                    <label class="text-[40px] font-bold">
-                        Professores
+        <section class="mx-auto max-w-7xl p-[14px] flex flex-col gap-[24px]">
+            <div class="flex flex-col gap-[4px]">
+                <div>
+                    <label class="text-[18px]" for="interesse">
+                        Pesquisar
                     </label>
-                    <label class="text-[18px] font-normal">
-                        Professores encontrados com base no filtro customizado. 
-                        Professores encontrados com base no filtro customizado.
-                    </label>
-                </section>
-                <section class="flex items-start flex-col gap-[16px]">
+                </div>
+                <input 
+                    v-model="search" 
+                    type="text" 
+                    id="interesse" 
+                    class="p-[8px] border border-black" 
+                    placeholder="Pesquise pelo nome do professor"
+                    maxlength="50"
+                />
+           </div>
+            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]">
+                <section class="flex items-start flex-col gap-[16px] border rounded-md p-[10px]" v-for="(professor, index) in professores" :key="index">
                     <div class="flex items-center gap-[16px]">
                         <section>
                             <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -26,26 +32,59 @@
                         </section>
                         <section class="flex flex-col gap-[4px]">
                             <label class="text-[20px] font-bold">
-                                Nome completo
+                                {{ professor.nome }}  {{ professor.sobrenome }}
                             </label>
-                            <label class="text-[18px] font-normal">
-                                Área de atuação
-                            </label>
-                            <label class="text-[18px] font-normal">
-                                Disponibilidade
-                            </label>
+                            <div class="flex flex-wrap gap-[8px]">
+                                <label class="text-[16px] font-bold">
+                                    Área:
+                                </label>
+                                <label class="text-[16px] ">
+                                {{ professor.interesse || '-' }}
+                                </label>
+                            </div>
+
+                            <div class="flex flex-wrap gap-[8px]">
+                                <label class="text-[16px] font-bold">
+                                    Disponibilidade:
+                                </label>
+                                <label class="text-[16px] ">
+                                    {{ professor.disponibilidade || '-' }}
+                                </label>
+                            </div>
                         </section>
                     </div>
                     <label class="text-[18px] font-normal">
-                        Descrição informada pelo professor. Descrição informada pelo professor.
+                        {{ professor.descricao || 'Sem descrição' }}
                     </label>
-                    <button>
-                        mais informações
-                    </button>
+                    <router-link :to="`/professor/${professor._id}`" class="hidden md:block lg:block">
+                        mais informações >
+                    </router-link>
                 </section>
             </section>
         </section>
     </main>
 </template>
 <script setup>
+import { onMounted, ref, watch } from "vue";
+import api from "@/api.js";
+import { popupInfo } from '../stores/util.js';
+
+const professores = ref([])
+const search = ref('')
+
+async function start() {
+    await api.get(`/usuario?search=${search.value}`)
+    .then((res)=>{
+        professores.value = res.data.item;
+        console.log(res.data.item)
+    }).catch((e)=>{
+        popupInfo().warning('Erro ao pesquisar usuários.');
+    })
+}
+
+watch(search, () => {
+    start();
+});
+
+onMounted(start);
 </script>
