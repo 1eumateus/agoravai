@@ -7,10 +7,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        'primary-opaque': '#1e8449',
-        'primary': "#ffffff",
-        'secundary': "#66b032",
-        'primary-transparent': "rgba(34, 197, 94, 0.1)",
+        'principal': "#3d4a7b",
+        'principal-opaco': '#2f3a60',
+        'secundaria': "#e9e9e9",
+        'terciaria': "#d99c44",
       },
     },
   },

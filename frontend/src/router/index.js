@@ -52,7 +52,7 @@ router.beforeEach(async (to, from, next) => {
     next({ name: "Login" });
   }
   else if (tokenValido && to.name === "Login") {
-    next({ name: "Perfil" });
+    next({ name: "Home" });
   }
   else if (tokenValido && userType !== 'admin') {
     let routesForUser = [

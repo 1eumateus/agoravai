@@ -3,9 +3,9 @@
             <main class="w-full md:w-[720px] lg:w-[720px] p-[24px] h-screen md:max-h-[720px] lg:max-h-[720px] overflow-y-auto bg-white rounded-md flex flex-col gap-[24px]">
                 <section class="grid grid-cols-1 gap-[14px]">
                     <div class="flex items-center justify-between border-b border-gray-300">
-                        <label class="text-[24px] font-bold" for="nome">
-                           Editar informações
-                        </label>
+                        <Texto as="h2">
+                            Editar informações
+                        </Texto>
                         <button 
                         type="button" 
                         :onClick="()=> emits('modal:open', false)" 
@@ -15,13 +15,15 @@
                     </button>
                        
                     </div>
-                    <label class="text-[18px] font-bold" for="nome">
+                    <Texto as="h3">
                         Informações principais
-                    </label>
+                    </Texto>
                     <section class="grid grid-cols-2 gap-[10px]">
                         <div class="flex flex-col gap-[4px]">
                             <div class="flex items-center gap-[10px]">
-                                <label class="text-[18px] " for="nome">Nome</label>
+                                <Texto as="body" for="nome">
+                                    Nome
+                                </Texto>
                             </div>
                             <input 
                                 v-model="form.nome" 
@@ -33,8 +35,12 @@
                         </div>
                         <div class="flex flex-col gap-[4px]">
                             <div class="flex items-center gap-[10px]">
-                                <label class="text-[18px] " for="sobrenome">Sobrenome</label>
-                                <label class="text-gray-600" for="sobrenome">Opcional</label>
+                                <Texto as="body" for="sobrenome">
+                                    Sobrenome
+                                </Texto>
+                                <Texto as="body" color='gray' for="sobrenome">
+                                    Opcional
+                                </Texto>
                             </div>
                             <input 
                                 v-model="form.sobrenome" 
@@ -47,11 +53,27 @@
 
                     </section>
 
+                    <div class="flex flex-col gap-[4px]" v-if="form.tipo === 'professor'">
+                        <div>
+                            <Texto as="body" for="formacao">
+                                Formação acadêmica/profissional (Onde obteve os títulos, atuação profissional, etc.)
+                            </Texto>
+                        </div>
+                        <input 
+                            v-model="form.formacao" 
+                            type="text" 
+                            id="interesse" 
+                            class="p-[8px] border border-black" 
+                            placeholder="ex.: Inteligência artificial, desenvolvimento web e automação"
+                            maxlength="65"
+                        />
+                    </div>
+
                     <div class="flex flex-col gap-[4px]">
                         <div>
-                            <label class="text-[18px]" for="interesse">
-                                Área de interesse
-                            </label>
+                            <Texto as="body" for="interesse">
+                                Áreas de Interesse (áreas de interesse de ensino e pesquisa)
+                            </Texto>
                         </div>
                         <input 
                             v-model="form.interesse" 
@@ -65,7 +87,9 @@
 
                     <div class="flex flex-col gap-[12px] ">
                         <div class="flex items-center gap-[10px]">
-                            <label class="text-[18px]" for="formdisponibilidade">Disponibilidade </label>
+                            <Texto as="body" for="formdisponibilidade">
+                                Disponibilidade
+                            </Texto>
                         </div>
                         <div class="flex items-center flex-wrap gap-[14px]">
                             <label class="flex items-center p-[10px] gap-[10px] border border-black rounded-md">
@@ -124,7 +148,9 @@
 
                     <div class="flex flex-col gap-[4px]">
                         <div>
-                            <label class="text-[18px]" for="instituicao">Instituição de ensino</label>
+                            <Texto as="body" for="instituicao">
+                                Instituição de ensino
+                            </Texto>
                         </div>
                         <input 
                             v-model="form.instituicao" 
@@ -137,8 +163,12 @@
 
                     <div class="flex flex-col gap-[4px] ">
                         <div class="flex items-center gap-[10px]">
-                            <label class="text-[18px]" for="formdescricao">Descrição </label>
-                            <label class="text-gray-600" for="formdescricao">Opcional</label>
+                            <Texto as="body" for="formdescricao">
+                                Descrição
+                            </Texto>
+                            <Texto as="body" color="gray" for="formdescricao">
+                                Opcional
+                            </Texto>
                         </div>
                         <textarea 
                             v-model="form.descricao" 
@@ -150,13 +180,15 @@
                         </textarea>
                     </div>  
 
-                    <label class="text-[18px] font-bold" for="nome">
+                    <Texto as="h3">
                         Informações de contato
-                    </label>
+                    </Texto>
 
                     <div class="flex flex-col gap-[4px]">
                         <div>
-                            <label class="text-[18px]" for="email">Email</label>
+                            <Texto as="body" for="email">
+                                Email
+                            </Texto>
                         </div>
                         <input 
                             v-model="form.email" 
@@ -169,7 +201,9 @@
 
                     <div class="flex flex-col gap-[4px]">
                         <div>
-                            <label class="text-[18px]" for="celular">Celular</label>
+                            <Texto as="body" for="celular">
+                                Celular
+                            </Texto>
                         </div>
                         <input 
                             v-model="form.celular" 
@@ -184,8 +218,12 @@
 
                     <div class="flex flex-col gap-[4px]">
                         <div class="flex items-center gap-[10px]">
-                            <label class="text-[18px]" for="linkedin">LinkedIn </label>
-                            <label class="text-gray-600" for="linkedin">Opcional</label>
+                            <Texto as="body" for="linkedin">
+                                LinkedIn
+                            </Texto>
+                            <Texto as="body" color='gray' for="linkedin">
+                                Opcional
+                            </Texto>
                         </div>
                         <input 
                             v-model="form.linkedin" 
@@ -198,8 +236,12 @@
 
                     <div class="flex flex-col gap-[4px]">
                         <div class="flex items-center gap-[10px]">
-                            <label class="text-[18px]" for="github">GitHub </label>
-                            <label class="text-gray-600" for="github">Opcional</label>
+                            <Texto as="body" for="github">
+                                GitHub
+                            </Texto>
+                            <Texto as="body" color='gray' for="github">
+                                Opcional
+                            </Texto>
                         </div>
                         <input 
                             v-model="form.github" 
@@ -231,6 +273,7 @@
 </template>
 
 <script setup>
+import Texto from '@components/Texto.vue'
 import { PhX } from '@phosphor-icons/vue';
 import { onMounted, reactive } from "vue";
 import api from "@/api.js";
@@ -242,6 +285,7 @@ const form = reactive({
     _id: false,
     nome: "",
     sobrenome: "",
+    formacao: "",
     email: "",
     descricao: "",
     github: "",
