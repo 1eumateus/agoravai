@@ -1,4 +1,8 @@
 <template>
+    <CadastrarUsuario
+        @modal:open="recarregar($event)"
+        v-if="openCadastrar"
+    />
    <main class="flex-grow relative ">
         <section class="mx-auto max-w-5xl p-[14px] flex flex-col gap-[8px]">
             <div>
@@ -9,16 +13,23 @@
             <input 
                 v-model="search" 
                 type="text" 
-                id="interesse" 
+                id="search" 
                 class="p-[8px] border border-black" 
                 placeholder="Pesquise pelo nome do usuário"
                 maxlength="65"
             />
 
-            <div class="flex flex-col">
+            <div class="flex justify-between">
                 <Texto as="h2">
                     Usuários cadastrados
                 </Texto>
+                <button 
+                    type="button" 
+                    class="text-[16px] font-normal bg-principal hover:bg-principal-opaco text-white rounded-md py-[10px] px-[12px]" 
+                    @click="()=> openCadastrar = true" 
+                >
+                    Cadastrar novo
+                </button>
             </div>
             <div class="flex justify-between gap-[8px] border rounded-md p-[8px]" 
                 v-for="(usuario, index) in usuarios" :key="index">
@@ -30,12 +41,12 @@
                         viewBox="0 0 256 256">
                         <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-59.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,131.52,0Z"></path>
                     </svg>
-                    <div class="flex flex-col gap-[4px]">
-                        <Texto as="body">
+                    <div class="flex flex-col gap-[2px]">
+                        <Texto as="body-bold">
                             {{ usuario.nome }} {{ usuario.sobrenome }}
                         </Texto>
                         <Texto as="body">
-                            {{ usuario.email }} 
+                            {{ usuario.tipo }} 
                         </Texto>
                     </div>
                 </section>
@@ -49,9 +60,15 @@ import Texto from '@components/Texto.vue'
 import { onMounted, ref, watch } from "vue";
 import api from "@/api.js";
 import { popupInfo } from '../../stores/util.js';
+import CadastrarUsuario from './CadastrarUsuario.vue';
 
 const usuarios = ref([])
 const search = ref('')
+const openCadastrar = ref(false);
+
+const props = defineProps({
+  idUser: String
+});
 
 async function start() {
     await api.get(`/usuario?search=${search.value}`)
@@ -65,6 +82,11 @@ async function start() {
 watch(search, () => {
     start();
 });
+
+function recarregar(event){
+    openCadastrar.value = event
+    start()
+}
 
 onMounted(start);
 </script>

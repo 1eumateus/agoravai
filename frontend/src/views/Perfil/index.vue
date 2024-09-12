@@ -47,13 +47,13 @@
                             target="_blank" 
                             rel="noopener noreferrer" 
                             class="text-blue-500 hover:text-blue-800" v-if="form.linkedin">
-                            <PhLinkedinLogo :size="20"/>
+                            <PhLinkedinLogo :size="24"/>
                         </a>
                         <a :href="form.github" 
                             target="_blank" 
                             rel="noopener noreferrer" 
                             class="text-gray-800 hover:text-gray-900" v-if="form.github">
-                            <PhGithubLogo :size="20" />
+                            <PhGithubLogo :size="24" />
                         </a>
                     </div>
                 </section>

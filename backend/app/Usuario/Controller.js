@@ -12,14 +12,16 @@ async function listar(req, res) {
         });
         if (!userID) return res.status(400);
 
-        if(userTipo === 'aluno'){
-            filtro.tipo = {$nin: ['admin', 'aluno']}
-        }else if(userTipo === 'professor'){
-           return res.status(200).json({item:[]})
+        if(userTipo !== 'admin'){
+            return res.sendStatus(400);
         }
+
         const search = req.query.search || false;
         if (search) {
-            filtro.nome = { $regex: search, $options: "i" };
+            filtro.$or = [
+                { nome: { $regex: search, $options: "i" } },
+                { sobrenome: { $regex: search, $options: "i" } }
+            ];
         }
 
         const item = await Model.aggregate([
@@ -30,6 +32,40 @@ async function listar(req, res) {
                     nome: 1,
                     sobrenome: 1,
                     descricao: 1,
+                    tipo: 1,
+                    disponibilidade: 1,
+                    interesse: 1
+                }
+            }
+        ]);
+
+        res.status(200).json({ item });
+    } catch (error) {
+        return res.sendStatus(400);
+    }
+}
+
+async function listarProfessores(req, res) {
+    try {
+        const filtro = {ativo: true, tipo: 'professor'}
+
+        const search = req.query.search || false;
+        if (search) {
+            filtro.$or = [
+                { nome: { $regex: search, $options: "i" } },
+                { sobrenome: { $regex: search, $options: "i" } }
+            ];
+        }
+
+        const item = await Model.aggregate([
+            { $match: filtro },  
+            {
+                $project: {    
+                    _id: 1,       
+                    nome: 1,
+                    sobrenome: 1,
+                    descricao: 1,
+                    tipo: 1,
                     disponibilidade: 1,
                     interesse: 1
                 }
@@ -44,10 +80,12 @@ async function listar(req, res) {
 
 async function criar(req, res) {
     try {
-        console.log(req.body)
         let isNew = await Model.findOne({ ativo: true, email: req.body.email });
         if (isNew) return res.sendStatus(400).json({ msg: "Usuário já cadastrado." });
 
+        if(req.body.senha.length < 6){
+            return res.status(400).json({ msg: "Senha inválida." });
+        }
         const hashSenha = await bcrypt.hash(req.body.senha, 10);
 
         const novo = new Model({
@@ -171,4 +209,4 @@ async function pegarPorId(req, res) {
 }
 
 
-export { listar, criar, deletar, editar, pegarPorId };
+export { listar, listarProfessores, criar, deletar, editar, pegarPorId };

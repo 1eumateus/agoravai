@@ -7,9 +7,6 @@
             <router-link to="/" class="hidden md:block lg:block hover:text-terciaria">
                 Início
             </router-link>
-            <router-link to="/" class="hidden md:block lg:block hover:text-terciaria">
-                Meus trabalhos
-            </router-link>
         </section>
 
         <dropdown-menu mode="click" :overlay="false" class="hidden md:block lg:block">
