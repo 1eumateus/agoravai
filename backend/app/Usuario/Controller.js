@@ -51,12 +51,20 @@ async function criar(req, res) {
         const hashSenha = await bcrypt.hash(req.body.senha, 10);
 
         const novo = new Model({
-            nome: req.body.nome,
             ativo: true,
+            nome: req.body.nome,
             sobrenome: req.body.sobrenome,
             email: req.body.email,
+            descricao: req.body.descricao,
+            github: req.body.github,
+            linkedin: req.body.linkedin,
+            disponibilidade: req.body.disponibilidade,
             celular: req.body.celular,
+            instituicao: req.body.instituicao,
+            interesse: req.body.interesse,
             tipo: req.body.tipo,
+            solicitacoes: req.body.solicitacoes,
+            formacao: req.body.formacao,
             senha: hashSenha,
         });
 
@@ -87,7 +95,7 @@ async function editar(req, res) {
         if (!editar) {
             return res.status(404).json({ error: "Usuário não encontrado" });
         }
-        console.log('encontrado')
+
         let hashSenha = '';
         if (req.body.senha !== "") {
             console.log('senah editada')
@@ -106,6 +114,8 @@ async function editar(req, res) {
         editar.instituicao = req.body.instituicao;
         editar.interesse = req.body.interesse;
         editar.tipo = req.body.tipo;
+        editar.solicitacoes = req.body.solicitacoes;
+        editar.formacao = req.body.formacao;
         editar.ativo = true;
         await editar.save();
         res.status(200).json({ msg: "Usuário editado com sucesso." });

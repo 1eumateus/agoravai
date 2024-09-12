@@ -3,14 +3,14 @@
         <section class="mx-auto max-w-7xl p-[14px] flex flex-col gap-[24px]">
             <div class="flex flex-col gap-[4px]">
                 <div>
-                    <label class="text-[18px]" for="interesse">
+                    <Texto as="body" for="pesquisar">
                         Pesquisar
-                    </label>
+                    </Texto>
                 </div>
                 <input 
                     v-model="search" 
                     type="text" 
-                    id="interesse" 
+                    id="pesquisar" 
                     class="p-[8px] border border-black" 
                     placeholder="Pesquise pelo nome do professor"
                     maxlength="50"
@@ -31,33 +31,39 @@
                             </svg>
                         </section>
                         <section class="flex flex-col gap-[4px]">
-                            <label class="text-[20px] font-bold">
+                            <Texto as="h3">
                                 {{ professor.nome }}  {{ professor.sobrenome }}
-                            </label>
+                            </Texto>
                             <div class="flex flex-wrap gap-[8px]">
-                                <label class="text-[16px] font-bold">
+                                <Texto as="body-bold">
                                     Área:
-                                </label>
-                                <label class="text-[16px] ">
-                                {{ professor.interesse || '-' }}
-                                </label>
+                                </Texto>
+                                <Texto as="body">
+                                    {{ professor.interesse || '-' }}
+                                </Texto>
                             </div>
 
                             <div class="flex flex-wrap gap-[8px]">
-                                <label class="text-[16px] font-bold">
+                                <Texto as="body-bold">
                                     Disponibilidade:
-                                </label>
-                                <label class="text-[16px] ">
+                                </Texto>
+                                <Texto as="body">
                                     {{ professor.disponibilidade || '-' }}
-                                </label>
+                                </Texto>
                             </div>
                         </section>
                     </div>
-                    <label class="text-[18px] font-normal">
+                    <Texto as="body">
                         {{ professor.descricao || 'Sem descrição' }}
-                    </label>
-                    <router-link :to="`/professor/${professor._id}`" class="hidden md:block lg:block">
-                        mais informações >
+                    </Texto>
+                    <router-link 
+                        :to="`/professor/${professor._id}`" 
+                        class="flex items-center gap-[2px] cursor-pointer"
+                    >
+                        <Texto as="button" color="blue">
+                            mais informações 
+                        </Texto>
+                        <PhCaretRight :size="18" class="fill-blue-700 hover:fill-blue-900" />
                     </router-link>
                 </section>
             </section>
@@ -65,9 +71,11 @@
     </main>
 </template>
 <script setup>
+import { PhCaretRight } from '@phosphor-icons/vue';
 import { onMounted, ref, watch } from "vue";
 import api from "@/api.js";
 import { popupInfo } from '../stores/util.js';
+import Texto from '@components/Texto.vue'
 
 const professores = ref([])
 const search = ref('')
