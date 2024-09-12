@@ -81,10 +81,9 @@ const professores = ref([])
 const search = ref('')
 
 async function start() {
-    await api.get(`/usuario?search=${search.value}`)
+    await api.get(`/usuario/professores?search=${search.value}`)
     .then((res)=>{
         professores.value = res.data.item;
-        console.log(res.data.item)
     }).catch((e)=>{
         popupInfo().warning('Erro ao pesquisar usuários.');
     })

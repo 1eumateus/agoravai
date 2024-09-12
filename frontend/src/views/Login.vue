@@ -16,9 +16,11 @@
             <div class="flex flex-col justify-center gap-[24px] px-[10px] lg:px-[90px]">
                 
                 <div class="flex flex-col p-[20px] gap-[24px]"> 
-                    <Texto as="h2">
-                        {{ showRegister ? 'Cadastre-se' : 'Entrar' }}
-                    </Texto>
+                    <section class="flex flex-col">
+                        <Texto as="h2">
+                            {{ showRegister ? 'Cadastro do aluno' : 'Entrar' }}
+                        </Texto>
+                    </section>
                     <section class="grid grid-cols-1 gap-[24px]" v-if="!showRegister">
                         <div class="flex flex-col gap-[4px]">
                             <div>
@@ -146,7 +148,7 @@
                             type="button" 
                             class="text-[16px] font-normal" 
                             @click="alterarForm" >
-                            {{ showRegister ? 'Entrar' : ' Criar nova conta' }}
+                            {{ showRegister ? 'Entrar' : ' Cadastrar novo aluno' }}
                         </button>
                     </section>
                 </div>

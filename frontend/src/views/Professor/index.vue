@@ -1,4 +1,8 @@
 <template>
+    <SolicitarOrientacao
+        @modal:open="openSolicitarOrientacao = $event"
+        v-if="openSolicitarOrientacao"
+    />
    <main class="flex-grow relative ">
         <section class="mx-auto max-w-5xl p-[14px] flex flex-col gap-[8px]">
             <div class="flex flex-col">
@@ -34,18 +38,19 @@
                             target="_blank" 
                             rel="noopener noreferrer" 
                             class="text-blue-500 hover:text-blue-800" v-if="form.linkedin">
-                            <PhLinkedinLogo :size="20"/>
+                            <PhLinkedinLogo :size="24"/>
                         </a>
                         <a :href="form.github" 
                             target="_blank" 
                             rel="noopener noreferrer" 
                             class="text-gray-800 hover:text-gray-900" v-if="form.github">
-                            <PhGithubLogo :size="20" />
+                            <PhGithubLogo :size="24" />
                         </a>
                     </div>
                     <div class="flex justify-end">
                         <button 
                             v-if="form.disponibilidade !== 'indisponível'"
+                            @click="()=> openSolicitarOrientacao = true" 
                             class=" font-bold text-[14px] bg-green-300 hover:bg-green-400 py-[8px] px-[12px] rounded-md cursor-pointer">
                             Solicitar orientação
                         </button>
@@ -54,6 +59,10 @@
                             class=" font-bold text-[14px] bg-red-300 py-[8px] px-[12px] rounded-md cursor-not-allowed">
                             Indisponivel
                         </button>
+                        <!-- <button 
+                            class=" font-bold text-[14px] bg-orange-300 py-[8px] px-[12px] rounded-md cursor-not-allowed">
+                            solicitação de orientação pendente
+                        </button> -->
                    </div>
                 </section>
 
@@ -121,6 +130,9 @@ import api from "@/api.js";
 import { popupInfo } from '../../stores/util.js';
 import {useRoute } from "vue-router";
 import { formatMask } from '../../stores/util.js';
+import SolicitarOrientacao from './SolicitarOrientacao.vue';
+
+const openSolicitarOrientacao = ref(false);
 
 const form = reactive({
     _id: false,

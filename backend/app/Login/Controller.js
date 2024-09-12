@@ -5,7 +5,6 @@ import Usuario from "../Usuario/Model.js";
 async function login(req, res) {
     try {
         const { email, senha } = req.body;
-        console.log(req.body)
         const usuario = await Usuario.findOne({ email });
         if (!usuario) {
             return res.status(400).json({ msg: 'Email incorreto.' });
