@@ -1,23 +1,67 @@
 <template>
    <main class="flex-grow relative " >
         <section class="mx-auto max-w-7xl p-[14px] flex flex-col gap-[24px]">
-            <div class="flex flex-col gap-[4px]">
-                <div>
-                    <Texto as="body" for="pesquisar">
-                        Pesquisar
-                    </Texto>
+            <section class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-[12px] items-center">
+                <div class="flex flex-col gap-[4px] col-span-1 md:col-span-3 lg:col-span-4">
+                    <div>
+                        <Texto as="body" for="pesquisar">
+                            Pesquisar
+                        </Texto>
+                    </div>
+                    <input 
+                        v-model="procurar" 
+                        type="text" 
+                        id="pesquisar" 
+                        class="p-[6px] border border-black" 
+                        placeholder="Pesquise pelo nome do professor"
+                        maxlength="50"
+                    />
                 </div>
-                <input 
-                    v-model="search" 
-                    type="text" 
-                    id="pesquisar" 
-                    class="p-[8px] border border-black" 
-                    placeholder="Pesquise pelo nome do professor"
-                    maxlength="50"
-                />
-           </div>
+                <div class="flex flex-col gap-[4px]">
+                    <div>
+                        <Texto as="body" for="pesquisar">
+                            Disponibilidade
+                        </Texto>
+                    </div>
+                    <select 
+                        v-model="procurarDisponibilidade" 
+                        class="p-[8px] border border-black " >
+                        <option 
+                            :value="disponi.value" 
+                            v-for="disponi in disponibilidades">
+                            {{ disponi.nome }}
+                        </option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-[4px]">
+                    <div>
+                        <Texto as="body" for="pesquisar">
+                            Área
+                        </Texto>
+                    </div>
+                    <select 
+                        v-model="procurarInteresse" 
+                        class="p-[8px] border border-black " >
+                        <option value="" selected>Não aplicado</option>
+                        <option 
+                            :value="area" 
+                            v-for="area in areaProfessores">
+                            {{ area }}
+                        </option>
+                    </select>
+                </div>
+               <div class="flex flex-col h-full justify-end">
+                    <button 
+                        type="button" 
+                        class="text-[16px] font-normal bg-gray-200 hover:bg-gray-300 rounded-md py-[10px]" 
+                        @click="limparFiltro" 
+                    >
+                        Limpar filtro
+                    </button>
+                </div>
+            </section>
             <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]">
-                <section class="flex items-start flex-col gap-[16px] border rounded-md p-[10px]" v-for="(professor, index) in professores" :key="index">
+                <section class="flex items-start flex-col gap-[16px] border rounded-md p-[10px] justify-between bg-white" v-for="(professor, index) in professores" :key="index">
                     <div class="flex items-center gap-[16px]">
                         <section>
                             <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -31,10 +75,10 @@
                             </svg>
                         </section>
                         <section class="flex flex-col gap-[4px]">
-                            <Texto as="h3">
+                            <Texto as="body-bold">
                                 {{ professor.nome }}  {{ professor.sobrenome }}
                             </Texto>
-                            <div class="flex flex-wrap gap-[8px]">
+                            <div class="flex gap-[8px]">
                                 <Texto as="body-bold">
                                     Área:
                                 </Texto>
@@ -43,7 +87,7 @@
                                 </Texto>
                             </div>
 
-                            <div class="flex flex-wrap gap-[8px]">
+                            <div class="flex gap-[8px]">
                                 <Texto as="body-bold">
                                     Disponibilidade:
                                 </Texto>
@@ -72,24 +116,52 @@
 </template>
 <script setup>
 import { PhCaretRight } from '@phosphor-icons/vue';
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch, reactive } from "vue";
 import api from "@/api.js";
 import { popupInfo } from '../stores/util.js';
 import Texto from '@components/Texto.vue'
 
 const professores = ref([])
-const search = ref('')
+const procurar = ref('')
+const procurarDisponibilidade = ref('')
+const procurarInteresse = ref('')
+
+const disponibilidades = [
+    { value: "", nome: "Não aplicado" },
+    { value: "indisponível", nome: "Indisponível" },
+    { value: "matutino", nome: "Matutino" },
+    { value: "vespertino", nome: "Vespertino" },
+    { value: "noturno", nome: "Noturno" },
+    { value: "integral", nome: "Integral" },
+    { value: "flexivel", nome: "Flexível" },
+];
+
+const areaProfessores = reactive([])
 
 async function start() {
-    await api.get(`/usuario/professores?search=${search.value}`)
+    await api.get(`/usuario/professores?procurar=${procurar.value}&&procurarDisponibilidade=${procurarDisponibilidade.value}&&procurarInteresse=${procurarInteresse.value}`)
     .then((res)=>{
         professores.value = res.data.item;
+        for(let i=0;i<professores.value?.length;i++){
+            const professor = professores.value[i]
+            if (professor.interesse) {
+                if (!areaProfessores.includes(professor.interesse)) {
+                    areaProfessores.push(professor.interesse);
+                }
+            }
+        }
     }).catch((e)=>{
         popupInfo().warning('Erro ao pesquisar usuários.');
     })
 }
 
-watch(search, () => {
+function limparFiltro(){
+    procurar.value = '';
+    procurarDisponibilidade.value = '';
+    procurarInteresse.value = '';
+}
+
+watch([procurar, procurarDisponibilidade, procurarInteresse], () => {
     start();
 });
 

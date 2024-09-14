@@ -1,8 +1,8 @@
 <template>
 
-  <Menu v-if="tokenValid" :user="userType"></Menu>
+  <Menu v-if="tokenValid" :user="usuario"></Menu>
   <router-view
-    :idUser="idUser"
+    :usuario="usuario"
   />
   <Rodape v-if="tokenValid"></Rodape>
 
@@ -15,8 +15,7 @@ import Rodape from "./components/Rodape.vue";
 import { onMounted, ref } from "vue";
 
 const tokenValid = ref(false);
-const userType = ref('user');
-const idUser = ref('');
+const usuario = ref(null);
 
 function start() {
   verifyToken()
@@ -25,8 +24,7 @@ function start() {
 async function verifyToken() {
   const res = await checkToken();
   tokenValid.value = res.valid;
-  userType.value = res.tipo;
-  idUser.value = res.id
+  usuario.value = res
 }
 
 onMounted(start);

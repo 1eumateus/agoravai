@@ -26,16 +26,9 @@ const modelSchema = new Schema({
         type: String,
         required: false,
     },
-    solicitacoes: [{
-        aluno: {
-            type: mongoose.SchemaTypes.ObjectId,
-            ref: "Usuario",
-        },
-        professor: {
-            type: mongoose.SchemaTypes.ObjectId,
-            ref: "Usuario",
-        },
-        proposta: String,
+    orientacoes: [{
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: "Orientacao",
     }],
     descricao: {
         type: String,

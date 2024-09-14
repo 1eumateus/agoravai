@@ -20,7 +20,7 @@
             />
 
             <div class="flex justify-between">
-                <Texto as="h2">
+                <Texto as="h3">
                     Usuários cadastrados
                 </Texto>
                 <button 
@@ -66,9 +66,7 @@ const usuarios = ref([])
 const search = ref('')
 const openCadastrar = ref(false);
 
-const props = defineProps({
-  idUser: String
-});
+defineProps(["usuario"]);
 
 async function start() {
     await api.get(`/usuario?search=${search.value}`)
