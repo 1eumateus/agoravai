@@ -27,6 +27,14 @@ const computedClass = computed(() => {
     let colorText = ' flex gap-[4px] ';
     let styleHover = '';
     switch (props?.color) {
+        case 'principal':
+            styleHover = props.as === 'button' ? ' hover:text-principal-opaco ' : ''
+            colorText = ` text-principal ` + styleHover;
+            break;
+        case 'white':
+            styleHover = props.as === 'button' ? ' hover:text-gray-400 ' : ''
+            colorText = ` text-white ` + styleHover;
+            break;
         case 'gray':
             styleHover = props.as === 'button' ? ' hover:text-gray-700 ' : ''
             colorText = ` text-gray-500 ` + styleHover;
@@ -39,6 +47,14 @@ const computedClass = computed(() => {
             styleHover = props.as === 'button' ? ' hover:text-red-700 ' : ''
             colorText = ` text-red-500 ` + styleHover;
             break;
+        case 'orange':
+            styleHover = props.as === 'button' ? ' hover:text-orange-700 ' : ''
+            colorText = ` text-orange-500 ` + styleHover;
+            break;
+        case 'green':
+            styleHover = props.as === 'button' ? ' hover:text-green-800 ' : ''
+            colorText = ` text-green-600 ` + styleHover;
+            break;
         default:
             colorText = ` text-black `;
     }
@@ -47,8 +63,10 @@ const computedClass = computed(() => {
         case 'h1':
             return `${colorText} font-bold text-[56px] `;
         case 'h2':
-            return `${colorText} font-bold text-[30px] `;
+            return `${colorText} font-bold text-[42px] `;
         case 'h3':
+            return `${colorText} font-bold text-[30px] `;
+        case 'h4':
             return `${colorText} font-bold text-[20px] `;
         case 'body-bold':
             return `${colorText}  font-bold text-[16px] `;

@@ -2,23 +2,20 @@
     <main class="flex-grow relative ">
         <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 h-full w-full divide-x divide-y">
             
-            <div class="hidden md:flex lg:flex flex-col justify-center gap-[24px] px-[10px] lg:px-[90px] bg-secundaria">
-                <Texto as="h1">
-                    Bem vindo
-                </Texto>
+            <div class="hidden md:flex lg:flex flex-col justify-center px-[10px] md:px-[10px] lg:px-[60px] bg-secundaria">
+                 <img src="/SOTCC2.png" />
                 <Texto as="body">
-                    Sistema para encontrar professores disponíveis para orientação de 
-                    TCC e trabalhos acadêmicos. Além disso, você pode organizar seus 
-                    próximos passos para a conclusão do trabalho e armazenar versões dos seus documentos.
+                    Sistema para encontrar professores para orientação de 
+                    trabalhos de conclusão de curso (TCC), mostrando a disponibilidade dos professores, trabalhos orientados, formação e contatos.
                 </Texto>
             </div>
 
-            <div class="flex flex-col justify-center gap-[24px] px-[10px] lg:px-[90px]">
+            <div class="flex flex-col justify-center gap-[24px] px-[10px] md:px-[10px] lg:px-[90px]">
                 
-                <div class="flex flex-col p-[20px] gap-[24px]"> 
+                <div class="flex flex-col p-[20px] gap-[12px]"> 
                     <section class="flex flex-col">
-                        <Texto as="h2">
-                            {{ showRegister ? 'Cadastro do aluno' : 'Entrar' }}
+                        <Texto as="h2" color="principal">
+                            {{ showRegister ? 'Cadastrar aluno' : 'Entrar' }}
                         </Texto>
                     </section>
                     <section class="grid grid-cols-1 gap-[24px]" v-if="!showRegister">
@@ -138,7 +135,7 @@
                         </button>
                         <button 
                             type="button" 
-                            class="text-[16px] font-normal bg-principal hover:bg-principal-opaco text-white rounded-md py-[10px]" 
+                            class="text-[16px] font-normal bg-principal hover:bg-principal-opaco text-white rounded-md py-[10px] px-[12px]" 
                             @click="register" 
                             v-if="showRegister"
                         >
@@ -146,7 +143,7 @@
                         </button>
                         <button 
                             type="button" 
-                            class="text-[16px] font-normal" 
+                            class="text-[16px] font-normal hover:bg-gray-200 py-[10px] px-[12px]" 
                             @click="alterarForm" >
                             {{ showRegister ? 'Entrar' : ' Cadastrar novo aluno' }}
                         </button>

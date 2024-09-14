@@ -1,6 +1,8 @@
 <template>
     <SolicitarOrientacao
         @modal:open="openSolicitarOrientacao = $event"
+        :professor="form._id"
+        :aluno="usuario.id"
         v-if="openSolicitarOrientacao"
     />
    <main class="flex-grow relative ">
@@ -10,14 +12,14 @@
                     {{ form.tipo }}
                 </Texto>
                 <div class="flex items-center gap-[8px]">
-                    <Texto as="h2">
+                    <Texto as="h3">
                         {{ form.tipo !=='admin' ? ' Perfil público': 'Perfil privado' }}
                     </Texto>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-[8px]">
-                <section class="flex flex-col items-center gap-[8px] border rounded-md border-gray-300 p-[10px]">
+                <section class="flex flex-col items-center gap-[8px] border rounded-md border-gray-300 p-[10px] bg-white">
                     <svg width="180" height="180" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                         <rect width="80" height="80" fill="url(#pattern0_4_1480)"/>
                         <defs>
@@ -47,7 +49,7 @@
                             <PhGithubLogo :size="24" />
                         </a>
                     </div>
-                    <div class="flex justify-end">
+                    <div class="flex justify-end" v-if="props?.usuario.tipo === 'aluno'">
                         <button 
                             v-if="form.disponibilidade !== 'indisponível'"
                             @click="()=> openSolicitarOrientacao = true" 
@@ -66,7 +68,7 @@
                    </div>
                 </section>
 
-                <section class="flex flex-col justify-between gap-[8px] border rounded-md border-gray-300 p-[10px] col-span-2">
+                <section class="flex flex-col justify-between gap-[8px] border rounded-md border-gray-300 p-[10px] col-span-2 bg-white">
                     <div class="flex flex-col gap-[8px]">
                         <Texto as="body-bold">
                             Descrição
@@ -134,6 +136,13 @@ import SolicitarOrientacao from './SolicitarOrientacao.vue';
 
 const openSolicitarOrientacao = ref(false);
 
+const props = defineProps({
+    usuario: {
+        type: [Object],
+        required: false, 
+    },
+})
+
 const form = reactive({
     _id: false,
     nome: "",
@@ -155,6 +164,7 @@ async function start() {
         .then((res)=>{
             Object.assign(form, res.data.usuario)
         }).catch((e)=>{
+            console.log(e)
             popupInfo().warning('Erro ao procurar usuário.');
         })
     }

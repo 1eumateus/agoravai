@@ -1,9 +1,11 @@
 <template>
     <nav class="flex items-center justify-between px-[80px] h-[60px] border-b-[2px] border-terciaria gap-[24px] bg-principal text-white">
-       <section class="flex items-center gap-[24px]">
-            <label class="text-[40px] font-bold">
-                Logo
-            </label>
+       <section class="flex items-center gap-[24px] ">
+            
+            <!-- <img src="/SOTCC.png" class="h-[60px] "/> -->
+            <Texto as="h2" for="pesquisar" color="white">
+                SOTCC
+            </Texto>
             <router-link to="/" class="hidden md:block lg:block hover:text-terciaria">
                 Início
             </router-link>
@@ -24,7 +26,7 @@
                         <router-link 
                             to="/usuarios" 
                             class="px-[14px] py-[8px] hover:text-terciaria w-full rounded-md"
-                            v-if="user === 'admin'"
+                            v-if="user.tipo === 'admin'"
                             >
                             Usuários 
                         </router-link>
@@ -42,6 +44,7 @@
 </template>
 
 <script setup>
+import Texto from '@components/Texto.vue'
 import dropdownMenu from 'v-dropdown-menu';
 defineProps(["user"]);
 

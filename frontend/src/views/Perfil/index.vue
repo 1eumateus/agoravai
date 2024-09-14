@@ -11,22 +11,22 @@
                 <Texto as="small">
                     {{ form.tipo }}
                 </Texto>
-                <div class="flex items-center gap-[8px]">
-                    <Texto as="h2">
+                <div class="flex items-center gap-[8px] justify-between">
+                    <Texto as="h3">
                         {{ form.tipo !=='admin' ? ' Perfil público': 'Perfil privado' }}
                     </Texto>
                     <button 
                         type="button" 
                         :onClick="()=> openEditarPerfil = true" 
-                        class="cursor-pointer"
-                    >
+                        class="cursor-pointer flex items-center gap-[4px] p-[4px] border border-gray-400 hover:bg-gray-200 rounded-md"
+                    >   Editar
                         <PhPencil :size="20" />
                     </button>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-[8px]">
-                <section class="flex flex-col items-center gap-[8px] border rounded-md border-gray-300 p-[10px]">
+                <section class="flex flex-col items-center gap-[8px] border rounded-md border-gray-300 p-[10px] bg-white">
                     <svg width="180" height="180" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                         <rect width="80" height="80" fill="url(#pattern0_4_1480)"/>
                         <defs>
@@ -58,7 +58,7 @@
                     </div>
                 </section>
 
-                <section class="flex flex-col gap-[8px] border rounded-md border-gray-300 p-[10px] col-span-2">
+                <section class="flex flex-col gap-[8px] border rounded-md border-gray-300 p-[10px] col-span-2 bg-white">
                     <div class="flex flex-col gap-[8px]">
                         <div class="flex flex-col gap-[8px]">
                         <Texto as="body-bold">
@@ -79,8 +79,8 @@
                             {{ form.formacao || 'Não informado.' }}
                         </Texto>
                     </div>
-                    <hr class=""/>
-                    <div class="flex flex-col gap-[8px]">
+                    <hr class="" v-if="form.tipo === 'professor'"/>
+                    <div class="flex flex-col gap-[8px]" v-if="form.tipo === 'professor'">
                         <Texto as="body-bold">
                             Área de interesse
                         </Texto>
@@ -112,23 +112,105 @@
                    </div>
                 </section>
             </div>
+            <div class="grid grid-cols-1 gap-[8px]">
+                <Texto as="h4">
+                    Pedidos de orientação
+                </Texto>
+                <section class="grid grid-cols-1 md:grid-cols-8 lg:grid-cols-8 gap-[8px] border rounded-md border-gray-300 bg-white p-[10px]" v-for="(orientacao, index) in orientacoes" :key="index" v-if="orientacoes.length>0">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-[4px] cols-span-1 md:col-span-7 lg:col-span-7">
+                        <div class="flex flex-col" v-if="props.usuario.tipo === 'aluno'">
+                            <Texto as="body-bold">
+                                {{ orientacao.professor.nome }} {{ orientacao.professor.sobrenome }}
+                            </Texto>
+                            <Texto as="body">
+                                Área: {{ orientacao.professor.interesse }}
+                            </Texto>
+                            <Texto as="body">
+                                Email: {{ orientacao.professor.email }}
+                            </Texto>
+                            <div class="flex gap-[4px]">
+                                <Texto as="body">
+                                    Situação:
+                                </Texto>
+                                <Texto 
+                                    as="body" 
+                                    :color="`${orientacao.situacao=='pendente' 
+                                        ? 'orange' 
+                                        : orientacao.situacao=='confirmado' ? 'green' : 'red'}`">
+                                     {{ orientacao.situacao }}
+                                </Texto>
+                            </div>
+                        </div>
+                        <div class="flex flex-col" v-else>
+                            <Texto as="body-bold">
+                                {{ orientacao.aluno.nome }} {{ orientacao.aluno.sobrenome }}
+                            </Texto>
+                            <Texto as="body">
+                                Email: {{ orientacao.aluno.email }}
+                            </Texto>
+                            <div class="flex gap-[4px]">
+                                <Texto as="body">
+                                    Situação:
+                                </Texto>
+                                <Texto 
+                                    as="body" 
+                                    :color="`${orientacao.situacao=='pendente' 
+                                        ? 'orange' 
+                                        : orientacao.situacao=='confirmada' ? 'green' : 'red'}`">
+                                     {{ orientacao.situacao }}
+                                </Texto>
+                            </div>
+                        </div>
+                        <div>
+                            <Texto as="body-bold">
+                                Proposta
+                            </Texto>
+                            <Texto as="body">
+                                {{ orientacao.proposta }}
+                            </Texto>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-[8px] items-center" v-if="orientacao.situacao === 'pendente' || usuario.tipo === 'aluno'">
+                        <button 
+                            type="button" 
+                            :onClick="()=> cancelarPedido(orientacao._id, index)" 
+                            class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-red-400 hover:bg-red-100 rounded-md"
+                        >  
+                            <PhTrash :size="20" v-if="props.usuario.tipo === 'aluno'" />
+                        {{ props.usuario.tipo === 'aluno' ? ' Cancelar pedido' : 'Negar orientação' }}
+                        </button>
+                        <button 
+                            type="button" 
+                            :onClick="()=> confirmarPedido(orientacao._id)" 
+                            v-if="props.usuario.tipo === 'professor'"
+                            class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-green-400 hover:bg-green-100 rounded-md"
+                        >  
+                           Confirmar orientação
+                        </button>
+                    </div>
+                </section>
+                <section class="grid grid-cols-1 gap-[8px] border rounded-md border-gray-300 bg-white p-[10px]" v-else>
+                       Nenhum pedido de orientação.
+                </section>
+            </div>
         </section>
     </main>
 </template>
 
 <script setup>
 import Texto from '@components/Texto.vue'
-import { PhLinkedinLogo, PhGithubLogo, PhPencil  } from '@phosphor-icons/vue';
+import { PhLinkedinLogo, PhGithubLogo, PhPencil, PhTrash  } from '@phosphor-icons/vue';
 import { onMounted, reactive, ref } from "vue";
 import api from "@/api.js";
 import EditarPerfil from './EditarPerfil.vue'
 import { popupInfo, formatMask } from '../../stores/util.js';
 
 const openEditarPerfil = ref(false)
+const orientacoes = reactive([])
 
 const props = defineProps({
-    idUser: {
-        type: String,
+    usuario: {
+        type: [Object],
         required: false, 
     },
 })
@@ -149,18 +231,46 @@ const form = reactive({
 });
 
 async function start() {
-    const idUser = props?.idUser;
+    const idUser = props?.usuario.id;
     await api.get(`/usuario/${idUser}`)
     .then((res)=>{
         Object.assign(form, res.data.usuario)
     }).catch((e)=>{
         popupInfo().warning('Erro ao procurar usuário.');
     })
+
+    await listarOrientacao();
+}
+async function listarOrientacao(){
+    await api.get(`/orientacao/`)
+    .then((res)=>{
+        Object.assign(orientacoes, res.data?.item)
+    }).catch((e)=>{
+        popupInfo().warning(e?.response?.data?.msg || e);
+    })
 }
 
 function recarregar(event){
     openEditarPerfil.value = event
     start()
+}
+
+function confirmarPedido(id){
+    console.log(id)
+}
+
+async function cancelarPedido(id, index){
+    await api.put(`/orientacao/negar/${id}`)
+    .then((res)=>{
+        popupInfo().success(res?.data?.msg);
+        if(props?.usuario.tipo==='aluno'){
+            orientacoes.splice(index, 1);
+        }
+    }).catch((e)=>{
+        popupInfo().warning(e?.response?.data?.msg || e);
+    })
+
+    listarOrientacao()
 }
 
 onMounted(start);

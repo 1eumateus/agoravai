@@ -26,7 +26,7 @@
                             id="proposta" 
                             class="p-[8px] border border-black" 
                             placeholder="Escreva a sua proposta de trabalho."
-                            maxlength="80"
+                            maxlength="200"
                             rows="4"
                         ></textarea>
                     </div>
@@ -36,13 +36,13 @@
                     <button 
                         type="button" 
                         :onClick="()=> emits('modal:open', false)" 
-                        class=" font-bold text-[14px] bg-gray-300 hover:bg-gray-400 py-[8px] px-[12px] rounded-md cursor-pointer">
+                        class=" font-bold text-[14px] bg-red-300 hover:bg-red-400 py-[8px] px-[12px] rounded-md cursor-pointer">
                         Cancelar
                     </button>
                     <button 
                         type="button" 
-                        :onClick="salvar" 
-                        class=" font-bold text-[14px] bg-gray-300 hover:bg-gray-400 py-[8px] px-[12px] rounded-md cursor-pointer">
+                        :onClick="solicitar" 
+                        class=" font-bold text-[14px] bg-green-300 hover:bg-green-400 py-[8px] px-[12px] rounded-md cursor-pointer">
                         solicitar
                     </button>
                 </section>
@@ -54,22 +54,58 @@
 <script setup>
 import Texto from '@components/Texto.vue'
 import { PhX } from '@phosphor-icons/vue';
-import { reactive, ref } from "vue";
+import { reactive } from "vue";
+import { popupInfo } from '../../stores/util.js';
 import api from "@/api.js";
 
+const props = defineProps({
+    aluno: {
+        type: String,
+        required: true, 
+    },
+    professor: {
+        type: String,
+        required: true, 
+    },
+})
+
 const emits = defineEmits(['modal:open']);
-const confirmarSenha = ref('');
 
 const form = reactive({
     aluno: "",
-    pendente: true,
     professor: "",
     proposta: "",
 });
 
-async function salvar(){
+async function solicitar(){
+    form.aluno = props?.aluno;
+    form.professor = props.professor;
+    if(!form.aluno){
+        return popupInfo().warning('Aluno inválido.');
+    }
+    if(!form.professor){
+        return popupInfo().warning('Professor inválido.');
+    }
+    let idOrientacao = '';
 
-    console.log(form)
+    await api.post(`/orientacao/criar`, form)
+    .then((res)=>{
+        idOrientacao = res.data.id
+    }).catch((e)=>{
+        popupInfo().warning(e?.response?.data?.msg);
+    })
+
+    if(idOrientacao){
+        await api.put(`/usuario/adicionarOrientacao`,
+         {aluno: form.aluno, orientacao: idOrientacao}
+        ).then((res)=>{
+            popupInfo().success(res?.data?.msg);
+        }).catch((e)=>{
+            console.log(e)
+            popupInfo().warning(e?.response?.data?.msg);
+        })
+    }
+    emits('modal:open', false)
 }
 
 </script>

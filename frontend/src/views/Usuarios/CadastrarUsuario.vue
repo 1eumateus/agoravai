@@ -3,8 +3,8 @@
             <main class="w-full md:w-[720px] lg:w-[720px] p-[24px] h-screen md:max-h-[720px] lg:max-h-[720px] overflow-y-auto bg-white rounded-md flex flex-col gap-[24px]">
                 <section class="grid grid-cols-1 gap-[14px]">
                     <div class="flex items-center justify-between border-b border-gray-300">
-                        <Texto as="h2">
-                            Cadastar usuário
+                        <Texto as="h3">
+                            Cadastrar usuário
                         </Texto>
                         <button 
                         type="button" 
@@ -15,7 +15,7 @@
                     </button>
                        
                     </div>
-                    <Texto as="h3">
+                    <Texto as="h4">
                         Informações principais
                     </Texto>
                     <section class="grid grid-cols-2 gap-[10px]">
@@ -98,65 +98,21 @@
                         />
                     </div>
 
-                    <div class="flex flex-col gap-[12px] ">
-                        <div class="flex items-center gap-[10px]">
-                            <Texto as="body" for="formdisponibilidade">
+                    <div class="flex flex-col gap-[4px]">
+                        <div>
+                            <Texto as="body" for="pesquisar">
                                 Disponibilidade
                             </Texto>
                         </div>
-                        <div class="flex items-center flex-wrap gap-[14px]">
-                            <label class="flex items-center p-[10px] gap-[10px] border border-black rounded-md">
-                                <input 
-                                    type="radio"
-                                    v-model="form.disponibilidade" 
-                                    value="indisponível"
-                                />Indisponível
-                            </label>
-
-                            <label class="flex items-center p-[10px] gap-[10px] border border-black rounded-md">
-                                <input 
-                                    type="radio"
-                                    v-model="form.disponibilidade" 
-                                    value="matutino"
-                                />Matutino
-                            </label>
-
-                            <label class="flex items-center p-[10px] gap-[10px] border border-black rounded-md">
-                                <input 
-                                    type="radio"
-                                    v-model="form.disponibilidade" 
-                                    value="vespertino"
-                                />
-                                Vespertino
-                                </label>
-
-                            <label class="flex items-center p-[10px] gap-[10px] border border-black rounded-md">
-                                <input 
-                                    type="radio"
-                                    v-model="form.disponibilidade" 
-                                    value="noturno"
-                                />
-                                Noturno
-                            </label>
-
-                            <label class="flex items-center p-[10px] gap-[10px] border border-black rounded-md">
-                                <input 
-                                    type="radio"
-                                    v-model="form.disponibilidade" 
-                                    value="integral"
-                                />
-                                Integral
-                            </label>
-
-                            <label class="flex items-center p-[10px] gap-[10px] border border-black rounded-md">
-                                <input 
-                                    type="radio"
-                                    v-model="form.disponibilidade" 
-                                    value="flexivel"
-                                />
-                                Flexível
-                            </label>
-                        </div>
+                        <select 
+                            v-model="form.disponibilidade" 
+                            class="p-[8px] border border-black " >
+                            <option 
+                                :value="disponi.value" 
+                                v-for="disponi in disponibilidades">
+                                {{ disponi.nome }}
+                            </option>
+                        </select>
                     </div>
 
                     <div class="flex flex-col gap-[4px]">
@@ -193,7 +149,7 @@
                         </textarea>
                     </div>  
 
-                    <Texto as="h3">
+                    <Texto as="h4">
                         Senha
                     </Texto>
 
@@ -227,7 +183,7 @@
                         </div>
                     </section>
 
-                    <Texto as="h3">
+                    <Texto as="h4">
                         Informações de contato
                     </Texto>
 
@@ -331,6 +287,15 @@ import { popupInfo, formatMask } from '../../stores/util.js';
 
 const emits = defineEmits(['modal:open']);
 const confirmarSenha = ref('');
+
+const disponibilidades = [
+    { value: "indisponível", nome: "Indisponível" },
+    { value: "matutino", nome: "Matutino" },
+    { value: "vespertino", nome: "Vespertino" },
+    { value: "noturno", nome: "Noturno" },
+    { value: "integral", nome: "Integral" },
+    { value: "flexivel", nome: "Flexível" },
+];
 
 const form = reactive({
     _id: false,

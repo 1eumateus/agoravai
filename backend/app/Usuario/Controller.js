@@ -49,12 +49,22 @@ async function listarProfessores(req, res) {
     try {
         const filtro = {ativo: true, tipo: 'professor'}
 
-        const search = req.query.search || false;
-        if (search) {
+        const procurar = req.query.procurar || false;
+        const procurarDisponibilidade = req.query.procurarDisponibilidade || false;
+        const procurarInteresse = req.query.procurarInteresse || false;
+
+        if (procurar) {
             filtro.$or = [
-                { nome: { $regex: search, $options: "i" } },
-                { sobrenome: { $regex: search, $options: "i" } }
+                { nome: { $regex: procurar, $options: "i" } },
+                { sobrenome: { $regex: procurar, $options: "i" } }
             ];
+        }
+
+        if (procurarDisponibilidade) {
+            filtro.disponibilidade = { $regex: procurarDisponibilidade, $options: "i" } 
+        }
+        if (procurarInteresse) {
+            filtro.interesse = { $regex: procurarInteresse, $options: "i" } 
         }
 
         const item = await Model.aggregate([
@@ -136,7 +146,6 @@ async function editar(req, res) {
 
         let hashSenha = '';
         if (req.body.senha !== "") {
-            console.log('senah editada')
             hashSenha = await bcrypt.hash(req.body.senha, 10);
             editar.senha = hashSenha;
         }
@@ -152,11 +161,26 @@ async function editar(req, res) {
         editar.instituicao = req.body.instituicao;
         editar.interesse = req.body.interesse;
         editar.tipo = req.body.tipo;
-        editar.solicitacoes = req.body.solicitacoes;
+        editar.orientacoes = req.body.orientacoes;
         editar.formacao = req.body.formacao;
         editar.ativo = true;
         await editar.save();
         res.status(200).json({ msg: "Usuário editado com sucesso." });
+    } catch (error) {
+        return res.status(400);
+    }
+}
+
+async function adicionarOrientacao(req, res) {
+    try {
+        let editar = await Model.findOne({ ativo:true, _id: req.body.aluno });
+
+        if (!editar) {
+            return res.status(404).json({ error: "Usuário não encontrado" });
+        }
+        editar.orientacoes.push(req.body.orientacao);
+        await editar.save();
+        res.status(200).json({ msg: "Adicionado pedido de orientação." });
     } catch (error) {
         return res.status(400);
     }
@@ -209,4 +233,4 @@ async function pegarPorId(req, res) {
 }
 
 
-export { listar, listarProfessores, criar, deletar, editar, pegarPorId };
+export { listar, listarProfessores, adicionarOrientacao, criar, deletar, editar, pegarPorId };
