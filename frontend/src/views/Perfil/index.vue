@@ -4,6 +4,12 @@
         @modal:open="recarregar($event)"
         v-if="openEditarPerfil"
     />
+    <RespostaOrientacao
+        @modal:open="recarregar($event)"
+        :orientacao="orientacao"
+        :situacao="situacao"
+        v-if="openRespostaOrientacao"
+    />
    <main class="flex-grow relative ">
         <section class="mx-auto max-w-5xl p-[14px] flex flex-col gap-[8px]">
             
@@ -18,7 +24,7 @@
                     <button 
                         type="button" 
                         :onClick="()=> openEditarPerfil = true" 
-                        class="cursor-pointer flex items-center gap-[4px] p-[4px] border border-gray-400 hover:bg-gray-200 rounded-md"
+                        class="cursor-pointer flex items-center gap-[4px] px-[12px] py-[8px] border border-gray-400 bg-principal text-white hover:bg-principal-opaco rounded-md"
                     >   Editar
                         <PhPencil :size="20" />
                     </button>
@@ -52,8 +58,14 @@
                         <a :href="form.github" 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            class="text-gray-800 hover:text-gray-900" v-if="form.github">
+                            class="text-gray-800 hover:text-gray-900" v-if="form.github" >
                             <PhGithubLogo :size="24" />
+                        </a>
+                        <a :href="form.lattes" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="text-gray-800 hover:text-gray-900" v-if="form.lattes">
+                            <img src="/curriculoLattes.jpeg" alt="Currículo Lattes" class="h-[24px] w-[24px]" />
                         </a>
                     </div>
                 </section>
@@ -156,24 +168,34 @@
                                     as="body" 
                                     :color="`${orientacao.situacao=='pendente' 
                                         ? 'orange' 
-                                        : orientacao.situacao=='confirmada' ? 'green' : 'red'}`">
+                                        : orientacao.situacao=='confirmado' ? 'green' : 'red'}`">
                                      {{ orientacao.situacao }}
                                 </Texto>
                             </div>
                         </div>
-                        <div>
-                            <Texto as="body-bold">
-                                Proposta
-                            </Texto>
-                            <Texto as="body">
-                                {{ orientacao.proposta }}
-                            </Texto>
+                        <div class="flex flex-col gap-[4px]">
+                            <div class="flex flex-col">
+                                <Texto as="body-bold">
+                                    Proposta
+                                </Texto>
+                                <Texto as="body">
+                                    {{ orientacao.proposta }}
+                                </Texto>
+                            </div>
+                            <div class="flex flex-col" v-if="orientacao.resposta">
+                                <Texto as="body-bold">
+                                    Resposta do professor
+                                </Texto>
+                                <Texto as="body">
+                                    {{ orientacao.resposta }}
+                                </Texto>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex flex-col gap-[8px] items-center" v-if="orientacao.situacao === 'pendente' || usuario.tipo === 'aluno'">
+                    <div class="flex flex-col gap-[8px] items-center" v-if="orientacao.situacao === 'pendente' || (usuario.tipo === 'aluno' && orientacao.situacao !== 'confirmado')">
                         <button 
                             type="button" 
-                            :onClick="()=> cancelarPedido(orientacao._id, index)" 
+                            :onClick="()=> usuario.tipo === 'aluno' ? cancelarPedido(orientacao): responderOrientacao(orientacao, 'negado')" 
                             class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-red-400 hover:bg-red-100 rounded-md"
                         >  
                             <PhTrash :size="20" v-if="props.usuario.tipo === 'aluno'" />
@@ -181,7 +203,7 @@
                         </button>
                         <button 
                             type="button" 
-                            :onClick="()=> confirmarPedido(orientacao._id)" 
+                            :onClick="()=> responderOrientacao(orientacao, 'confirmado')" 
                             v-if="props.usuario.tipo === 'professor'"
                             class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-green-400 hover:bg-green-100 rounded-md"
                         >  
@@ -203,10 +225,14 @@ import { PhLinkedinLogo, PhGithubLogo, PhPencil, PhTrash  } from '@phosphor-icon
 import { onMounted, reactive, ref } from "vue";
 import api from "@/api.js";
 import EditarPerfil from './EditarPerfil.vue'
+import RespostaOrientacao from './RespostaOrientacao.vue'
 import { popupInfo, formatMask } from '../../stores/util.js';
 
 const openEditarPerfil = ref(false)
+const openRespostaOrientacao = ref(false)
 const orientacoes = reactive([])
+const orientacao = reactive({})
+const situacao = ref('')
 
 const props = defineProps({
     usuario: {
@@ -252,15 +278,15 @@ async function listarOrientacao(){
 
 function recarregar(event){
     openEditarPerfil.value = event
+    openRespostaOrientacao.value = event
     start()
 }
 
-function confirmarPedido(id){
-    console.log(id)
-}
-
 async function cancelarPedido(id, index){
-    await api.put(`/orientacao/negar/${id}`)
+    const formOrientacao = {
+        id: id
+    }
+    await api.put(`/orientacao/alterarSituacao`, formOrientacao)
     .then((res)=>{
         popupInfo().success(res?.data?.msg);
         if(props?.usuario.tipo==='aluno'){
@@ -271,6 +297,12 @@ async function cancelarPedido(id, index){
     })
 
     listarOrientacao()
+}
+
+async function responderOrientacao(orientacaoParaNegar, novaSituacao){
+    openRespostaOrientacao.value = true;
+    situacao.value = novaSituacao;
+    Object.assign(orientacao, orientacaoParaNegar)
 }
 
 onMounted(start);

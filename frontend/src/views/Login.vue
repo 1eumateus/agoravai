@@ -10,11 +10,13 @@
                 </Texto>
             </div>
 
-            <div class="flex flex-col justify-center gap-[24px] px-[10px] md:px-[10px] lg:px-[90px]">
-                
+            <div class="flex flex-col justify-center gap-[24px] px-[10px] md:px-[10px] lg:px-[90px]">   
                 <div class="flex flex-col p-[20px] gap-[12px]"> 
                     <section class="flex flex-col">
-                        <Texto as="h2" color="principal">
+                        <div class="flex justify-center items-center block md:hidden lg:hidden">
+                            <img src="/SOTCC2.png" class="w-1/2" />
+                        </div>
+                        <Texto as="h3" color="principal">
                             {{ showRegister ? 'Cadastrar aluno' : 'Entrar' }}
                         </Texto>
                     </section>

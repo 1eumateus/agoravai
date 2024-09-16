@@ -48,23 +48,30 @@
                             class="text-gray-800 hover:text-gray-900" v-if="form.github">
                             <PhGithubLogo :size="24" />
                         </a>
+                        <a :href="form.lattes" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="text-gray-800 hover:text-gray-900" v-if="form.lattes">
+                            <img src="/curriculoLattes.jpeg" alt="Currículo Lattes" class="h-[24px] w-[24px]" />
+                        </a>
                     </div>
                     <div class="flex justify-end" v-if="props?.usuario.tipo === 'aluno'">
                         <button 
-                            v-if="form.disponibilidade !== 'indisponível'"
+                            v-if="form.disponibilidade !== 'indisponível' && !solicitacaoEnviada"
                             @click="()=> openSolicitarOrientacao = true" 
                             class=" font-bold text-[14px] bg-green-300 hover:bg-green-400 py-[8px] px-[12px] rounded-md cursor-pointer">
                             Solicitar orientação
                         </button>
                         <button 
-                            v-else
+                             v-if="form.disponibilidade === 'indisponível' && !solicitacaoEnviada"
                             class=" font-bold text-[14px] bg-red-300 py-[8px] px-[12px] rounded-md cursor-not-allowed">
                             Indisponivel
                         </button>
-                        <!-- <button 
-                            class=" font-bold text-[14px] bg-orange-300 py-[8px] px-[12px] rounded-md cursor-not-allowed">
-                            solicitação de orientação pendente
-                        </button> -->
+                        <button 
+                            v-if="solicitacaoEnviada"
+                            class=" font-bold text-[14px] bg-orange-400 py-[8px] px-[12px] rounded-md cursor-not-allowed">
+                            Solicitado enviada
+                        </button>
                    </div>
                 </section>
 
@@ -135,6 +142,8 @@ import { formatMask } from '../../stores/util.js';
 import SolicitarOrientacao from './SolicitarOrientacao.vue';
 
 const openSolicitarOrientacao = ref(false);
+const orientacoes = reactive([]);
+const solicitacaoEnviada = ref(false);
 
 const props = defineProps({
     usuario: {
@@ -167,6 +176,25 @@ async function start() {
             console.log(e)
             popupInfo().warning('Erro ao procurar usuário.');
         })
+    }
+    listarOrientacao()
+}
+
+async function listarOrientacao(){
+    await api.get(`/orientacao/`)
+    .then((res)=>{
+        Object.assign(orientacoes, res.data?.item)
+    }).catch((e)=>{
+        popupInfo().warning(e?.response?.data?.msg || e);
+    })
+
+    solicitacaoEnviada.value = false;
+    for(let i=0;i<orientacoes.length;i++){
+        const professor = orientacoes[i].professor
+        if(professor._id === form._id){
+            solicitacaoEnviada.value = true;
+            break;
+        }
     }
 }
 
