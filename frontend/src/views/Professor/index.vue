@@ -19,7 +19,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-[8px]">
-                <section class="flex flex-col items-center gap-[8px] border rounded-md border-gray-300 p-[10px] bg-white">
+                <section class="flex flex-col items-center gap-[8px] border rounded-md border-secundaria-opaco p-[10px] bg-white">
                     <svg width="180" height="180" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                         <rect width="80" height="80" fill="url(#pattern0_4_1480)"/>
                         <defs>
@@ -75,7 +75,7 @@
                    </div>
                 </section>
 
-                <section class="flex flex-col justify-between gap-[8px] border rounded-md border-gray-300 p-[10px] col-span-2 bg-white">
+                <section class="flex flex-col justify-between gap-[8px] border rounded-md border-secundaria-opaco p-[10px] col-span-2 bg-white">
                     <div class="flex flex-col gap-[8px]">
                         <Texto as="body-bold">
                             Descrição

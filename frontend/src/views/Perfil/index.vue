@@ -32,7 +32,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-[8px]">
-                <section class="flex flex-col items-center gap-[8px] border rounded-md border-gray-300 p-[10px] bg-white">
+                <section class="flex flex-col items-center gap-[8px] border rounded-md border-secundaria-opaco p-[10px] bg-white">
                     <svg width="180" height="180" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                         <rect width="80" height="80" fill="url(#pattern0_4_1480)"/>
                         <defs>
@@ -70,7 +70,7 @@
                     </div>
                 </section>
 
-                <section class="flex flex-col gap-[8px] border rounded-md border-gray-300 p-[10px] col-span-2 bg-white">
+                <section class="flex flex-col gap-[8px] border rounded-md border-secundaria-opaco p-[10px] col-span-2 bg-white">
                     <div class="flex flex-col gap-[8px]">
                         <div class="flex flex-col gap-[8px]">
                         <Texto as="body-bold">
@@ -128,7 +128,7 @@
                 <Texto as="h4">
                     Pedidos de orientação
                 </Texto>
-                <section class="grid grid-cols-1 md:grid-cols-8 lg:grid-cols-8 gap-[8px] border rounded-md border-gray-300 bg-white p-[10px]" v-for="(orientacao, index) in orientacoes" :key="index" v-if="orientacoes.length>0">
+                <section class="grid grid-cols-1 md:grid-cols-8 lg:grid-cols-8 gap-[8px] border border-secundaria-opaco rounded-md bg-white p-[10px]" v-for="(orientacao, index) in orientacoes" :key="index" v-if="orientacoes.length>0">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-[4px] cols-span-1 md:col-span-7 lg:col-span-7">
                         <div class="flex flex-col" v-if="props.usuario.tipo === 'aluno'">
                             <Texto as="body-bold">
@@ -211,7 +211,7 @@
                         </button>
                     </div>
                 </section>
-                <section class="grid grid-cols-1 gap-[8px] border rounded-md border-gray-300 bg-white p-[10px]" v-else>
+                <section class="grid grid-cols-1 gap-[8px] border border-secundaria-opaco rounded-md bg-white p-[10px]" v-else>
                        Nenhum pedido de orientação.
                 </section>
             </div>

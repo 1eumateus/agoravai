@@ -10,6 +10,7 @@ export default {
         'principal': "#3d4a7b",
         'principal-opaco': '#2f3a60',
         'secundaria': "#e9e9e9",
+        'secundaria-opaco': '#c8d5ec',
         'terciaria': "#d99c44",
       },
     },

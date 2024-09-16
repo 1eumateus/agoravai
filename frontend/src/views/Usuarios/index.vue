@@ -31,7 +31,7 @@
                     Cadastrar novo
                 </button>
             </div>
-            <div class="flex justify-between gap-[8px] border rounded-md p-[8px]" 
+            <div class="flex justify-between gap-[8px] border border-secundaria-opaco rounded-md p-[8px]" 
                 v-for="(usuario, index) in usuarios" :key="index">
 
                 <section class="flex items-center gap-[8px]">
