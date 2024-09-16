@@ -61,7 +61,7 @@
                 </div>
             </section>
             <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]">
-                <section class="flex items-start flex-col gap-[16px] border rounded-md p-[10px] justify-between bg-white" v-for="(professor, index) in professores" :key="index">
+                <section class="flex items-start flex-col gap-[16px] border border-secundaria-opaco rounded-md p-[10px] justify-between bg-white" v-for="(professor, index) in professores" :key="index">
                     <div class="flex items-center gap-[16px]">
                         <section>
                             <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
