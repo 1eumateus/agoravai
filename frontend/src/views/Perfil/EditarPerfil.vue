@@ -30,7 +30,7 @@
                                 id="nome" 
                                 class="p-[8px] border border-black" 
                                 placeholder="ex.: Davi"
-                                maxlength="12"
+                                maxlength="20"
                             />
                         </div>
                         <div class="flex flex-col gap-[4px]">
@@ -47,7 +47,7 @@
                                 id="sobrenome" 
                                 class="p-[8px] border border-black" 
                                 placeholder="ex.: Barroso"
-                                 maxlength="12"
+                                maxlength="20"
                             />
                         </div>
 
@@ -131,7 +131,7 @@
                             id="formdescricao" 
                             class="p-[8px] border border-black" 
                             placeholder="Descrição com no máximo 100 caracteres."
-                            maxlength="100"
+                            maxlength="200"
                         >
                         </textarea>
                     </div>  
@@ -234,7 +234,7 @@
                     <button 
                         type="button" 
                         :onClick="()=> emits('modal:open', false)" 
-                        class=" font-bold text-[14px] bg-red-300 hover:bg-red-400 py-[8px] px-[12px] rounded-md cursor-pointer">
+                        class=" font-bold text-[14px] border border-red-400 hover:bg-red-100 py-[8px] px-[12px] rounded-md cursor-pointer">
                         Cancelar
                     </button>
                     <button 

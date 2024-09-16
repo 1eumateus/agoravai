@@ -43,7 +43,7 @@
                                 id="nome" 
                                 class="p-[8px] border border-black" 
                                 placeholder="ex.: Davi"
-                                maxlength="12"
+                                maxlength="20"
                             />
                         </div>
                         <div class="flex flex-col gap-[4px]">
@@ -60,7 +60,7 @@
                                 id="sobrenome" 
                                 class="p-[8px] border border-black" 
                                 placeholder="ex.: Barroso"
-                                 maxlength="12"
+                                maxlength="20"
                             />
                         </div>
 
@@ -72,14 +72,15 @@
                                 Formação acadêmica/profissional (Onde obteve os títulos, atuação profissional, etc.)
                             </Texto>
                         </div>
-                        <input 
+                        <textarea 
                             v-model="form.formacao" 
                             type="text" 
                             id="formacao" 
                             class="p-[8px] border border-black" 
                             placeholder="ex.: Inteligência artificial, desenvolvimento web e automação"
-                            maxlength="65"
-                        />
+                            maxlength="500"
+                            rows="3"
+                        ></textarea>
                     </div>
 
                     <div class="flex flex-col gap-[4px]">
@@ -88,14 +89,14 @@
                                 Áreas de Interesse (áreas de interesse de ensino e pesquisa)
                             </Texto>
                         </div>
-                        <input 
+                        <textarea 
                             v-model="form.interesse" 
                             type="text" 
                             id="interesse" 
                             class="p-[8px] border border-black" 
                             placeholder="ex.: Inteligência artificial, desenvolvimento web e automação"
-                            maxlength="65"
-                        />
+                            maxlength="400"
+                        ></textarea>
                     </div>
 
                     <div class="flex flex-col gap-[4px]">
@@ -143,8 +144,8 @@
                             v-model="form.descricao" 
                             id="formdescricao" 
                             class="p-[8px] border border-black" 
-                            placeholder="Descrição com no máximo 100 caracteres."
-                            maxlength="100"
+                            placeholder="Descrição com no máximo 200 caracteres."
+                            maxlength="200"
                         >
                         </textarea>
                     </div>  
@@ -164,7 +165,8 @@
                                 v-model="form.senha" 
                                 type="password"
                                 id="formsenha" 
-                                class="p-[8px] border border-black" 
+                                class="p-[8px] border border-black"
+                                maxlength="12" 
                             />
                         </div>
 
@@ -179,6 +181,7 @@
                                 type="password"
                                 id="confirmarSenha" 
                                 class="p-[8px] border border-black" 
+                                maxlength="12" 
                             />
                         </div>
                     </section>
@@ -199,6 +202,24 @@
                             id="email" 
                             class="p-[8px] border border-black" 
                             placeholder="ex.: exemplo@exemplo.com"
+                        />
+                    </div>
+
+                    <div class="flex flex-col gap-[4px]">
+                        <div class="flex items-center gap-[10px]">
+                            <Texto as="body" for="linkedin">
+                                Currículo Lattes
+                            </Texto>
+                            <Texto as="body" color='gray' for="linkedin">
+                                Opcional
+                            </Texto>
+                        </div>
+                        <input 
+                            v-model="form.lattes" 
+                            id="lattes" 
+                            class="p-[8px] border border-black" 
+                            placeholder="ex.: http://lattes.cnpq.br/"
+                            maxlength="90"
                         />
                     </div>
 
@@ -263,13 +284,13 @@
                     <button 
                         type="button" 
                         :onClick="()=> emits('modal:open', false)" 
-                        class=" font-bold text-[14px] bg-gray-300 hover:bg-gray-400 py-[8px] px-[12px] rounded-md cursor-pointer">
+                        class=" font-bold text-[14px] border border-red-400 hover:bg-red-100 py-[8px] px-[12px] rounded-md cursor-pointer">
                         Cancelar
                     </button>
                     <button 
                         type="button" 
                         :onClick="salvar" 
-                        class=" font-bold text-[14px] bg-gray-300 hover:bg-gray-400 py-[8px] px-[12px] rounded-md cursor-pointer">
+                        class=" font-bold text-[14px] bg-principal text-white hover:bg-principal-opaco py-[8px] px-[12px] rounded-md cursor-pointer">
                         Salvar
                     </button>
                 </section>
@@ -306,6 +327,7 @@ const form = reactive({
     descricao: "",
     github: "",
     linkedin: "",
+    lattes: "",
     celular: "",
     disponibilidade: "indisponível",
     senha: "",
@@ -343,6 +365,9 @@ async function salvar(){
     if(form.github && !validateGithub(form.github)){
         return popupInfo().warning('Github inválido.');
     }
+    if(form.lattes && !validateLattes(form.lattes)){
+        return popupInfo().warning('Currículo Lattes inválido.');
+    }
     if(form.celular){
         form.celular =  form.celular.replace(/\D/g, '')
     }
@@ -379,6 +404,11 @@ function validateGithub(link) {
 function validateLinkedin(link) {
     const linkedinPattern = /^https:\/\/(www\.)?linkedin\.com\/in\/[A-z0-9_-]+\/?$/;
     return linkedinPattern.test(link);
+}
+
+function validateLattes(link) {
+    const lattes = /^http:\/\/lattes\.cnpq\.br\/\d{15,17}$/;
+    return lattes.test(link);
 }
 
 </script>
