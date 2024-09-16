@@ -77,7 +77,7 @@ async function listarProfessores(req, res) {
                     descricao: 1,
                     tipo: 1,
                     disponibilidade: 1,
-                    interesse: 1
+                    interesse: 1,
                 }
             }
         ]);
@@ -113,6 +113,7 @@ async function criar(req, res) {
             tipo: req.body.tipo,
             solicitacoes: req.body.solicitacoes,
             formacao: req.body.formacao,
+            lattes: req.body.lattes,
             senha: hashSenha,
         });
 
@@ -163,6 +164,7 @@ async function editar(req, res) {
         editar.tipo = req.body.tipo;
         editar.orientacoes = req.body.orientacoes;
         editar.formacao = req.body.formacao;
+        editar.lattes= req.body.lattes;
         editar.ativo = true;
         await editar.save();
         res.status(200).json({ msg: "Usuário editado com sucesso." });

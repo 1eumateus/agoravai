@@ -5,7 +5,12 @@ export function checkToken() {
     if (token) {
         return api.get('/login/getUser')
         .then((res) => {
-            return {valid: true, tipo: res.data.tipo, id:res.data.id};
+            return {
+                valid: true, 
+                tipo: res.data.tipo, 
+                id:res.data.id, 
+                nome:res.data.nome
+            };
         }).catch(() => {
             localStorage.removeItem('token');
             window.location.reload();

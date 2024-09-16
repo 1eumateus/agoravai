@@ -3,17 +3,21 @@
        <section class="flex items-center gap-[24px] ">
             
             <!-- <img src="/SOTCC.png" class="h-[60px] "/> -->
-            <Texto as="h2" for="pesquisar" color="white">
+            <Texto as="h2" color="white">
                 SOTCC
             </Texto>
             <router-link to="/" class="hidden md:block lg:block hover:text-terciaria">
                 Início
             </router-link>
         </section>
-
+      
+            
         <dropdown-menu mode="click" :overlay="false" class="hidden md:block lg:block">
             <template #trigger >
-              <div class="cursor-pointer hover:text-terciaria"> Configurações </div>
+                <div class="cursor-pointer hover:text-terciaria flex items-center gap-[8px]"> 
+                    {{user.nome}} 
+                    <PhGear :size="28" />
+                </div>
             </template>
             <template #body>
                 <div class="relative">
@@ -44,6 +48,7 @@
 </template>
 
 <script setup>
+import { PhGear } from '@phosphor-icons/vue';
 import Texto from '@components/Texto.vue'
 import dropdownMenu from 'v-dropdown-menu';
 defineProps(["user"]);

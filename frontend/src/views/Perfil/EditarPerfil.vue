@@ -178,6 +178,24 @@
                     <div class="flex flex-col gap-[4px]">
                         <div class="flex items-center gap-[10px]">
                             <Texto as="body" for="linkedin">
+                                Currículo Lattes
+                            </Texto>
+                            <Texto as="body" color='gray' for="linkedin">
+                                Opcional
+                            </Texto>
+                        </div>
+                        <input 
+                            v-model="form.lattes" 
+                            id="lattes" 
+                            class="p-[8px] border border-black" 
+                            placeholder="ex.: http://lattes.cnpq.br/"
+                            maxlength="90"
+                        />
+                    </div>
+
+                    <div class="flex flex-col gap-[4px]">
+                        <div class="flex items-center gap-[10px]">
+                            <Texto as="body" for="linkedin">
                                 LinkedIn
                             </Texto>
                             <Texto as="body" color='gray' for="linkedin">
@@ -216,13 +234,13 @@
                     <button 
                         type="button" 
                         :onClick="()=> emits('modal:open', false)" 
-                        class=" font-bold text-[14px] bg-gray-300 hover:bg-gray-400 py-[8px] px-[12px] rounded-md cursor-pointer">
+                        class=" font-bold text-[14px] bg-red-300 hover:bg-red-400 py-[8px] px-[12px] rounded-md cursor-pointer">
                         Cancelar
                     </button>
                     <button 
                         type="button" 
                         :onClick="salvar" 
-                        class=" font-bold text-[14px] bg-gray-300 hover:bg-gray-400 py-[8px] px-[12px] rounded-md cursor-pointer">
+                        class=" font-bold text-[14px] bg-principal text-white hover:bg-principal-opaco py-[8px] px-[12px] rounded-md cursor-pointer">
                         Salvar
                     </button>
                 </section>
@@ -286,6 +304,10 @@ async function salvar(){
     if(form.github && !validateGithub(form.github)){
         return popupInfo().warning('Github inválido.');
     }
+
+    if(form.lattes && !validateLattes(form.lattes)){
+        return popupInfo().warning('Currículo Lattes inválido.');
+    }
     
     await api.put(`/usuario/editar`, form)
     .then(()=>{
@@ -297,13 +319,18 @@ async function salvar(){
 }
 
 function validateGithub(link) {
-    const githubPattern = /^https:\/\/github\.com\/[A-z0-9_-]+\/?$/;
-    return githubPattern.test(link);
+    const github = /^https:\/\/github\.com\/[A-z0-9_-]+\/?$/;
+    return github.test(link);
 }
 
 function validateLinkedin(link) {
-    const linkedinPattern = /^https:\/\/(www\.)?linkedin\.com\/in\/[A-z0-9_-]+\/?$/;
-    return linkedinPattern.test(link);
+    const linkedin = /^https:\/\/(www\.)?linkedin\.com\/in\/[A-z0-9_-]+\/?$/;
+    return linkedin.test(link);
+}
+
+function validateLattes(link) {
+    const lattes = /^http:\/\/lattes\.cnpq\.br\/\d{15,17}$/;
+    return lattes.test(link);
 }
 
 onMounted(start);

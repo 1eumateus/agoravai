@@ -55,6 +55,10 @@ const modelSchema = new Schema({
         type: String,
         required: false,
     },
+    lattes: {
+        type: String,
+        required: false,
+    },
     senha: {
         type: String,
         required: true

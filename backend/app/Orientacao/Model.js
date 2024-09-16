@@ -23,6 +23,9 @@ const modelSchema = new Schema({
     proposta: {
         type: String,
     },
+    resposta: {
+        type: String,
+    },
 });
 
 export default model("Orientacao", modelSchema);

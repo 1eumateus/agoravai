@@ -32,6 +32,7 @@ async function listar(req, res) {
                     ativo: 1,
                     situacao: 1,
                     proposta: 1,
+                    resposta:1,
                 }
             },
             {
@@ -110,6 +111,7 @@ async function editar(req, res) {
         editar.professor = req.body.professor;
         editar.ativo = req.body.ativo;
         editar.situacao = req.body.situacao;
+        editar.resposta = req.body.resposta;
 
         await editar.save();
         res.status(200).json({ msg: "Orientação editada com sucesso." });
@@ -132,7 +134,7 @@ async function deletar(req, res) {
     }
 }
 
-async function negar(req, res) {
+async function alterarSituacao(req, res) {
     try {
 
         const token = req.headers.authorization;
@@ -141,22 +143,24 @@ async function negar(req, res) {
             return {userID: usuario._id, userTipo: usuario.tipo};
         });
         if (!userID) return res.status(400);
-
-        const orientacao = await Model.findOne({ ativo:true, _id: req.params.id });
+        
+        const orientacao = await Model.findOne({ ativo:true, _id: req.body.id });
  
         if (!orientacao) {
             return res.status(404).json({ msg: "Orientação não encontrada." });
         }
+        
         let msg= ''
         if(userTipo === 'professor'){
-            orientacao.situacao = 'negado';
-            msg = 'Pedido de orientação negada.'
+            orientacao.situacao = req.body.situacao;
+            orientacao.resposta = req.body.resposta;
+             msg = 'Resposta enviada.'
         }
         if(userTipo === 'aluno'){
             orientacao.ativo = false;
-           msg = 'Pedido de orientação cancelada.'
+            msg = 'Pedido de orientação cancelada.'
         }
-       
+
         await orientacao.save();
         return res.status(200).json({msg: msg});
     } catch (error) {
@@ -180,4 +184,4 @@ async function pegarPorId(req, res) {
 }
 
 
-export { listar, criar, deletar, negar, editar, pegarPorId };
+export { listar, criar, deletar, alterarSituacao, editar, pegarPorId };
