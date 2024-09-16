@@ -36,13 +36,13 @@
                     <button 
                         type="button" 
                         :onClick="()=> emits('modal:open', false)" 
-                        class=" font-bold text-[14px] bg-red-300 hover:bg-red-400 py-[8px] px-[12px] rounded-md cursor-pointer">
+                        class=" font-bold text-[14px] border border-red-400 hover:bg-red-100 py-[8px] px-[12px] rounded-md cursor-pointer">
                         Cancelar
                     </button>
                     <button 
                         type="button" 
                         :onClick="solicitar" 
-                        class=" font-bold text-[14px] bg-green-300 hover:bg-green-400 py-[8px] px-[12px] rounded-md cursor-pointer">
+                        class=" font-bold text-[14px] bg-principal hover:bg-principal-opaco text-white py-[8px] px-[12px] rounded-md cursor-pointer">
                         solicitar
                     </button>
                 </section>
