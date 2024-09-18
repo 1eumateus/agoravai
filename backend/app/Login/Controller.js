@@ -57,4 +57,23 @@ async function getUser(req, res) {
     });
 }
 
-export { login, getUser };
+async function confirmarEmail(req, res) {
+   
+    const token = req.query.confirmandoEmail
+    if(!token) return res.sendStatus(400);
+
+    jwt.verify(token, process.env.JWT_SECRET, async(err, usuario) => {
+        if (err) return res.sendStatus(403);
+        const user = await Usuario.findOne({ email: usuario.email });
+        if(!user) return res.sendStatus(400);
+        user.ativo = true;
+        await user.save()
+        res.status(200).json({ 
+            tipo: user.tipo, 
+            nome: user.nome, 
+            id: user._id,
+        });
+    });
+}
+
+export { login, getUser, confirmarEmail };
