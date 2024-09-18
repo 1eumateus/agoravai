@@ -1,6 +1,7 @@
 import Model from "./Model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import nodemailer from 'nodemailer'
 
 async function listar(req, res) {
     try {
@@ -90,16 +91,23 @@ async function listarProfessores(req, res) {
 
 async function criar(req, res) {
     try {
-        let isNew = await Model.findOne({ ativo: true, email: req.body.email });
-        if (isNew) return res.sendStatus(400).json({ msg: "Usuário já cadastrado." });
+        const tokenUser = req.headers.authorization;
 
-        if(req.body.senha.length < 6){
+        const { userTipo } = jwt.verify(tokenUser, process.env.JWT_SECRET, (err, usuario) => {
+            if (err) return false;
+            return { userTipo: usuario.tipo };
+        });
+
+        let isNew = await Model.findOne({ ativo: true, email: req.body.email });
+        if (isNew) return res.status(400).json({ msg: "Usuário já cadastrado." });
+
+        if(req.body?.senha?.length < 6){
             return res.status(400).json({ msg: "Senha inválida." });
         }
-        const hashSenha = await bcrypt.hash(req.body.senha, 10);
+        const hashSenha = await bcrypt.hash(req.body?.senha, 10);
 
         const novo = new Model({
-            ativo: true,
+            ativo: userTipo ==='admin' ? true : false,
             nome: req.body.nome,
             sobrenome: req.body.sobrenome,
             email: req.body.email,
@@ -117,8 +125,6 @@ async function criar(req, res) {
             senha: hashSenha,
         });
 
-        await novo.save();
-
         const token = jwt.sign(
             {
                 _id: novo._id,
@@ -130,10 +136,43 @@ async function criar(req, res) {
             process.env.JWT_SECRET
         );
 
-        res.json({ token });
+        if(userTipo !== 'admin'){
+            const transport = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth:{
+                    user: process.env.EMAIL,
+                    pass: process.env.SENHA,
+                },
+                connectionTimeout: 20000
+            })
+
+            let err = false;
+            await transport.sendMail({
+                from: 'SOTCC',
+                to: req.body.email,
+                subject: 'Email de confirmação',
+                html: `<h3>Confirmação de email<h3/><a href='http://localhost:4444/login?token=${token}'>Clique para confirmar email.</a>`,
+            })
+            .then(()=>err = false)
+            .catch(()=> err = true)
+
+            if(err){
+                return res.status(400).json({ msg: "Erro ao enviar email de confirmação." })
+            }
+            
+            transport.close();
+        }
+
+        await novo.save();
+        res.json({ 
+            msg: 'Email de confirmação enviado.' 
+        });
 
     } catch (error) {
-        return res.status(400).json({ msg: "Erro 400." });;
+        console.log(error)
+        return res.status(400).json({ msg: "Erro 400." });
     }
 }
 

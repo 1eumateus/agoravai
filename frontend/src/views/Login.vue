@@ -200,7 +200,7 @@ async function login() {
             window.location.reload();
         })
         .catch((e) => {
-            popupInfo().error(e.response.data.msg);
+            popupInfo().error(e.response?.data?.msg);
         });
 };
 
@@ -226,14 +226,12 @@ async function register(){
         popupInfo().warning('Senhas não coincidem');
         return;
     }
-
     await api.post('/usuario/criar', registrar)
         .then((res) => {
-            localStorage.setItem('token', res.data.token);
-            window.location.reload();
+            popupInfo().info(res?.data?.msg);
         })
         .catch((e) => {
-            popupInfo().error(e.msg);
+            popupInfo().error(e.response?.data?.msg);
         });
 }
 

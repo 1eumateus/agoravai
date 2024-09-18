@@ -151,8 +151,23 @@
                     </div>  
 
                     <Texto as="h4">
-                        Senha
+                        Login
                     </Texto>
+
+                    <div class="flex flex-col gap-[4px]">
+                        <div>
+                            <Texto as="body" for="email">
+                                Email
+                            </Texto>
+                        </div>
+                        <input 
+                            v-model="form.email" 
+                            type="email" 
+                            id="email" 
+                            class="p-[8px] border border-black" 
+                            placeholder="ex.: exemplo@exemplo.com"
+                        />
+                    </div>
 
                     <section class="grid grid-cols-2 gap-[10px]">
                         <div class="flex flex-col gap-[4px]">
@@ -189,21 +204,6 @@
                     <Texto as="h4">
                         Informações de contato
                     </Texto>
-
-                    <div class="flex flex-col gap-[4px]">
-                        <div>
-                            <Texto as="body" for="email">
-                                Email
-                            </Texto>
-                        </div>
-                        <input 
-                            v-model="form.email" 
-                            type="email" 
-                            id="email" 
-                            class="p-[8px] border border-black" 
-                            placeholder="ex.: exemplo@exemplo.com"
-                        />
-                    </div>
 
                     <div class="flex flex-col gap-[4px]">
                         <div class="flex items-center gap-[10px]">
@@ -358,6 +358,15 @@ async function salvar(){
         return;
     } 
 
+    if (!form.senha) {
+        popupInfo().warning('Informe sua senha.');
+        return;
+    }
+    if (form.senha.length<6) {
+        popupInfo().warning('A senha deve ter 6 caracteres no mínimo.');
+        return;
+    }
+    
     if(form.linkedin && !validateLinkedin(form.linkedin)){
         return popupInfo().warning('Linkedin inválido.');
     }
@@ -372,15 +381,6 @@ async function salvar(){
         form.celular =  form.celular.replace(/\D/g, '')
     }
 
-    if (!form.senha) {
-        popupInfo().warning('Informe sua senha.');
-        return;
-    }
-    if (form.senha.length<6) {
-        popupInfo().warning('A senha deve ter 6 caracteres no mínimo.');
-        return;
-    }
-
     if (form.senha !== confirmarSenha.value) {
         popupInfo().warning('Senhas não coincidem');
         return;
@@ -388,7 +388,7 @@ async function salvar(){
 
     await api.post('/usuario/criar', form)
     .then(() => {
-        popupInfo().success('Usuário editado com sucesso.');
+        popupInfo().success('Usuário cadastrado com sucesso.');
         emits('modal:open', false)
     })
     .catch((e) => {
