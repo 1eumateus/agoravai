@@ -125,6 +125,7 @@ async function criar(req, res) {
             senha: hashSenha,
         });
 
+        console.log(novo)
         const token = jwt.sign(
             {
                 _id: novo._id,
