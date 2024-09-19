@@ -1,18 +1,18 @@
 <template>
-    <nav class="flex items-center justify-between px-[80px] h-[60px] border-b-[2px] border-terciaria gap-[24px] bg-principal text-white">
+    <nav class="flex items-center justify-between px-[5px] md:px-[80px] lg:px-[80px] h-[60px] border-b-[2px] border-terciaria gap-[24px] bg-principal text-white">
        <section class="flex items-center gap-[24px] ">
             
             <!-- <img src="/SOTCC.png" class="h-[60px] "/> -->
             <Texto as="h2" color="white">
                 SOTCC
             </Texto>
-            <router-link to="/" class="hidden md:block lg:block hover:text-terciaria">
+            <router-link to="/" class=" hover:text-terciaria">
                 Início
             </router-link>
         </section>
       
             
-        <dropdown-menu mode="click" :overlay="false" class="hidden md:block lg:block">
+        <dropdown-menu mode="click" :overlay="false" >
             <template #trigger >
                 <div class="cursor-pointer hover:text-terciaria flex items-center gap-[8px]"> 
                     {{user.nome}} 

@@ -78,7 +78,7 @@
                             <Texto as="body-bold">
                                 {{ professor.nome }}  {{ professor.sobrenome }}
                             </Texto>
-                            <div class="flex gap-[8px]">
+                            <div class="flex flex-col gap-[8px]">
                                 <Texto as="body-bold">
                                     Área:
                                 </Texto>
@@ -87,7 +87,7 @@
                                 </Texto>
                             </div>
 
-                            <div class="flex gap-[8px]">
+                            <div class="flex flex-col gap-[8px]">
                                 <Texto as="body-bold">
                                     Disponibilidade:
                                 </Texto>

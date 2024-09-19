@@ -19,7 +19,7 @@
                         Informações principais
                     </Texto>
                     <section class="grid grid-cols-2 gap-[10px]">
-                        <div class="flex flex-col gap-[4px] col-span-1 lg:col-span-2">
+                        <div class="flex flex-col gap-[4px] col-span-2">
                             <div class="flex items-center gap-[10px]">
                                 <label class="text-[18px] " for="registrartipo">Tipo de usuário</label>
                             </div>
@@ -89,14 +89,14 @@
                                 Áreas de Interesse (áreas de interesse de ensino e pesquisa)
                             </Texto>
                         </div>
-                        <textarea 
+                        <input 
                             v-model="form.interesse" 
                             type="text" 
                             id="interesse" 
                             class="p-[8px] border border-black" 
                             placeholder="ex.: Inteligência artificial, desenvolvimento web e automação"
                             maxlength="400"
-                        ></textarea>
+                        />
                     </div>
 
                     <div class="flex flex-col gap-[4px]">

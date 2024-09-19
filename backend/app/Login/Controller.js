@@ -5,7 +5,7 @@ import Usuario from "../Usuario/Model.js";
 async function login(req, res) {
     try {
         const { email, senha } = req.body;
-        const usuario = await Usuario.findOne({ email });
+        const usuario = await Usuario.findOne({ ativo:true, email });
         if (!usuario) {
             return res.status(400).json({ msg: 'Email incorreto.' });
         }
@@ -34,15 +34,7 @@ async function login(req, res) {
 
 async function getUser(req, res) {
    
-    const authHeader = req.headers["authorization"] || req.query.token;
-    let token;
-
-    if (authHeader?.split(" ").length > 1) {
-        token = authHeader && authHeader?.split(" ")[1];
-    } else {
-        token = authHeader;
-    }
-    
+    const token = req.headers["authorization"] || req.query.token;    
     if (token == null) return res.sendStatus(401);
 
     jwt.verify(token, process.env.JWT_SECRET, async(err, usuario) => {
