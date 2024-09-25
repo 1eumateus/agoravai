@@ -47,6 +47,11 @@ router.beforeEach(async (to, from, next) => {
   let confirmandoEmail = to.query?.token || null;
 
   const res = await checkToken(confirmandoEmail);
+
+  if(confirmandoEmail && !res.valid){
+    next({path: to.path});
+  }
+
   const tokenValido = res.valid;
   const userType = res.tipo;
 

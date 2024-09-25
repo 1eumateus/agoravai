@@ -24,7 +24,7 @@
                         <textarea 
                             v-model="form.proposta" 
                             id="proposta" 
-                            class="p-[8px] border border-black" 
+                            class="p-[8px] border border-principal rounded-md" 
                             placeholder="Escreva a sua proposta de trabalho."
                             maxlength="200"
                             rows="4"
@@ -36,7 +36,7 @@
                     <button 
                         type="button" 
                         :onClick="()=> emits('modal:open', false)" 
-                        class=" font-bold text-[14px] border border-red-400 hover:bg-red-100 py-[8px] px-[12px] rounded-md cursor-pointer">
+                        class=" font-bold text-[14px] border hover:bg-gray-200 py-[8px] px-[12px] rounded-md cursor-pointer">
                         Cancelar
                     </button>
                     <button 

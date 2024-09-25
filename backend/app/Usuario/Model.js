@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
 const modelSchema = new Schema({
+    verificado: {
+        type: Boolean,
+        default: false,
+    },
     ativo: {
         type: Boolean,
         default: true,
@@ -18,7 +22,7 @@ const modelSchema = new Schema({
         type: String,
         required: true
     },
-    celular: {
+    telefone: {
         type: String,
         required: false,
     },
@@ -42,6 +46,7 @@ const modelSchema = new Schema({
     instituicao: {
         type: String,
         required: false,
+        default: 'Universidade Federal do Pará (UFPA)'
     },
     interesse: {
         type: String,

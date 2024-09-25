@@ -2,11 +2,134 @@ import Model from "./Model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from 'nodemailer'
+import axios from "axios";
+import { decode } from 'html-entities';
+
+function clean (text) {
+    if (text.indexOf ('<dd:')) {
+        text = text.substring (text.indexOf ('<dd>') + 4);
+        text = text.substring (0, text.indexOf ('</dd>'));
+    }
+    text = text.replaceAll ('\n', '');
+    text = text.replaceAll ('\t', '');
+    if (text.indexOf ('n&#227;o cadastrad') != -1 || text.indexOf ('n&#227;o informad') != -1) {
+        text = '';
+    }
+    while (text.charAt (0) == ' ') {
+        text = text.substring (1);
+    }
+    while (text.charAt (text.length - 1) == ' ') {
+        text = text.substring (0, text.length - 1);
+    }
+    return text;
+}
+
+function filtrarPerfil1 (text) {
+    text = text.substring (text.indexOf ('<h4>Perfil Pessoal</h4>'));
+    let descricao = text.substring (0, text.indexOf ('</div>'));
+    descricao = clean (descricao)
+    text = text.substring (text.indexOf ('<h4>Forma&#231;&#227;o Acad&#234;mica</h4>'));
+    let formacao = text.substring (0, text.indexOf ('</div>'));
+    formacao = clean (formacao);
+    return {
+        'descricao': descricao,
+        'formacao': formacao,
+        'interesse': '',
+        'lattes': '',
+    }
+}
+
+function filtrarPerfil2 (text) {
+    text = text.substring (text.indexOf('<dl>') + 4);
+    let descricao = text.substring (0, text.indexOf ('</dl>'));
+    descricao = clean (descricao);
+    text = text.substring (text.indexOf ('<dl>') + 4);
+    let formacao = text.substring (0, text.indexOf ('</dl>'));
+    formacao = clean (formacao);
+    text = text.substring (text.indexOf ('<dl>') + 4);
+    let interesse = text.substring (0, text.indexOf ('</dl>'));
+    interesse = clean (interesse);
+    text = text.substring (text.indexOf ('<dl>') + 4);
+    let lattes = text.substring (0, text.indexOf ('</dl>'));
+    if (lattes.indexOf ('n&#227;o informad') != -1) {
+        lattes = '';
+    }
+    else {
+        lattes = lattes.substring (lattes.indexOf ('href') + 6);
+        lattes = lattes.substring (0, lattes.indexOf ('"'));
+    }
+    return {
+        'descricao': descricao,
+        'formacao': formacao,
+        'interesse': interesse,
+        'lattes': lattes
+    }
+}
+
+function filtrar (text) {
+    let tipo = text.substring (0, text.indexOf ('<div id="contato">'));
+    let dados = null
+    if (tipo.indexOf ('<dl>')) dados = filtrarPerfil2 (text);
+    else dados = filtrarPerfil1 (text);
+    
+    let nome = text.substring (text.indexOf ('<h3>') + 4);
+    nome = nome.substring(0, nome.indexOf('</h3>')).trim(); 
+    let nomePartes = nome.split(' ');
+    dados['nome'] = nomePartes[0];
+    dados['sobrenome'] = nomePartes?.slice(1)?.join(' ');
+
+    text = text.substring (text.indexOf ('<div id="contato">'));
+    text = text.substring (text.indexOf ('<dl>') + 4);
+    
+    let endereco = text.substring (0, text.indexOf ('</dl>'));
+    dados ['endereco'] = clean (endereco);
+    
+    text = text.substring (text.indexOf ('<dl>') + 4);
+    let sala = text.substring (0, text.indexOf ('</dl>'));
+    dados ['sala'] = clean (sala);
+    text = text.substring (text.indexOf ('<dl>') + 4);
+    let telefone = text.substring (0, text.indexOf ('</dl>'));
+    dados ['telefone'] = clean (telefone);
+    text = text.substring (text.indexOf ('<dl>') + 4);
+    let email = text.substring (0, text.indexOf ('</dl>'));
+    dados ['email'] = clean (email);
+    return dados;
+}
+
+function formatHtmlTags(str) {
+    return decode(str.replace(/<[^>]*>/g, '. '));
+}
+
+async function siape(req, res){
+    try{
+        let dados = null
+        await axios.get(`https://sigaa.ufpa.br/sigaa/public/docente/portal.jsf?siape=${req.params.codigo}`)
+        .then((res)=>{
+            let perfil = filtrar (res.data);
+            dados = {
+                nome: formatHtmlTags(perfil.nome),
+                sobrenome: formatHtmlTags(perfil.sobrenome),
+                formacao: formatHtmlTags(perfil.formacao),
+                interesse: formatHtmlTags(perfil.interesse),
+                email: formatHtmlTags(perfil.email),
+                lattes: formatHtmlTags(perfil.lattes),
+                descricao: formatHtmlTags(perfil.descricao),
+            }
+        }).catch((e)=>{
+            console.log(e)
+            return res.status(400).json({ msg: 'Tempo de consulta excedido.'})
+        })
+        return res.status(200).json(dados)
+    }catch(e){
+        console.log(e)
+        return res.status(400).json({msg: 'Erro ao consultar dados do siape.'})
+    }
+}
 
 async function listar(req, res) {
     try {
         const token = req.headers.authorization;
-        const filtro = {ativo: true}
+        const filtro = {ativo: true, verificado: true}
         const {userID, userTipo }= jwt.verify(token, process.env.JWT_SECRET, (err, usuario) => {
             if (err) return false;
             return {userID: usuario._id, userTipo: usuario.tipo};
@@ -48,7 +171,7 @@ async function listar(req, res) {
 
 async function listarProfessores(req, res) {
     try {
-        const filtro = {ativo: true, tipo: 'professor'}
+        const filtro = {ativo: true, verificado: true, tipo: 'professor'}
 
         const procurar = req.query.procurar || false;
         const procurarDisponibilidade = req.query.procurarDisponibilidade || false;
@@ -98,7 +221,7 @@ async function criar(req, res) {
             return { userTipo: usuario.tipo };
         });
 
-        let isNew = await Model.findOne({ ativo: true, email: req.body.email });
+        let isNew = await Model.findOne({ ativo: true, verificado:false, email: req.body.email });
         if (isNew) return res.status(400).json({ msg: "Usuário já cadastrado." });
 
         if(req.body?.senha?.length < 6){
@@ -107,7 +230,7 @@ async function criar(req, res) {
         const hashSenha = await bcrypt.hash(req.body?.senha, 10);
 
         const novo = new Model({
-            ativo: userTipo ==='admin' ? true : false,
+            ativo: true,
             nome: req.body.nome,
             sobrenome: req.body.sobrenome,
             email: req.body.email,
@@ -115,8 +238,7 @@ async function criar(req, res) {
             github: req.body.github,
             linkedin: req.body.linkedin,
             disponibilidade: req.body.disponibilidade,
-            celular: req.body.celular,
-            instituicao: req.body.instituicao,
+            telefone: req.body.telefone,
             interesse: req.body.interesse,
             tipo: req.body.tipo,
             solicitacoes: req.body.solicitacoes,
@@ -125,7 +247,6 @@ async function criar(req, res) {
             senha: hashSenha,
         });
 
-        console.log(novo)
         const token = jwt.sign(
             {
                 _id: novo._id,
@@ -179,7 +300,7 @@ async function criar(req, res) {
 
 async function editar(req, res) {
     try {
-        let editar = await Model.findOne({ ativo:true, _id: req.body._id });
+        let editar = await Model.findOne({ ativo:true, verificado: true, _id: req.body._id });
        
         if (!editar) {
             return res.status(404).json({ error: "Usuário não encontrado" });
@@ -198,7 +319,7 @@ async function editar(req, res) {
         editar.github = req.body.github;
         editar.linkedin = req.body.linkedin;
         editar.disponibilidade = req.body.disponibilidade;
-        editar.celular = req.body.celular;
+        editar.telefone = req.body.telefone;
         editar.instituicao = req.body.instituicao;
         editar.interesse = req.body.interesse;
         editar.tipo = req.body.tipo;
@@ -215,7 +336,7 @@ async function editar(req, res) {
 
 async function adicionarOrientacao(req, res) {
     try {
-        let editar = await Model.findOne({ ativo:true, _id: req.body.aluno });
+        let editar = await Model.findOne({ ativo:true, verificado: true, _id: req.body.aluno });
 
         if (!editar) {
             return res.status(404).json({ error: "Usuário não encontrado" });
@@ -245,7 +366,7 @@ async function deletar(req, res) {
 async function pegarPorId(req, res) {
     try {
         const token = req.headers.authorization;
-        const filtro = { ativo: true, _id: req.params.id };
+        const filtro = { ativo: true, verificado: true, _id: req.params.id };
 
         const { userID, userTipo } = jwt.verify(token, process.env.JWT_SECRET, (err, usuario) => {
             if (err) return false;
@@ -275,4 +396,4 @@ async function pegarPorId(req, res) {
 }
 
 
-export { listar, listarProfessores, adicionarOrientacao, criar, deletar, editar, pegarPorId };
+export { listar, listarProfessores, siape, adicionarOrientacao, criar, deletar, editar, pegarPorId };

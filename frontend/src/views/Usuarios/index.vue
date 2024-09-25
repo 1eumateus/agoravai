@@ -1,8 +1,4 @@
 <template>
-    <CadastrarUsuario
-        @modal:open="recarregar($event)"
-        v-if="openCadastrar"
-    />
    <main class="flex-grow relative ">
         <section class="mx-auto max-w-5xl p-[14px] flex flex-col gap-[8px]">
             <div>
@@ -23,13 +19,6 @@
                 <Texto as="h3">
                     Usuários cadastrados
                 </Texto>
-                <button 
-                    type="button" 
-                    class="text-[16px] font-normal bg-principal hover:bg-principal-opaco text-white rounded-md py-[10px] px-[12px]" 
-                    @click="()=> openCadastrar = true" 
-                >
-                    Cadastrar novo
-                </button>
             </div>
             <div class="flex justify-between gap-[8px] border bg-white border-secundaria-opaco rounded-md p-[8px]" 
                 v-for="(usuario, index) in usuarios" :key="index">
@@ -60,11 +49,9 @@ import Texto from '@components/Texto.vue'
 import { onMounted, ref, watch } from "vue";
 import api from "@/api.js";
 import { popupInfo } from '../../stores/util.js';
-import CadastrarUsuario from './CadastrarUsuario.vue';
 
 const usuarios = ref([])
 const search = ref('')
-const openCadastrar = ref(false);
 
 defineProps(["usuario"]);
 
@@ -80,11 +67,6 @@ async function start() {
 watch(search, () => {
     start();
 });
-
-function recarregar(event){
-    openCadastrar.value = event
-    start()
-}
 
 onMounted(start);
 </script>

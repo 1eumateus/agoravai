@@ -35,7 +35,12 @@ function popupInfo() {
     },
   };
 }
-
+export const isValid = {
+  email(email) {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailPattern.test(email);
+  }
+}
 export const formatMask = {
     money (value)  {
       if (!value) return "R$ 0,00";

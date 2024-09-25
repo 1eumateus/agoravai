@@ -10,7 +10,10 @@ export async function start() {
             nome: 'Admin',
             email: 'organizadortrabalhos@gmail.com',
             tipo: 'admin',
-            senha: await bcrypt.hash('@organizadortrabalhos1', 10),
+            ativo: true,
+            verificado: true,
+            senha: await bcrypt.hash('123456', 10),
+            // senha: await bcrypt.hash('@organizadortrabalhos1', 10),
         });
         await novo.save();
     }
