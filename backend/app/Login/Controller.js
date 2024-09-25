@@ -5,7 +5,7 @@ import Usuario from "../Usuario/Model.js";
 async function login(req, res) {
     try {
         const { email, senha } = req.body;
-        const usuario = await Usuario.findOne({ ativo:true, email });
+        const usuario = await Usuario.findOne({ ativo:true, email, verificado: true });
         if (!usuario) {
             return res.status(400).json({ msg: 'Email incorreto.' });
         }
@@ -56,9 +56,9 @@ async function confirmarEmail(req, res) {
 
     jwt.verify(token, process.env.JWT_SECRET, async(err, usuario) => {
         if (err) return res.sendStatus(403);
-        const user = await Usuario.findOne({ email: usuario.email });
-        if(!user) return res.sendStatus(400);
-        user.ativo = true;
+        const user = await Usuario.findOne({ _id: usuario._id, verificado: false });
+        if(!user) return res.status(409).json({msg: 'Conta já verificada.'});
+        user.verificado = true;
         await user.save()
         res.status(200).json({ 
             tipo: user.tipo, 

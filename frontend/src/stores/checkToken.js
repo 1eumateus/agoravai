@@ -29,7 +29,6 @@ export async function checkToken(confirmandoEmail) {
             };
         }).catch(() => {
             localStorage.removeItem('token');
-            window.location.reload();
             return {valid: false, tipo: 'user'};
         });
     }else {

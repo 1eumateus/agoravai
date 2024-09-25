@@ -1,5 +1,5 @@
 import express from "express";
-import { listar, listarProfessores, adicionarOrientacao, pegarPorId, criar, deletar, editar } from "./Controller.js";
+import { listar, listarProfessores, siape, adicionarOrientacao, pegarPorId, criar, deletar, editar } from "./Controller.js";
 
 const router = express.Router();
 
@@ -10,5 +10,6 @@ router.post("/criar", criar);
 router.delete("/:id", deletar);
 router.put("/editar", editar);
 router.put("/adicionarOrientacao", adicionarOrientacao);
+router.get("/siape/:codigo", siape);
 
 export default router;

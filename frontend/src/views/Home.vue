@@ -12,7 +12,7 @@
                         v-model="procurar" 
                         type="text" 
                         id="pesquisar" 
-                        class="p-[6px] border border-black" 
+                        class="p-[8px] border h-11 border-principal rounded-md" 
                         placeholder="Pesquise pelo nome do professor"
                         maxlength="50"
                     />
@@ -25,7 +25,7 @@
                     </div>
                     <select 
                         v-model="procurarDisponibilidade" 
-                        class="p-[8px] border border-black " >
+                        class="p-[8px] border border-principal rounded-md h-11 " >
                         <option 
                             :value="disponi.value" 
                             v-for="disponi in disponibilidades">
@@ -41,19 +41,19 @@
                     </div>
                     <select 
                         v-model="procurarInteresse" 
-                        class="p-[8px] border border-black " >
+                        class="p-[8px] border border-principal rounded-md h-11 " >
                         <option value="" selected>Não aplicado</option>
                         <option 
                             :value="area" 
                             v-for="area in areaProfessores">
-                            {{ area }}
+                            {{ area?.substring(0, 40) }}...
                         </option>
                     </select>
                 </div>
                <div class="flex flex-col h-full justify-end">
                     <button 
                         type="button" 
-                        class="text-[16px] font-normal bg-gray-200 hover:bg-gray-300 rounded-md py-[10px]" 
+                        class="text-[16px] font-normal bg-white border border-gray-400 hover:bg-gray-200 rounded-md py-[10px]" 
                         @click="limparFiltro" 
                     >
                         Limpar filtro
@@ -115,6 +115,7 @@
     </main>
 </template>
 <script setup>
+import Campo from '@components/Campo.vue'
 import { PhCaretRight } from '@phosphor-icons/vue';
 import { onMounted, ref, watch, reactive } from "vue";
 import api from "@/api.js";

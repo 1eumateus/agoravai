@@ -1,4 +1,43 @@
 <template>
+   
+    <div class="fixed inset-0 z-40 flex items-center justify-center bg-gray-600 bg-opacity-50" v-if="abrirModal">
+            <div class="w-full md:w-[480px] lg:w-[480px] p-[24px] max-h-[220px] overflow-y-auto bg-white rounded-md flex flex-col gap-[24px]">
+                <section class="grid grid-cols-1 gap-[4px]">
+                    <div class="flex items-center justify-between border-b border-gray-300">
+                        <Texto as="h4">
+                            Cadastrar
+                        </Texto>
+                        <button 
+                            type="button" 
+                            @click="abrirModal =false " 
+                            class="cursor-pointer">
+                            <PhX :size="18" class="fill-gray-700 hover:fill-black" />
+                        </button>
+                    </div>
+                    <Texto as="body">
+                        Um email de confirmação será enviado para
+                    </Texto>
+                    <Texto as="body" >
+                        {{ registrar.email }}
+                    </Texto>
+                </section>
+                <section class="flex justify-between gap-[24px] border-t border-gray-300 pt-[10px]">
+                    <button 
+                        type="button" 
+                        @click="abrirModal =false " 
+                        class=" font-bold text-[14px] border hover:bg-gray-200 py-[8px] px-[12px] rounded-md cursor-pointer">
+                        Cancelar
+                    </button>
+                    <button 
+                        type="button" 
+                        :onClick="register" 
+                        class=" font-bold text-[14px] bg-principal text-white hover:bg-principal-opaco py-[8px] px-[12px] rounded-md cursor-pointer">
+                        Confirmar
+                    </button>
+                </section>
+            </div>
+    </div>
+
     <main class="flex-grow relative ">
         <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 h-full w-full divide-x divide-y">
             
@@ -13,141 +52,318 @@
             <div class="flex flex-col justify-center gap-[24px] px-[10px] md:px-[10px] lg:px-[90px]">   
                 <div class="flex flex-col p-[20px] gap-[12px]"> 
                     <section class="flex flex-col">
-                        <div class="flex justify-center items-center block md:hidden lg:hidden">
-                            <img src="/SOTCC2.png" class="w-1/2" />
-                        </div>
                         <Texto as="h3" color="principal">
-                            {{ showRegister ? 'Cadastrar aluno' : 'Entrar' }}
+                            {{ opcao === 'entrar' ? 'Entrar': '' }}
+                            {{ opcao === 'cadastrarAluno' ? 'Cadastrar aluno': '' }}
+                            {{ opcao === 'cadastrarProfessor' ? 'Cadastrar professor': '' }}
                         </Texto>
                     </section>
-                    <section class="grid grid-cols-1 gap-[24px]" v-if="!showRegister">
-                        <div class="flex flex-col gap-[4px]">
-                            <div>
-                                <Texto as="body" for="formemail">
-                                    Email
-                                </Texto>
-                            </div>
-                            <input 
-                                v-model="form.email" 
-                                type="email" 
-                                id="formemail" 
-                                class="p-[8px] border border-black" 
-                                placeholder="ex.: exemplo@exemplo.com"
-                            />
-                        </div>
-
-                        <div class="flex flex-col gap-[4px]">
-                            <div >
-                                <Texto as="body" for="formsenha">
-                                    Senha
-                                </Texto>
-                            </div>
-                            <input 
-                                v-model="form.senha" 
-                                type="password" 
-                                id="formsenha" 
-                                class="p-[8px] border border-black" 
-                            />
-                        </div>
-
+                    <section class="grid grid-cols-1 gap-[24px]" v-if="opcao === 'entrar'">
+                        <Campo 
+                            v-model="form.email" 
+                            label="Email" 
+                            id="formemail" 
+                            type="email"
+                            :opcional="false"
+                            :maxLength="50"
+                            placeholder="ex.: exemplo@exemplo.com"
+                        /> 
+                        <Campo 
+                            v-model="form.senha" 
+                            label="Senha" 
+                            id="formsenha" 
+                            type="password"
+                            :opcional="false"
+                            :maxLength="20"
+                            placeholder=""
+                        /> 
                     </section>
 
-                    <section class="grid grid-cols-1 lg:grid-cols-2 gap-[10px]" v-else>
-                        <div class="flex flex-col gap-[4px]">
-                            <div class="flex items-center gap-[10px]">
-                                <Texto as="body" for="registrarnome">
-                                    Nome
-                                </Texto>
-                            </div>
-                            <input 
-                                v-model="registrar.nome" 
-                                id="registrarnome" 
-                                class="p-[8px] border border-black" 
-                                placeholder="ex.: Davi"
-                            />
-                        </div>
-                        <div class="flex flex-col gap-[4px]">
-                            <div class="flex items-center gap-[10px]">
-                                <Texto as="body" for="registrarsobrenome">
-                                    Sobrenome
-                                </Texto>
-                                <Texto as="body" color="gray" for="registrarsobrenome">
-                                    Opcional
-                                </Texto>
-                            </div>
-                            <input 
-                                v-model="registrar.sobrenome" 
-                                id="registrarsobrenome" 
-                                class="p-[8px] border border-black" 
-                                placeholder="ex.: Barroso"
-                            />
-                        </div>
-                        <div class="flex flex-col gap-[4px] col-span-1 lg:col-span-2">
-                            <div>
-                                <Texto as="body" for="registraremail">
-                                    Email
-                                </Texto>
-                            </div>
-                            <input 
+                    <section class="grid grid-cols-1 lg:grid-cols-2 gap-[10px]" v-if="opcao === 'cadastrarAluno'">
+                        <Campo 
+                            v-model="registrar.nome" 
+                            label="Nome" 
+                            id="registrarnome" 
+                            type="text"
+                            :opcional="false"
+                            :maxLength="50"
+                            placeholder="ex.: Davi"
+                        /> 
+                        <Campo 
+                            v-model="registrar.sobrenome" 
+                            label="Sobrenome" 
+                            id="registrarsobrenome" 
+                            type="text"
+                            :opcional="true"
+                            :maxLength="50"
+                            placeholder="ex.: Barroso"
+                        /> 
+                        <div class="col-span-1 lg:col-span-2">
+                            <Campo 
                                 v-model="registrar.email" 
-                                type="email" 
+                                label="Email" 
                                 id="registraremail" 
-                                class="p-[8px] border border-black" 
+                                type="email"
+                                :opcional="false"
+                                :maxLength="50"
+                                placeholder="ex.: exemplo@exemplo.com"
+                            /> 
+                        </div>
+                        <Campo 
+                            v-model="registrar.senha" 
+                            label="Senha" 
+                            id="registrarsenha" 
+                            type="password"
+                            :opcional="false"
+                            :maxLength="20"
+                            placeholder="" 
+                        /> 
+                        <Campo 
+                            v-model="confirmarSenha" 
+                            label="Confirmar senha" 
+                            id="confirmarSenha" 
+                            type="password"
+                            :maxLength="20"
+                            :opcional="false"
+                            placeholder="" 
+                        /> 
+                    </section>
+
+                    <section class="grid grid-cols-1 gap-[10px]" v-if="opcao === 'cadastrarProfessor'">
+                        <div class="grid grid-cols-2 gap-[8px] items-end " >
+                            <Campo 
+                                v-model="registrar.siape" 
+                                label="SIAPE" 
+                                id="siape" 
+                                type="text"
+                                :opcional="true"
+                                placeholder="ex.: 1234567" 
+                            /> 
+                            <div class="flex items-center gap-[4px]">
+                                <button 
+                                type="button" 
+                                class="text-[16px] font-normal border border-gray-400 hover:bg-gray-200 rounded-md py-[10px] px-[12px]" 
+                                @click="buscarDados()"
+                            >
+                                Buscar dados
+                            </button>
+                            <button 
+                                type="button" 
+                                class="text-[16px] font-normal border border-gray-400 hover:bg-gray-200 rounded-md py-[10px] px-[12px]" 
+                                @click="limparDados()"
+                            >
+                             <PhEraser :size="24" class=" mx-auto " /> 
+                            </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1">
+                            <button 
+                                :class="`${aba === 0 ? ' bg-principal border-terciaria ' : ' bg-gray-300 border-white ' } p-1 min-w-full border rounded-md`"
+                                @click="irParaAba(0)">
+                            </button>
+                            <button 
+                                :class="`${aba === 1 ? ' bg-principal border-terciaria ' : ' bg-gray-300 border-white ' } p-1 min-w-full border rounded-md`"
+                                @click="irParaAba(1)">
+                            </button>
+                            <button 
+                                :class="`${aba === 2 ? ' bg-principal border-terciaria ' : ' bg-gray-300 border-white ' } p-1 min-w-full border rounded-md `"
+                                @click="irParaAba(2)">
+                            </button>
+                        </div>
+                        <div class="flex flex-col gap-[10px]" v-if="aba===0">
+                            <div class="flex flex-col gap-[4px] col-span-2">
+                                <Texto as="h4" >
+                                    Informações principais
+                                </Texto>
+                            </div>
+                            <div class="grid grid-cols-2 gap-[8px]">
+                                <Campo 
+                                    v-model="registrar.nome" 
+                                    label="Nome" 
+                                    id="registrarnome" 
+                                    type="text"
+                                    :opcional="false"
+                                    placeholder="ex.: Davi"
+                                    :maxLength="20" 
+                                /> 
+                                <Campo 
+                                    v-model="registrar.sobrenome" 
+                                    label="Sobrenome" 
+                                    id="registrarsobrenome" 
+                                    type="text"
+                                    :opcional="true"
+                                    placeholder="ex.: Barroso" 
+                                    :maxLength="20" 
+                                />
+                            </div>
+                            <Campo 
+                                v-model="registrar.formacao" 
+                                label="Formação acadêmica / profissional" 
+                                id="formacao" 
+                                type="text"
+                                :maxLength="500"
+                                :opcional="false"
+                                placeholder="ex.: Mestrado em Inteligência artificial"
+                            />
+                            <Campo 
+                                v-model="registrar.interesse" 
+                                label="Áreas de interesse de ensino e pesquisa" 
+                                id="interesse" 
+                                type="text"
+                                :maxLength="400"
+                                :opcional="false"
+                                placeholder="ex.: Inteligência artificial, desenvolvimento web e automação"
+                            />
+                        </div>
+
+                        <div class="flex flex-col gap-[10px]" v-if="aba===1">
+                            <div class="flex flex-col gap-[4px] col-span-2">
+                                <Texto as="h4" >
+                                    Informações adicionais
+                                </Texto>
+                            </div>
+
+                            <div class="flex flex-col gap-[4px]">
+                                <div>
+                                    <Texto as="body" for="pesquisar">
+                                        Disponibilidade
+                                    </Texto>
+                                </div>
+                                <select 
+                                    v-model="registrar.disponibilidade" 
+                                    class="p-[8px] h-11 border border-principal focus:outline-principal rounded-md " >
+                                    <option 
+                                        :value="disponi.value" 
+                                        v-for="disponi in disponibilidades">
+                                        {{ disponi.nome }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="flex flex-col gap-[4px] ">
+                                <div class="flex items-center gap-[10px]">
+                                    <Texto as="body" for="formdescricao">
+                                        Descrição
+                                    </Texto>
+                                    <Texto as="body" color="gray" for="formdescricao">
+                                        Opcional
+                                    </Texto>
+                                </div>
+                                <textarea 
+                                    v-model="registrar.descricao" 
+                                    id="formdescricao" 
+                                    class="p-[8px] border border-principal focus:outline-principal rounded-md" 
+                                    placeholder="Descrição com no máximo 200 caracteres."
+                                    maxlength="200"
+                                    rows="4"
+                                >
+                                </textarea>
+                            </div>  
+                        </div>
+
+                        <div class="flex flex-col gap-[10px]" v-if="aba===2">
+                            <div class="flex flex-col gap-[4px] col-span-2">
+                                <Texto as="h4" >
+                                    Informações de login
+                                </Texto>
+                            </div>
+                            <Campo 
+                                v-model="registrar.email" 
+                                label="Email" 
+                                id="registraremail" 
+                                type="email"
+                                :maxLength="50"
+                                :opcional="false"
                                 placeholder="ex.: exemplo@exemplo.com"
                             />
-                        </div>
-
-                        <div class="flex flex-col gap-[4px] col-span-1 lg:col-span-2">
-                            <div class="flex items-center gap-[10px]">
-                                <Texto as="body" for="registrarsenha">
-                                    Senha
-                                </Texto>
-                            </div>
-                            <input 
+                            <Campo 
                                 v-model="registrar.senha" 
-                                type="password"
+                                label="Senha" 
                                 id="registrarsenha" 
-                                class="p-[8px] border border-black" 
-                            />
-                        </div>
-
-                        <div class="flex flex-col gap-[4px] col-span-1 lg:col-span-2">
-                            <div class="flex items-center gap-[10px]">
-                                <Texto as="body" for="confirmarSenha">
-                                    Confirmar senha
-                                </Texto>
-                            </div>
-                            <input 
-                                v-model="confirmarSenha" 
                                 type="password"
+                                :maxLength="20"
+                                :opcional="false"
+                                placeholder=""
+                            />
+                            <Campo 
+                                v-model="confirmarSenha" 
+                                label="Confirmar senha" 
                                 id="confirmarSenha" 
-                                class="p-[8px] border border-black" 
+                                type="password"
+                                :maxLength="20"
+                                :opcional="false"
+                                placeholder=""
                             />
                         </div>
                     </section>
 
                     <section class="flex flex-col gap-[10px]">
+                        <div class="flex justify-between">
+                            <button 
+                                type="button" 
+                                :class="`border flex items-center bg-white hover:bg-gray-200 border-gray-300 text-[16px] font-normal rounded-md py-[6px] px-[12px] text-black`" 
+                                @click="voltarAbaProfessor()"
+                                v-if="opcao ==='cadastrarProfessor'"
+                            >
+                                <PhCaretLeft :size="20"  />voltar
+                            </button>
+                            <button 
+                                type="button" 
+                                :class="`border flex items-center bg-white hover:bg-gray-200 border-gray-300 text-[16px] font-normal rounded-md py-[6px] px-[12px] text-black`" 
+                                @click="proximaAbaProfessor()"
+                                v-if="opcao ==='cadastrarProfessor' && aba < 2 "
+                            >
+                                próximo <PhCaretRight :size="20"  />
+                            </button>
+                            <button 
+                                type="button" 
+                                :class="`border transition-all bg-principal text-white hover:bg-principal-opaco text-[16px] font-normal rounded-md py-[6px] px-[12px] text-black`" 
+                                    @click="modalConfirmar"
+                                v-if="opcao ==='cadastrarProfessor' && aba === 2"
+                            >
+                                Cadastrar
+                            </button>
+                        </div>
                         <button 
                             type="button" 
-                            class="text-[16px] font-normal bg-principal hover:bg-principal-opaco text-white rounded-md py-[10px]" 
-                            @click="login" 
-                            v-if="!showRegister"
+                            class="text-[16px] font-normal bg-principal hover:bg-principal-opaco text-white rounded-md py-[10px] px-[12px]" 
+                            @click="login()"
+                            v-if="opcao !== 'cadastrarAluno' && opcao !== 'cadastrarProfessor'"
                         >
                             Entrar
                         </button>
                         <button 
                             type="button" 
                             class="text-[16px] font-normal bg-principal hover:bg-principal-opaco text-white rounded-md py-[10px] px-[12px]" 
-                            @click="register" 
-                            v-if="showRegister"
+                            @click="modalConfirmar"
+                            v-if="opcao !=='entrar' && opcao !=='cadastrarProfessor'"
                         >
-                            Cadastre-se
+                            Cadastrar
+                        </button>
+                        <hr class=" border-gray-400"/>
+                        <button 
+                            type="button" 
+                            class="text-[16px] mx-auto font-normal text-center hover:text-principal hover:cursor-pointer" 
+                            @click="alterarForm('entrar')"
+                            v-if="opcao !=='entrar'"
+                        >
+                            Entrar
                         </button>
                         <button 
                             type="button" 
-                            class="text-[16px] font-normal hover:bg-gray-200 py-[10px] px-[12px]" 
-                            @click="alterarForm" >
-                            {{ showRegister ? 'Entrar' : ' Cadastrar novo aluno' }}
+                            class="text-[16px] mx-auto font-normal text-center hover:text-principal hover:cursor-pointer" 
+                            @click="alterarForm('cadastrarAluno')"
+                            v-if="opcao !== 'cadastrarAluno'"
+                        >
+                            Cadastrar aluno
+                         </button>
+                         <button 
+                            type="button" 
+                            class="text-[16px] mx-auto font-normal text-center hover:text-principal hover:cursor-pointer" 
+                            @click="alterarForm('cadastrarProfessor')"
+                            v-if="opcao !== 'cadastrarProfessor'"
+                        >
+                            Cadastrar professor
                         </button>
                     </section>
                 </div>
@@ -157,23 +373,47 @@
 </template>
 
 <script setup>
+import { PhCaretLeft, PhCaretRight, PhX, PhEraser } from '@phosphor-icons/vue';
 import api from "@/api.js";
 // util
-import { popupInfo } from '../stores/util.js';
+import { popupInfo, isValid } from '../stores/util.js';
 import { ref, reactive } from "vue";
 import Texto from '@components/Texto.vue'
-const showRegister = ref(false);
-
+import Campo from '@components/Campo.vue'
+const opcao = ref('entrar');
+defineProps(["usuario"]);
 const confirmarSenha = ref('');
+const aba = ref(0);
+const abrirModal = ref(false)
+
+const emailEnviado = reactive({
+    situacao: false,
+    email: '',
+})
+
+const disponibilidades = [
+    { value: "indisponível", nome: "Indisponível" },
+    { value: "matutino", nome: "Matutino" },
+    { value: "vespertino", nome: "Vespertino" },
+    { value: "noturno", nome: "Noturno" },
+    { value: "integral", nome: "Integral" },
+    { value: "flexivel", nome: "Flexível" },
+];
 
 const registrar = reactive({
     nome: '',
     tipo: 'aluno',
     sobrenome: '',
     email: '',
-    telefone: '',
     senha: '',
-    areaAtuacao: null,
+    formacao: '',
+    telefone: '',
+    descricao: '',
+    interesse: '',
+    instituicao: '',
+    disponibilidade: 'indisponível',
+    lattes: '',
+    siape: '',
 })
 
 const form = reactive({
@@ -181,71 +421,152 @@ const form = reactive({
     senha: '',
 })
 
-async function login() {
-    if (form.email === "") {
-        popupInfo().warning('Informe email.');
-        return;
-    } if (form.senha === "") {
-        popupInfo().warning('Informe senha.');
-        return;
-    }
-    if (form.senha.length<6) {
-        popupInfo().warning('Senha muito curta.');
-        return;
-    }
-    
-    await api.post('/login', form)
-        .then((res) => {
-            localStorage.setItem('token', res.data.token);
-            window.location.reload();
-        })
-        .catch((e) => {
-            popupInfo().error(e.response?.data?.msg);
-        });
-};
+function irParaAba(numeroAba){
+    aba.value = numeroAba
+}
 
-async function register(){
+function proximaAbaProfessor(){
+    if(aba.value < 2){
+        aba.value++
+    }
+}
+function voltarAbaProfessor(){
+    if(aba.value > 0){
+        aba.value--
+    }
+}
+
+function modalConfirmar(){
+
+    if(opcao.value === 'cadastrarAluno'){
+        registrar.tipo = 'aluno';
+    }
+    if(opcao.value === 'cadastrarProfessor'){
+        registrar.tipo = 'professor';
+    }
+
     if (!registrar.nome) {
         popupInfo().warning('Informe seu nome.');
+        aba.value = 0;
+        abrirModal.value = false;
         return;
     } 
-    if (!registrar.email) {
-        popupInfo().warning('Informe seu email.');
+    if (!isValid.email(registrar.email)) {
+        popupInfo().warning('Informe email válido.');
+        abrirModal.value = false;
         return;
     } 
     if (!registrar.senha) {
         popupInfo().warning('Informe sua senha.');
+        abrirModal.value = false;
         return;
     }
     if (registrar.senha.length<6) {
         popupInfo().warning('A senha deve ter 6 caracteres no mínimo.');
+        abrirModal.value = false;
         return;
     }
 
     if (registrar.senha !== confirmarSenha.value) {
         popupInfo().warning('Senhas não coincidem');
+        abrirModal.value = false;
         return;
     }
-    await api.post('/usuario/criar', registrar)
+
+    if(registrar.tipo === 'professor'){
+        if (!registrar.formacao) {
+            popupInfo().warning('Informe sua formação.');
+            aba.value = 0;
+            abrirModal.value = false;
+            return;
+        }
+        if (!registrar.interesse) {
+            popupInfo().warning('Informe áreas de interesse.');
+            aba.value = 0;
+            abrirModal.value = false;
+            return;
+        }
+    }
+    abrirModal.value = true;
+}
+
+async function buscarDados(){
+    if(!registrar.siape) {
+        popupInfo().warning('Código do SIAPE inválido.');
+        return;
+    }
+    await api.get(`/usuario/siape/${registrar.siape}`)
         .then((res) => {
-            popupInfo().info(res?.data?.msg);
+            Object.assign(registrar, res.data)
         })
         .catch((e) => {
             popupInfo().error(e.response?.data?.msg);
         });
 }
 
-function alterarForm(){
-    showRegister.value = !showRegister.value;
+async function login() {
+        if (form.email === "") {
+            popupInfo().warning('Informe email.');
+            return;
+        } if (form.senha === "") {
+            popupInfo().warning('Informe senha.');
+            return;
+        }
+        if (form.senha.length<6) {
+            popupInfo().warning('Senha muito curta.');
+            return;
+        }
+        await api.post('/login', form)
+            .then((res) => {
+                localStorage.setItem('token', res.data.token);
+                window.location.reload();
+            })
+            .catch((e) => {
+                popupInfo().error(e.response?.data?.msg);
+            });
+};
+
+async function register(){
+    
+    if(emailEnviado.situacao && registrar.email === emailEnviado.email){
+        popupInfo().info('Email de confirmação enviado, verifique sua caixa de spam.');
+        return;
+    }
+    popupInfo().info('Enviando email de confirmação.');
+    await api.post('/usuario/criar', registrar)
+        .then((res) => {
+            popupInfo().info(res?.data?.msg);
+            emailEnviado.situacao = true;
+            emailEnviado.email = registrar.email
+        })
+        .catch((e) => {
+            popupInfo().error(e.response?.data?.msg);
+        });
+
+}
+
+function alterarForm(page){
+    opcao.value = page
+    limparDados()
+    
+}
+function limparDados(){
     form.email = '';
     form.senha = '';
+    confirmarSenha.value = '';
 
-    registrar.nome= '';
-    registrar.sobrenome= '';
-    registrar.email= '';
-    registrar.telefone= '';
-    registrar.senha= '';
-    registrar.areaAtuacao= null;
+    for (let key in registrar) {
+        registrar[key] = '';
+    }
+    
+    registrar.disponibilidade= 'indisponível';
+
+    if(opcao.value === 'cadastrarAluno'){
+        registrar.tipo = 'aluno';
+    }
+    if(opcao.value === 'cadastrarProfessor'){
+        registrar.tipo = 'professor';
+    }
 }
 
 </script>

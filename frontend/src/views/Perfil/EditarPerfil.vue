@@ -19,71 +19,45 @@
                         Informações principais
                     </Texto>
                     <section class="grid grid-cols-2 gap-[10px]">
-                        <div class="flex flex-col gap-[4px]">
-                            <div class="flex items-center gap-[10px]">
-                                <Texto as="body" for="nome">
-                                    Nome
-                                </Texto>
-                            </div>
-                            <input 
-                                v-model="form.nome" 
-                                id="nome" 
-                                class="p-[8px] border border-black" 
-                                placeholder="ex.: Davi"
-                                maxlength="20"
-                            />
-                        </div>
-                        <div class="flex flex-col gap-[4px]">
-                            <div class="flex items-center gap-[10px]">
-                                <Texto as="body" for="sobrenome">
-                                    Sobrenome
-                                </Texto>
-                                <Texto as="body" color='gray' for="sobrenome">
-                                    Opcional
-                                </Texto>
-                            </div>
-                            <input 
-                                v-model="form.sobrenome" 
-                                id="sobrenome" 
-                                class="p-[8px] border border-black" 
-                                placeholder="ex.: Barroso"
-                                maxlength="20"
-                            />
-                        </div>
-
+                        <Campo 
+                            v-model="form.nome" 
+                            label="Nome" 
+                            id="nome" 
+                            type="text"
+                            :opcional="false"
+                            placeholder="ex.: Davi"
+                            :maxLength="20"  
+                        /> 
+                        <Campo 
+                            v-model="form.sobrenome" 
+                            label="Sobrenome" 
+                            id="sobrenome" 
+                            type="text"
+                            :opcional="true"
+                            placeholder="ex.: Barroso"
+                            :maxLength="20"  
+                        />
                     </section>
-
-                    <div class="flex flex-col gap-[4px]" v-if="form.tipo === 'professor'">
-                        <div>
-                            <Texto as="body" for="formacao">
-                                Formação acadêmica/profissional (Onde obteve os títulos, atuação profissional, etc.)
-                            </Texto>
-                        </div>
-                        <input 
-                            v-model="form.formacao" 
-                            type="text" 
-                            id="formacao" 
-                            class="p-[8px] border border-black" 
-                            placeholder="ex.: Inteligência artificial, desenvolvimento web e automação"
-                            maxlength="65"
-                        />
-                    </div>
-
-                    <div class="flex flex-col gap-[4px]" v-if="form.tipo === 'professor'">
-                        <div>
-                            <Texto as="body" for="interesse">
-                                Áreas de Interesse (áreas de interesse de ensino e pesquisa)
-                            </Texto>
-                        </div>
-                        <input 
-                            v-model="form.interesse" 
-                            type="text" 
-                            id="interesse" 
-                            class="p-[8px] border border-black" 
-                            placeholder="ex.: Inteligência artificial, desenvolvimento web e automação"
-                            maxlength="65"
-                        />
-                    </div>
+                    <Campo 
+                        v-model="form.formacao" 
+                        label="Formação acadêmica/profissional (Onde obteve os títulos, atuação profissional, etc.)" 
+                        id="formacao" 
+                        type="text"
+                        :maxLength="500"
+                        :opcional="false"
+                        placeholder="ex.: Mestrado em Inteligência artificial"
+                        v-if="form.tipo === 'professor'"
+                    />
+                    <Campo 
+                        v-model="form.interesse" 
+                        label=" Áreas de Interesse (áreas de interesse de ensino e pesquisa)" 
+                        id="interesse" 
+                        type="text"
+                        :maxLength="400"
+                        :opcional="false"
+                        placeholder="ex.: Inteligência artificial, desenvolvimento web e automação"
+                        v-if="form.tipo === 'professor'"
+                    />
 
                     <div class="flex flex-col gap-[4px]">
                         <div>
@@ -93,7 +67,7 @@
                         </div>
                         <select 
                             v-model="form.disponibilidade" 
-                            class="p-[8px] border border-black " >
+                            class="p-[8px] border border-principal h-11 rounded-md " >
                             <option 
                                 :value="disponi.value" 
                                 v-for="disponi in disponibilidades">
@@ -101,21 +75,15 @@
                             </option>
                         </select>
                     </div>
-
-                    <div class="flex flex-col gap-[4px]">
-                        <div>
-                            <Texto as="body" for="instituicao">
-                                Instituição de ensino
-                            </Texto>
-                        </div>
-                        <input 
-                            v-model="form.instituicao" 
-                            type="text" 
-                            id="instituicao" 
-                            class="p-[8px] border border-black" 
-                            placeholder="ex.: Universidade Federal do Pará"
-                        />
-                    </div>
+                    <Campo 
+                        v-model="form.instituicao" 
+                        label="Instituição de ensino" 
+                        id="instituicao" 
+                        type="text"
+                        :maxLength="400"
+                        :opcional="false"
+                         placeholder="ex.: Universidade Federal do Pará"
+                    />
 
                     <div class="flex flex-col gap-[4px] ">
                         <div class="flex items-center gap-[10px]">
@@ -129,7 +97,7 @@
                         <textarea 
                             v-model="form.descricao" 
                             id="formdescricao" 
-                            class="p-[8px] border border-black" 
+                            class="p-[8px] border border-principal rounded-md" 
                             placeholder="Descrição com no máximo 100 caracteres."
                             maxlength="200"
                         >
@@ -139,102 +107,59 @@
                     <Texto as="h4">
                         Informações de contato
                     </Texto>
-
-                    <div class="flex flex-col gap-[4px]">
-                        <div>
-                            <Texto as="body" for="email">
-                                Email
-                            </Texto>
-                        </div>
-                        <input 
-                            v-model="form.email" 
-                            type="email" 
-                            id="email" 
-                            class="p-[8px] border border-black" 
-                            placeholder="ex.: exemplo@exemplo.com"
-                        />
-                    </div>
-
-                    <div class="flex flex-col gap-[4px]">
-                        <div class="flex items-center gap-[10px]">
-                            <Texto as="body" for="celular">
-                                Celular
-                            </Texto>
-                            <Texto as="body" color="gray" for="celular">
-                                Opcional
-                            </Texto>
-                        </div>
-                        <input 
-                            v-model="form.celular" 
-                            type="text" 
-                            id="celular" 
-                            class="p-[8px] border border-black" 
-                            placeholder="ex.: (00) 90000-0000"
-                            :maxLength="15"
-                            @input="form.celular = formatMask.tel(form.celular)"
-                        />
-                    </div>
-
-                    <div class="flex flex-col gap-[4px]">
-                        <div class="flex items-center gap-[10px]">
-                            <Texto as="body" for="linkedin">
-                                Currículo Lattes
-                            </Texto>
-                            <Texto as="body" color='gray' for="linkedin">
-                                Opcional
-                            </Texto>
-                        </div>
-                        <input 
-                            v-model="form.lattes" 
-                            id="lattes" 
-                            class="p-[8px] border border-black" 
-                            placeholder="ex.: http://lattes.cnpq.br/"
-                            maxlength="90"
-                        />
-                    </div>
-
-                    <div class="flex flex-col gap-[4px]">
-                        <div class="flex items-center gap-[10px]">
-                            <Texto as="body" for="linkedin">
-                                LinkedIn
-                            </Texto>
-                            <Texto as="body" color='gray' for="linkedin">
-                                Opcional
-                            </Texto>
-                        </div>
-                        <input 
-                            v-model="form.linkedin" 
-                            id="linkedin" 
-                            class="p-[8px] border border-black" 
-                            placeholder="ex.: https://www.linkedin.com/"
-                            maxlength="90"
-                        />
-                    </div>
-
-                    <div class="flex flex-col gap-[4px]">
-                        <div class="flex items-center gap-[10px]">
-                            <Texto as="body" for="github">
-                                GitHub
-                            </Texto>
-                            <Texto as="body" color='gray' for="github">
-                                Opcional
-                            </Texto>
-                        </div>
-                        <input 
-                            v-model="form.github" 
-                            id="github" 
-                            class="p-[8px] border border-black" 
-                            placeholder="ex.: https://github.com/"
-                            maxlength="90"
-                        />
-                    </div> 
+                    <Campo 
+                        v-model="form.email" 
+                        label="Email" 
+                        id="email" 
+                        type="email"
+                        :opcional="false"
+                        :maxLength="50"
+                        placeholder="ex.: exemplo@exemplo.com"
+                    /> 
+                    <Campo 
+                        v-model="form.telefone" 
+                        label="Telefone" 
+                        id="telefone" 
+                        type="text"
+                        :maxLength="15"
+                        :opcional="true"
+                        placeholder="ex.: (00) 90000-0000"
+                        @input="form.telefone = formatMask.tel(form.telefone)"
+                    />
+                    <Campo 
+                        v-model="form.lattes" 
+                        label="Currículo Lattes" 
+                        id="lattes" 
+                        type="text"
+                        :maxLength="90"
+                        :opcional="true"
+                        placeholder="ex.: http://lattes.cnpq.br/"
+                    />
+                    <Campo 
+                        v-model="form.linkedin" 
+                        label="LinkedIn" 
+                        id="linkedin" 
+                        type="text"
+                        :maxLength="90"
+                        :opcional="true"
+                        placeholder="ex.: https://www.linkedin.com/"
+                    />
+                    <Campo 
+                        v-model="form.github" 
+                        label="GitHub" 
+                        id="github" 
+                        type="text"
+                        :maxLength="90"
+                        :opcional="true"
+                        placeholder="ex.: https://github.com/"
+                    />
 
                 </section>
                 <section class="flex justify-between gap-[24px] border-t border-gray-300 py-[10px]">
                     <button 
                         type="button" 
                         :onClick="()=> emits('modal:open', false)" 
-                        class=" font-bold text-[14px] border border-red-400 hover:bg-red-100 py-[8px] px-[12px] rounded-md cursor-pointer">
+                        class=" font-bold text-[14px] border hover:bg-gray-200 py-[8px] px-[12px] rounded-md cursor-pointer">
                         Cancelar
                     </button>
                     <button 
@@ -250,6 +175,7 @@
 </template>
 
 <script setup>
+import Campo from '@components/Campo.vue'
 import Texto from '@components/Texto.vue'
 import { PhX } from '@phosphor-icons/vue';
 import { onMounted, reactive } from "vue";
@@ -276,7 +202,7 @@ const form = reactive({
     descricao: "",
     github: "",
     linkedin: "",
-    celular: "",
+    telefone: "",
     disponibilidade: "",
     senha: "",
     tipo: null,
