@@ -1,5 +1,5 @@
 <template>
-    <nav class="flex items-center font-bold justify-between px-[5px] md:px-[80px] lg:px-[80px] h-[60px] border-b-[2px] bg-gray-200 gap-[24px] text-principal" v-if="breadcrumbs">
+    <nav class="flex items-center font-bold justify-between px-[5px] md:px-[80px] lg:px-[80px] min-h-[34px] border-b-[2px] bg-gray-200 gap-[24px] text-principal" v-if="breadcrumbs">
         <ol role="list" class="flex flex-wrap">
             <li class="flex items-center">
                 <router-link to="/" class="hover:opacity-50"  >
