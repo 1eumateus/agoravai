@@ -13,13 +13,13 @@
     />
 
    <main class="flex-grow relative ">
-        <section class="mx-auto max-w-5xl p-[14px] flex flex-col gap-[8px]">
+        <section class="mx-auto max-w-5xl pt-[14px] flex flex-col gap-2 ">
             <div class="flex flex-col">
                 <Texto as="small">
                     {{ form.tipo }}
                 </Texto>
                 <div class="flex items-center gap-[8px] justify-between">
-                    <Texto as="h3">
+                    <Texto as="h4">
                         {{ form.tipo !=='admin' ? ' Perfil público': 'Perfil privado' }}
                     </Texto>
                     <button 
@@ -49,6 +49,12 @@
                     <Texto as="body">
                         {{ form.instituicao }} 
                     </Texto>
+                    <div :class="`
+                        ${disponibilidades.find((item)=> item.value === form?.disponibilidade)?.color} flex justify-center rounded-2xl p-1`">
+                        <Texto as="label">
+                            Disponibilidade {{ form?.disponibilidade || '-' }} 
+                        </Texto>
+                    </div>
                     <div class="flex gap-[8px]">
                         <a :href="form.linkedin" 
                             target="_blank" 
@@ -68,6 +74,15 @@
                             class="text-gray-800 hover:text-gray-900" v-if="form.lattes">
                             <img src="/curriculoLattes.jpeg" alt="Currículo Lattes" class="h-[24px] w-[24px]" />
                         </a>
+                    </div>
+                    <div class="flex flex-col gap-[8px] w-full">
+                        <hr class="" />
+                        <Texto as="body">
+                            {{ form.email }}
+                        </Texto>
+                        <Texto as="body">
+                            {{ formatMask.tel(form.celular) }}
+                        </Texto>
                     </div>
                 </section>
 
@@ -99,27 +114,6 @@
                         </Texto>
                         <Texto as="body">
                             {{ form.interesse || '-' }}
-                        </Texto>
-                    </div>
-                    <hr class=""/>
-                    <div class="flex flex-col gap-[8px]">
-                        <Texto as="body-bold">
-                            Disponibilidade
-                        </Texto>
-                        <Texto as="body">
-                            {{ form.disponibilidade || '-' }}
-                        </Texto>
-                    </div>
-                    <hr class=""/>
-                    <div class="flex flex-col gap-[8px]">
-                        <Texto as="body-bold">
-                            Contatos
-                        </Texto>
-                        <Texto as="body">
-                            {{ form.email }}
-                        </Texto>
-                        <Texto as="body">
-                            {{ formatMask.tel(form.celular) }}
                         </Texto>
                     </div>
                    </div>
@@ -193,7 +187,7 @@
                         </div>
                     </div>
                     <div class="flex flex-col gap-[4px] col-span-1 md:col-span-7 lg:col-span-7">
-                        <div class="flex gap-1">
+                        <div class="flex gap-1" v-if="orientacao.situacao === 'confirmado'">
                             <Texto as="body-bold">
                                 Data de defesa:
                             </Texto>
@@ -275,6 +269,16 @@ const props = defineProps({
         required: false, 
     },
 })
+
+const disponibilidades = [
+    { value: "", nome: "Não aplicado", color:'bg-blue-200' },
+    { value: "indisponível", nome: "Indisponível", color:'bg-red-200' },
+    { value: "matutino", nome: "Matutino", color:'bg-blue-200' },
+    { value: "vespertino", nome: "Vespertino", color:'bg-blue-200' },
+    { value: "noturno", nome: "Noturno", color:'bg-blue-200' },
+    { value: "integral", nome: "Integral", color:'bg-blue-200' },
+    { value: "flexivel", nome: "Flexível", color:'bg-blue-100' },
+];
 
 const emits = defineEmits(['modal:open']);
 

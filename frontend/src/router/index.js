@@ -21,25 +21,40 @@ const routes = [
   {
     path: '/perfil',
     name: "Perfil",
-    component: () => import('../views/Perfil/index.vue')
+    component: () => import('../views/Perfil/index.vue'),
+    meta: {
+      breadcrumb: [{ name: "Perfil", href: "/perfil", current: true }],
+    },
   },
 
   {
     path: '/usuarios',
     name: "Usuarios",
-    component: () => import('../views/Usuarios/index.vue')
+    component: () => import('../views/Usuarios/index.vue'),
+    meta: {
+      breadcrumb: [{ name: "Usuários", href: "/usuarios", current: true }],
+    },
   },
 
   {
     path: '/professor/:id',
     name: "Professor",
-    component: () => import('../views/Professor/index.vue')
+    component: () => import('../views/Professor/index.vue'),
+    meta: {
+      breadcrumb: [ { name: "Perfil professor", href: "/professor/:id", current: true }],
+    },
   },
 
   {
     path: '/orientacao/:id',
     name: "Orientacao",
-    component: () => import('../views/Orientacao/index.vue')
+    component: () => import('../views/Orientacao/index.vue'),
+    meta: {
+      breadcrumb: [
+          { name: "Perfil", href: "/perfil", current: false },
+          { name: "Orientação", href: "/orientacao/:id", current: true }
+      ],
+    },
   },
 
 ]
