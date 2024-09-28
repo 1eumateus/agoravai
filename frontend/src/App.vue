@@ -1,9 +1,8 @@
 <template>
 
   <Menu v-if="tokenValid" :user="usuario"></Menu>
-  <router-view
-    :usuario="usuario"
-  />
+  <Breadcumbs v-if="tokenValid"></Breadcumbs>
+  <router-view :usuario="usuario"/>
   <Rodape v-if="tokenValid"></Rodape>
 
 </template>
@@ -11,6 +10,7 @@
 <script setup>
 import { checkToken } from "./stores/checkToken";
 import Menu from "./components/Menu.vue";
+import Breadcumbs from "./components/Breadcumbs.vue";
 import Rodape from "./components/Rodape.vue";
 import { onMounted, ref } from "vue";
 

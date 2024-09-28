@@ -20,11 +20,17 @@ const props = defineProps({
     for: {
         type: String,
         default: ''
+    },
+    cursorPointer: {
+        type: Boolean,
+        default: false,
     }
 });
 
 const computedClass = computed(() => {
     let colorText = ' flex gap-[4px] ';
+    let cursorPointer = props?.cursorPointer ? ' cursor-pointer ' : ' '
+
     let styleHover = '';
     switch (props?.color) {
         case 'principal':
@@ -65,7 +71,7 @@ const computedClass = computed(() => {
         case 'h2':
             return `${colorText} font-bold text-[42px] `;
         case 'h3':
-            return `${colorText} font-bold text-[30px] `;
+            return `${colorText} font-bold text-[30px] ${cursorPointer} `;
         case 'h4':
             return `${colorText} font-bold text-[20px] `;
         case 'body-bold':

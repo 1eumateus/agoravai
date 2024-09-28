@@ -97,7 +97,7 @@ function filtrar (text) {
 }
 
 function formatHtmlTags(str) {
-    return decode(str.replace(/<[^>]*>/g, '. '));
+    return decode(str.replace(/<[^>]*>/g, ' '));
 }
 
 async function siape(req, res){
