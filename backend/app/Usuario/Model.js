@@ -6,6 +6,10 @@ const modelSchema = new Schema({
         type: Boolean,
         default: false,
     },
+    dataCriacao: {
+        type: Date,
+        default: Date.now,
+    },
     ativo: {
         type: Boolean,
         default: true,

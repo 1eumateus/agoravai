@@ -71,6 +71,23 @@ export const formatMask = {
           .replace(/(\d{4})(\d)/, '$1-$2')
           .replace(/(\d{4})-(\d)(\d{4})/, '$1$2-$3')
           .replace(/(-\d{4})\d+?$/, '$1');
-  },
+    },
+    date(value)  {
+      if (!value) return '';
+      const data = new Date(value);
+      const ano = data.getUTCFullYear();
+      const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
+      const dia = String(data.getUTCDate()).padStart(2, '0');
+
+      return `${ano}-${mes}-${dia}`; 
+    },
+    viewDate(value) {
+      if (!value) return '';
+      const data = new Date(value);
+      const ano = data.getUTCFullYear();
+      const mes = String(data.getUTCMonth() + 1).padStart(2, '0');
+      const dia = String(data.getUTCDate()).padStart(2, '0');
+      return `${dia}/${mes}/${ano}`;
+    }
 }
 export {popupInfo, popupDelete}

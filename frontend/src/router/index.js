@@ -36,6 +36,12 @@ const routes = [
     component: () => import('../views/Professor/index.vue')
   },
 
+  {
+    path: '/orientacao/:id',
+    name: "Orientacao",
+    component: () => import('../views/Orientacao/index.vue')
+  },
+
 ]
 
 const router = createRouter({
@@ -66,6 +72,7 @@ router.beforeEach(async (to, from, next) => {
       'Home',
       'Perfil',
       'Professor',
+      'Orientacao',
       'NotFound',
     ];
     if (routesForUser.includes(to.name)) {

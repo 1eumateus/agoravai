@@ -24,7 +24,7 @@
                         <textarea 
                             v-model="form.proposta" 
                             id="proposta" 
-                            class="p-[8px] border border-principal rounded-md" 
+                            class="p-[8px] border border-principal rounded-md focus:outline-principal" 
                             placeholder="Escreva a sua proposta de trabalho."
                             maxlength="200"
                             rows="4"

@@ -97,7 +97,7 @@
                         <textarea 
                             v-model="form.descricao" 
                             id="formdescricao" 
-                            class="p-[8px] border border-principal rounded-md" 
+                            class="p-[8px] border border-principal rounded-md focus:outline-principal" 
                             placeholder="Descrição com no máximo 100 caracteres."
                             maxlength="200"
                         >

@@ -12,7 +12,7 @@
                         v-model="procurar" 
                         type="text" 
                         id="pesquisar" 
-                        class="p-[8px] border h-11 border-principal rounded-md" 
+                        class="p-[8px] border h-11 border-principal rounded-md focus:outline-principal" 
                         placeholder="Pesquise pelo nome do professor"
                         maxlength="50"
                     />
@@ -25,7 +25,7 @@
                     </div>
                     <select 
                         v-model="procurarDisponibilidade" 
-                        class="p-[8px] border border-principal rounded-md h-11 " >
+                        class="p-[8px] border border-principal rounded-md h-11 focus:outline-principal " >
                         <option 
                             :value="disponi.value" 
                             v-for="disponi in disponibilidades">
@@ -41,7 +41,7 @@
                     </div>
                     <select 
                         v-model="procurarInteresse" 
-                        class="p-[8px] border border-principal rounded-md h-11 " >
+                        class="p-[8px] border border-principal rounded-md h-11 focus:outline-principal" >
                         <option value="" selected>Não aplicado</option>
                         <option 
                             :value="area" 
@@ -74,11 +74,30 @@
                                 </defs>
                             </svg>
                         </section>
-                        <section class="flex flex-col gap-[4px]">
+                        <section class="flex flex-col gap-[6px]">
                             <Texto as="body-bold">
                                 {{ professor.nome }}  {{ professor.sobrenome }}
                             </Texto>
-                            <div class="flex flex-col gap-[8px]">
+                            <div class="flex flex-wrap">
+                                <div :class="`
+                                    ${disponibilidades.find((item)=> item.value === professor.disponibilidade).color} flex justify-center rounded-2xl p-1`" 
+                                    v-if="orientacoes.findIndex((item)=> item?.professor?._id === professor._id) === -1">
+                                    <Texto as="label">
+                                        Disponibilidade {{ professor.disponibilidade || '-' }} 
+                                    </Texto>
+                                </div>
+                                <div class="bg-orange-200 flex justify-center rounded-2xl p-1" v-else>
+                                    <Texto as="label" >
+                                        {{ 
+                                            orientacoes.findIndex((item)=> item?.professor?._id === professor._id) !== -1 
+                                            ? 'Orientação solicitada' 
+                                            : (professor.disponibilidade || '-') 
+                                        }} 
+                                    </Texto>
+                                </div>
+                            </div>
+ 
+                            <div class="flex flex-col">
                                 <Texto as="body-bold">
                                     Área:
                                 </Texto>
@@ -86,20 +105,8 @@
                                     {{ professor.interesse || '-' }}
                                 </Texto>
                             </div>
-
-                            <div class="flex flex-col gap-[8px]">
-                                <Texto as="body-bold">
-                                    Disponibilidade:
-                                </Texto>
-                                <Texto as="body">
-                                    {{ professor.disponibilidade || '-' }}
-                                </Texto>
-                            </div>
                         </section>
                     </div>
-                    <Texto as="body">
-                        {{ professor.descricao || 'Sem descrição' }}
-                    </Texto>
                     <router-link 
                         :to="`/professor/${professor._id}`" 
                         class="flex items-center gap-[2px] cursor-pointer"
@@ -115,7 +122,6 @@
     </main>
 </template>
 <script setup>
-import Campo from '@components/Campo.vue'
 import { PhCaretRight } from '@phosphor-icons/vue';
 import { onMounted, ref, watch, reactive } from "vue";
 import api from "@/api.js";
@@ -126,15 +132,23 @@ const professores = ref([])
 const procurar = ref('')
 const procurarDisponibilidade = ref('')
 const procurarInteresse = ref('')
+const orientacoes = reactive([])
+
+const props = defineProps({
+    usuario: {
+        type: [Object],
+        required: false, 
+    },
+})
 
 const disponibilidades = [
-    { value: "", nome: "Não aplicado" },
-    { value: "indisponível", nome: "Indisponível" },
-    { value: "matutino", nome: "Matutino" },
-    { value: "vespertino", nome: "Vespertino" },
-    { value: "noturno", nome: "Noturno" },
-    { value: "integral", nome: "Integral" },
-    { value: "flexivel", nome: "Flexível" },
+    { value: "", nome: "Não aplicado", color:'bg-blue-200' },
+    { value: "indisponível", nome: "Indisponível", color:'bg-red-200' },
+    { value: "matutino", nome: "Matutino", color:'bg-blue-200' },
+    { value: "vespertino", nome: "Vespertino", color:'bg-blue-200' },
+    { value: "noturno", nome: "Noturno", color:'bg-blue-200' },
+    { value: "integral", nome: "Integral", color:'bg-blue-200' },
+    { value: "flexivel", nome: "Flexível", color:'bg-blue-100' },
 ];
 
 const areaProfessores = reactive([])
@@ -154,12 +168,25 @@ async function start() {
     }).catch((e)=>{
         popupInfo().warning('Erro ao pesquisar usuários.');
     })
+   if(props?.usuario.tipo === 'aluno'){
+        listarOrientacao()
+    }
+   
 }
 
 function limparFiltro(){
     procurar.value = '';
     procurarDisponibilidade.value = '';
     procurarInteresse.value = '';
+}
+
+async function listarOrientacao(){
+    await api.get(`/orientacao/`)
+    .then((res)=>{
+        Object.assign(orientacoes, res.data?.item)
+    }).catch((e)=>{
+        popupInfo().warning(e?.response?.data?.msg || e);
+    })
 }
 
 watch([procurar, procurarDisponibilidade, procurarInteresse], () => {

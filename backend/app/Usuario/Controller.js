@@ -113,7 +113,7 @@ async function siape(req, res){
                 interesse: formatHtmlTags(perfil.interesse),
                 email: formatHtmlTags(perfil.email),
                 lattes: formatHtmlTags(perfil.lattes),
-                descricao: formatHtmlTags(perfil.descricao),
+                descricao: formatHtmlTags(perfil.descricao)?.substring(0, 200),
             }
         }).catch((e)=>{
             console.log(e)

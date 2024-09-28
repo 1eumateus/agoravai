@@ -74,6 +74,8 @@ const computedClass = computed(() => {
             return `${colorText}  font-normal text-[16px] `;
         case 'button':
             return `${colorText}  font-normal text-[16px] cursor-pointer`;
+        case 'label':
+            return `${colorText}  font-normal text-[14px]`;
         case 'small':
             return `${colorText}  font-bold text-[10px] uppercase`;
         default:
