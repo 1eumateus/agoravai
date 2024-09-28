@@ -33,6 +33,9 @@ async function listar(req, res) {
                     situacao: 1,
                     proposta: 1,
                     resposta:1,
+                    coorientador: 1,
+                    dataDefesa: 1,
+                    horaDefesa: 1,
                 }
             },
             {
@@ -106,12 +109,16 @@ async function editar(req, res) {
         if (!editar) {
             return res.status(404).json({ error: "Orientação não encontrada." });
         }
-
         editar.aluno = req.body.aluno;
         editar.professor = req.body.professor;
         editar.ativo = req.body.ativo;
         editar.situacao = req.body.situacao;
+        editar.proposta = req.body.proposta;
         editar.resposta = req.body.resposta;
+        editar.banca = req.body.banca;
+        editar.coorientador = req.body.coorientador;
+        editar.dataDefesa = req.body.dataDefesa;
+        editar.horaDefesa = req.body.horaDefesa;
 
         await editar.save();
         res.status(200).json({ msg: "Orientação editada com sucesso." });
@@ -170,16 +177,52 @@ async function alterarSituacao(req, res) {
 
 async function pegarPorId(req, res) {
     try {
-
-        const filtro = { ativo: true, _id: req.params.id };
-        const orientacao = await Model.findOne(filtro);
-        if (!orientacao) {
-            return res.sendStatus(404); 
+        const filtro = { ativo: true,  _id: new ObjectId(String(req.params.id)) };
+        
+        const orientacao = await Model.aggregate([
+            { $match: filtro },  
+            {
+                $lookup: {
+                    from: 'usuarios',
+                    localField: 'professor',
+                    foreignField: '_id',
+                    as: 'professor',
+                    pipeline: [
+                        { $project: { nome: 1, sobrenome: 1, email:1, interesse: 1, _id: 1 } }
+                    ]
+                },
+            },
+            {
+                $lookup: {
+                    from: 'usuarios',
+                    localField: 'aluno',
+                    foreignField: '_id',
+                    as: 'aluno',
+                    pipeline: [
+                        { $project: { nome: 1, sobrenome: 1, email: 1,  _id: 1 } }
+                    ]
+                },
+            },
+            {
+                $unwind: {
+                    path: '$aluno',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $unwind: {
+                    path: '$professor',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+        ]);
+        if (!orientacao[0]) {
+            return res.status(404).json({ msg: "Orientação não encontrada." });
         }
 
-        res.json({ orientacao: orientacao });
+        res.json({ orientacao: orientacao[0] });
     } catch (error) {
-        return res.sendStatus(400); 
+        return res.status(400).json({msg: 'Erro ao procurar dados da orientação.'});
     }
 }
 

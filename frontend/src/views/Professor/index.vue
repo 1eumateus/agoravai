@@ -70,7 +70,7 @@
                         <button 
                             v-if="solicitacaoEnviada"
                             class=" font-bold text-[14px] bg-orange-400 py-[8px] px-[12px] rounded-md cursor-not-allowed">
-                            Solicitado enviada
+                            Orientação solicitada
                         </button>
                    </div>
                 </section>
@@ -189,9 +189,9 @@ async function listarOrientacao(){
     })
 
     solicitacaoEnviada.value = false;
-    for(let i=0;i<orientacoes.length;i++){
-        const professor = orientacoes[i].professor
-        if(professor._id === form._id){
+    for(let i=0;i<orientacoes?.length;i++){
+        const professor = orientacoes[i]?.professor
+        if(professor?._id === form?._id){
             solicitacaoEnviada.value = true;
             break;
         }

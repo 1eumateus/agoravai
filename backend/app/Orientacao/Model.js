@@ -6,6 +6,10 @@ const modelSchema = new Schema({
         type: Boolean,
         default: true,
     },
+    dataCriacao: {
+        type: Date,
+        default: Date.now,
+    },
     situacao: {
         type: String,
         default: 'pendente',
@@ -22,10 +26,26 @@ const modelSchema = new Schema({
     },
     proposta: {
         type: String,
+        required: false,
     },
     resposta: {
         type: String,
+        required: false,
     },
+    banca: [],
+    coorientador: {
+        nome: String,
+        email: String,
+    },
+    dataDefesa:{
+        type: Date,
+        default: null,
+        required: false,
+    },
+    horaDefesa:{
+        type: String,
+        default: '00:00',
+    }
 });
 
 export default model("Orientacao", modelSchema);

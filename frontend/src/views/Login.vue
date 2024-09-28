@@ -142,17 +142,17 @@
                             <div class="flex items-center gap-[4px]">
                                 <button 
                                 type="button" 
-                                class="text-[16px] font-normal border border-gray-400 hover:bg-gray-200 rounded-md py-[10px] px-[12px]" 
+                                class="text-[16px] w-full font-normal border border-gray-400 hover:bg-gray-200 rounded-md py-[10px] px-[12px]" 
                                 @click="buscarDados()"
                             >
                                 Buscar dados
                             </button>
                             <button 
                                 type="button" 
-                                class="text-[16px] font-normal border border-gray-400 hover:bg-gray-200 rounded-md py-[10px] px-[12px]" 
+                                class="text-[16px] flex justify-center gap-1 font-normal border border-gray-400 hover:bg-gray-200 rounded-md py-[10px] px-[12px]" 
                                 @click="limparDados()"
                             >
-                             <PhEraser :size="24" class=" mx-auto " /> 
+                                Limpar <PhEraser :size="24" class="  " /> 
                             </button>
                             </div>
                         </div>
@@ -343,7 +343,7 @@
                         <hr class=" border-gray-400"/>
                         <button 
                             type="button" 
-                            class="text-[16px] mx-auto font-normal text-center hover:text-principal hover:cursor-pointer" 
+                            class="text-[16px] hover:underline mx-auto font-normal text-center  hover:cursor-pointer" 
                             @click="alterarForm('entrar')"
                             v-if="opcao !=='entrar'"
                         >
@@ -351,7 +351,7 @@
                         </button>
                         <button 
                             type="button" 
-                            class="text-[16px] mx-auto font-normal text-center hover:text-principal hover:cursor-pointer" 
+                            class="text-[16px] hover:underline mx-auto font-normal text-center  hover:cursor-pointer" 
                             @click="alterarForm('cadastrarAluno')"
                             v-if="opcao !== 'cadastrarAluno'"
                         >
@@ -359,7 +359,7 @@
                          </button>
                          <button 
                             type="button" 
-                            class="text-[16px] mx-auto font-normal text-center hover:text-principal hover:cursor-pointer" 
+                            class="text-[16px] hover:underline mx-auto font-normal text-center  hover:cursor-pointer" 
                             @click="alterarForm('cadastrarProfessor')"
                             v-if="opcao !== 'cadastrarProfessor'"
                         >

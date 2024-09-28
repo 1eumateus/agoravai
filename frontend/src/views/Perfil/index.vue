@@ -8,11 +8,12 @@
         @modal:open="recarregar($event)"
         :orientacao="orientacao"
         :situacao="situacao"
+        :usuario="props?.usuario"
         v-if="openRespostaOrientacao"
     />
+
    <main class="flex-grow relative ">
         <section class="mx-auto max-w-5xl p-[14px] flex flex-col gap-[8px]">
-            
             <div class="flex flex-col">
                 <Texto as="small">
                     {{ form.tipo }}
@@ -126,22 +127,29 @@
             </div>
             <div class="grid grid-cols-1 gap-[8px]">
                 <Texto as="h4">
-                    Pedidos de orientação
+                    Orientações
                 </Texto>
-                <section class="grid grid-cols-1 md:grid-cols-8 lg:grid-cols-8 gap-[8px] border border-secundaria-opaco rounded-md bg-white p-[10px]" v-for="(orientacao, index) in orientacoes" :key="index" v-if="orientacoes.length>0">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-[4px] cols-span-1 md:col-span-7 lg:col-span-7">
+                <section class="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-[6px] border border-secundaria-opaco rounded-md bg-white p-[10px]" v-for="(orientacao, index) in orientacoes" :key="index" v-if="orientacoes.length>0">
+                    <div class="grid grid-cols-1 gap-[4px] col-span-1 md:col-span-3 lg:col-span-3">
                         <div class="flex flex-col" v-if="props.usuario.tipo === 'aluno'">
-                            <Texto as="body-bold">
-                                {{ orientacao.professor.nome }} {{ orientacao.professor.sobrenome }}
-                            </Texto>
-                            <Texto as="body">
-                                Área: {{ orientacao.professor.interesse }}
-                            </Texto>
-                            <Texto as="body">
-                                Email: {{ orientacao.professor.email }}
-                            </Texto>
-                            <div class="flex gap-[4px]">
+                            <div class="flex flex-col">
+                                <Texto as="body-bold">
+                                    Orientador: 
+                                </Texto>
                                 <Texto as="body">
+                                    {{ orientacao?.professor?.nome }} {{ orientacao?.professor?.sobrenome }}
+                                </Texto>
+                            </div>
+                            <div class="flex flex-col">
+                                <Texto as="body-bold">
+                                    Co-orientador:
+                                </Texto>
+                                <Texto as="body">
+                                    {{ orientacao?.coorientador?.nome }}
+                                </Texto>
+                            </div>
+                            <div class="flex gap-[4px]">
+                                <Texto as="body-bold">
                                     Situação:
                                 </Texto>
                                 <Texto 
@@ -154,12 +162,22 @@
                             </div>
                         </div>
                         <div class="flex flex-col" v-else>
-                            <Texto as="body-bold">
-                                {{ orientacao.aluno.nome }} {{ orientacao.aluno.sobrenome }}
-                            </Texto>
-                            <Texto as="body">
-                                Email: {{ orientacao.aluno.email }}
-                            </Texto>
+                            <div class="flex flex-col">
+                                <Texto as="body-bold">
+                                    Aluno:
+                                </Texto>
+                                <Texto as="body">
+                                    {{ orientacao.aluno.nome }} {{ orientacao.aluno.sobrenome }}
+                                </Texto>
+                            </div>
+                            <div class="flex flex-col">
+                                <Texto as="body-bold">
+                                    Co-orientador:
+                                </Texto>
+                                <Texto as="body">
+                                    {{ orientacao?.coorientador?.nome }}
+                                </Texto>
+                            </div>
                             <div class="flex gap-[4px]">
                                 <Texto as="body">
                                     Situação:
@@ -173,42 +191,59 @@
                                 </Texto>
                             </div>
                         </div>
-                        <div class="flex flex-col gap-[4px]">
-                            <div class="flex flex-col">
-                                <Texto as="body-bold">
-                                    Proposta
-                                </Texto>
-                                <Texto as="body">
-                                    {{ orientacao.proposta }}
-                                </Texto>
-                            </div>
-                            <div class="flex flex-col" v-if="orientacao.resposta">
-                                <Texto as="body-bold">
-                                    Resposta do professor
-                                </Texto>
-                                <Texto as="body">
-                                    {{ orientacao.resposta }}
-                                </Texto>
-                            </div>
+                    </div>
+                    <div class="flex flex-col gap-[4px] col-span-1 md:col-span-7 lg:col-span-7">
+                        <div class="flex gap-1">
+                            <Texto as="body-bold">
+                                Data de defesa:
+                            </Texto>
+                            <Texto as="body">
+                                {{ formatMask.viewDate(orientacao.dataDefesa) }} {{ orientacao.horaDefesa }}
+                            </Texto>
+                        </div>
+                        <div class="flex flex-col">
+                            <Texto as="body-bold">
+                                Proposta
+                            </Texto>
+                            <Texto as="body">
+                                {{ orientacao.proposta }}
+                            </Texto>
+                        </div>
+                        <div class="flex flex-col" v-if="orientacao.resposta">
+                            <Texto as="body-bold">
+                                Resposta do professor
+                            </Texto>
+                            <Texto as="body">
+                                {{ orientacao.resposta }}
+                            </Texto>
                         </div>
                     </div>
-                    <div class="flex flex-col gap-[8px] items-center" v-if="orientacao.situacao === 'pendente' || (usuario.tipo === 'aluno' && orientacao.situacao !== 'confirmado')">
-                        <button 
-                            type="button" 
-                            :onClick="()=> usuario.tipo === 'aluno' ? cancelarPedido(orientacao): responderOrientacao(orientacao, 'negado')" 
-                            class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-red-400 hover:bg-red-100 rounded-md"
-                        >  
-                            <PhTrash :size="20" v-if="props.usuario.tipo === 'aluno'" />
-                        {{ props.usuario.tipo === 'aluno' ? ' Cancelar pedido' : 'Negar orientação' }}
-                        </button>
-                        <button 
-                            type="button" 
-                            :onClick="()=> responderOrientacao(orientacao, 'confirmado')" 
-                            v-if="props.usuario.tipo === 'professor'"
-                            class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-green-400 hover:bg-green-100 rounded-md"
-                        >  
-                           Confirmar orientação
-                        </button>
+                    <div class="flex flex-col gap-[8px] items-start md:items-end lg:items-end col-span-1 md:col-span-2 lg:col-span-2">
+                        <div class="flex md:flex-col lg:flex-col gap-[8px]">
+                            <button 
+                                type="button" 
+                                :onClick="()=> usuario.tipo === 'aluno' ? cancelarPedido(orientacao): responderOrientacao(orientacao, 'negado')" 
+                                class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-red-400 hover:bg-red-100 rounded-md"
+                                v-if="props.usuario.tipo === 'aluno' || (props.usuario.tipo === 'professor' && orientacao.situacao !== 'negado')"
+                            >  
+                            {{ props.usuario.tipo === 'aluno' ? ' Deletar orientação' : 'Negar orientação' }}
+                            </button>
+                            <button 
+                                type="button" 
+                                :onClick="()=> responderOrientacao(orientacao, 'confirmado')" 
+                                v-if="props.usuario.tipo === 'professor' && orientacao.situacao !== 'confirmado'"
+                                class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-green-400 hover:bg-green-100 rounded-md"
+                            >  
+                                Confirmar orientação
+                            </button>
+                            <router-link 
+                                :to="`/orientacao/${orientacao._id}`" 
+                                class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-blue-400 hover:bg-blue-100 rounded-md"
+                                v-if="orientacao.situacao === 'confirmado'"
+                            >
+                               Detalhes
+                            </router-link>
+                        </div>
                     </div>
                 </section>
                 <section class="grid grid-cols-1 gap-[8px] border border-secundaria-opaco rounded-md bg-white p-[10px]" v-else>
@@ -221,7 +256,7 @@
 
 <script setup>
 import Texto from '@components/Texto.vue'
-import { PhLinkedinLogo, PhGithubLogo, PhPencil, PhTrash  } from '@phosphor-icons/vue';
+import { PhLinkedinLogo, PhGithubLogo, PhPencil  } from '@phosphor-icons/vue';
 import { onMounted, reactive, ref } from "vue";
 import api from "@/api.js";
 import EditarPerfil from './EditarPerfil.vue'
@@ -265,9 +300,10 @@ async function start() {
         popupInfo().warning('Erro ao procurar usuário.');
     })
 
-    await listarOrientacao();
+    listarOrientacao();
 }
 async function listarOrientacao(){
+    orientacoes.splice(0, orientacoes.length);
     await api.get(`/orientacao/`)
     .then((res)=>{
         Object.assign(orientacoes, res.data?.item)
@@ -282,21 +318,9 @@ function recarregar(event){
     start()
 }
 
-async function cancelarPedido(id, index){
-    const formOrientacao = {
-        id: id
-    }
-    await api.put(`/orientacao/alterarSituacao`, formOrientacao)
-    .then((res)=>{
-        popupInfo().success(res?.data?.msg);
-        if(props?.usuario.tipo==='aluno'){
-            orientacoes.splice(index, 1);
-        }
-    }).catch((e)=>{
-        popupInfo().warning(e?.response?.data?.msg || e);
-    })
-
-    listarOrientacao()
+async function cancelarPedido(orientacaoParaCancelar){
+    openRespostaOrientacao.value = true;
+    Object.assign(orientacao, orientacaoParaCancelar)
 }
 
 async function responderOrientacao(orientacaoParaNegar, novaSituacao){
