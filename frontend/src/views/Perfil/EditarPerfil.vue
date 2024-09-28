@@ -59,7 +59,7 @@
                         v-if="form.tipo === 'professor'"
                     />
 
-                    <div class="flex flex-col gap-[4px]">
+                    <div class="flex flex-col gap-[4px]"  v-if="form.tipo === 'professor'">
                         <div>
                             <Texto as="body" for="pesquisar">
                                 Disponibilidade
@@ -75,7 +75,7 @@
                             </option>
                         </select>
                     </div>
-                    <Campo 
+                    <!-- <Campo 
                         v-model="form.instituicao" 
                         label="Instituição de ensino" 
                         id="instituicao" 
@@ -83,7 +83,7 @@
                         :maxLength="400"
                         :opcional="false"
                          placeholder="ex.: Universidade Federal do Pará"
-                    />
+                    /> -->
 
                     <div class="flex flex-col gap-[4px] ">
                         <div class="flex items-center gap-[10px]">

@@ -139,21 +139,21 @@
                                 :opcional="true"
                                 placeholder="ex.: 1234567" 
                             /> 
-                            <div class="flex items-center gap-[4px]">
+                            <div class="flex items-end gap-[4px] ">
                                 <button 
-                                type="button" 
-                                class="text-[16px] w-full font-normal border border-gray-400 hover:bg-gray-200 rounded-md py-[10px] px-[12px]" 
-                                @click="buscarDados()"
-                            >
-                                Buscar dados
-                            </button>
-                            <button 
-                                type="button" 
-                                class="text-[16px] flex justify-center gap-1 font-normal border border-gray-400 hover:bg-gray-200 rounded-md py-[10px] px-[12px]" 
-                                @click="limparDados()"
-                            >
-                                Limpar <PhEraser :size="24" class="  " /> 
-                            </button>
+                                    type="button" 
+                                    class="text-[16px] w-full font-normal border border-gray-400 hover:bg-gray-200 rounded-md p-[8px] " 
+                                    @click="buscarDados()"
+                                >
+                                    Buscar 
+                                </button>
+                                <button 
+                                    type="button" 
+                                    class="text-[16px] w-full font-normal border border-gray-400 hover:bg-gray-200 rounded-md p-[8px] flex gap-1 justify-center" 
+                                    @click="limparDados()"
+                                >
+                                    Limpar <PhEraser :size="24" class="  " /> 
+                                </button>
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-1">
