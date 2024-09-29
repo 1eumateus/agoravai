@@ -1,6 +1,6 @@
 <template>
     <SolicitarOrientacao
-        @modal:open="openSolicitarOrientacao = $event"
+        @modal:open="recarregar($event)"
         :professor="form._id"
         :aluno="usuario.id"
         v-if="openSolicitarOrientacao"
@@ -180,7 +180,7 @@ async function start() {
             popupInfo().warning('Erro ao procurar usuário.');
         })
     }
-    if(props?.usuario === 'aluno'){
+    if(props?.usuario.tipo === 'aluno'){
         listarOrientacao()
     }
 }
@@ -201,6 +201,11 @@ async function listarOrientacao(){
             break;
         }
     }
+}
+
+async function recarregar(event){
+    openSolicitarOrientacao.value = event
+    await start();
 }
 
 onMounted(start);

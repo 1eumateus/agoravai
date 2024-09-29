@@ -51,34 +51,34 @@
                     <section class="gap-[6px] flex flex-col border border-secundaria-opaco rounded-md bg-white p-[10px]">
                         <div class="flex items-center justify-between">
                             <Texto as="h4">
-                            Proposta
-                        </Texto>
-                        <div class="flex items-center gap-1">
-                            <button 
-                                type="button" 
-                                class="cursor-pointer py-[8px] px-[10px] border border-gray-300 hover:bg-gray-200 rounded-md"
-                                :onClick="()=>editandoProposta = true"
-                                v-if="!editandoProposta"
-                            >
-                                    <PhPencilSimple :size="18" />
-                            </button>
-                            <button 
-                                type="button" 
-                                class="cursor-pointer py-[8px] px-[10px] border border-red-600 hover:bg-gray-200 rounded-md"
-                                :onClick="()=>{ editandoProposta= false; propostaParaEditar = form.proposta }"
-                                v-else
-                            >
-                                    <PhX :size="18" class="fill-red-600"  />
-                            </button>
-                            <button 
-                                type="button" 
-                                class="cursor-pointer py-[5px] px-[10px] border border-principal hover:bg-gray-200 rounded-md"
-                                :onClick="salvarProposta"
-                                v-if="editandoProposta"
-                            >
-                                    Salvar alteração
-                            </button>
-                        </div>
+                                Proposta
+                            </Texto>
+                            <div class="flex items-center gap-1">
+                                <button 
+                                    type="button" 
+                                    class="cursor-pointer py-[8px] px-[10px] border border-gray-300 hover:bg-gray-200 rounded-md"
+                                    :onClick="()=>editandoProposta = true"
+                                    v-if="!editandoProposta"
+                                >
+                                        <PhPencilSimple :size="18" />
+                                </button>
+                                <button 
+                                    type="button" 
+                                    class="cursor-pointer py-[8px] px-[10px] border border-red-600 hover:bg-gray-200 rounded-md"
+                                    :onClick="()=>{ editandoProposta= false; propostaParaEditar = form.proposta }"
+                                    v-else
+                                >
+                                        <PhX :size="18" class="fill-red-600"  />
+                                </button>
+                                <button 
+                                    type="button" 
+                                    class="cursor-pointer py-[5px] px-[10px] border border-principal hover:bg-gray-200 rounded-md"
+                                    :onClick="salvarProposta"
+                                    v-if="editandoProposta"
+                                >
+                                        Salvar alteração
+                                </button>
+                            </div>
                         </div>
                         <Texto as="body" v-if="!editandoProposta">
                             {{ form.proposta }}
@@ -109,7 +109,7 @@
                                         label="Nome do coorientador" 
                                         id="coorientadorNome" 
                                         type="text"
-                                        :opcional="false"
+                                        :obrigatorio="true"
                                         placeholder="ex.: Davi Barroso"
                                         :maxLength="30"
                                     />
@@ -120,7 +120,7 @@
                                         label="Instituição" 
                                         id="coorientadorinstituicao" 
                                         type="text"
-                                        :opcional="false"
+                                        :obrigatorio="true"
                                         placeholder="ex.: UFPA/FECOMP"
                                         :maxLength="20"
                                     />
@@ -133,7 +133,7 @@
                                         label="Tema" 
                                         id="tema" 
                                         type="text"
-                                        :opcional="false"
+                                        :obrigatorio="true"
                                         placeholder="ex.: SOTCC - Sistema de orientação em TCC"
                                     />
                                 </div>
@@ -143,7 +143,7 @@
                                         label="Local virtual (link)" 
                                         id="link" 
                                         type="text"
-                                        :opcional="false"
+                                        :obrigatorio="false"
                                         placeholder="ex.: https://meet.google.com/"
                                         :maxLength="200"
                                     />
@@ -156,7 +156,7 @@
                                         label="Data de defesa" 
                                         id="dataDefesa" 
                                         type="date"
-                                        :opcional="false"
+                                        :obrigatorio="true"
                                     />
                                 </div>
                                 <div class="col-span-5">
@@ -166,7 +166,7 @@
                                         id="horaDefesa" 
                                         type="time"
                                         placeholder="10:30"
-                                        :opcional="false"
+                                        :obrigatorio="true"
                                     />
                                 </div>
                                 <div class="col-span-2">
@@ -186,7 +186,7 @@
                                         label="Novo participante da banca" 
                                         id="nome" 
                                         type="text"
-                                        :opcional="false"
+                                        :obrigatorio="false"
                                         placeholder="ex.: Prof. Dr. Davi Barroso"
                                         :maxLength="30"
                                     />
@@ -197,7 +197,7 @@
                                         label="Instituição" 
                                         id="instituicao" 
                                         type="text"
-                                        :opcional="false"
+                                        :obrigatorio="false"
                                         placeholder="ex.: UFPA/FECOMP"
                                         :maxLength="20"
                                     />

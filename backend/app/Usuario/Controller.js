@@ -151,6 +151,13 @@ async function listar(req, res) {
             ];
         }
 
+        const searchTipo = req.query.searchTipo || false;
+        if (searchTipo) {
+            filtro.$or = [
+                { tipo: { $regex: searchTipo, $options: "i" } },
+            ];
+        }
+
         const item = await Model.aggregate([
             { $match: filtro },  
             {
@@ -207,6 +214,9 @@ async function listarProfessores(req, res) {
                     interesse: 1,
                     imagem: 1,
                 }
+            },
+            { 
+                $sort: { nome: 1 } 
             }
         ]);
 
@@ -349,7 +359,7 @@ async function adicionarOrientacao(req, res) {
         }
         editar.orientacoes.push(req.body.orientacao);
         await editar.save();
-        res.status(200).json({ msg: "Adicionado pedido de orientação." });
+        res.status(200).json({ msg: "Pedido de orientação enviado. Verifique seu perfil." });
     } catch (error) {
         return res.status(400);
     }
