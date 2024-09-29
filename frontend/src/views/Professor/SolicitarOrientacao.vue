@@ -100,12 +100,12 @@ async function solicitar(){
          {aluno: form.aluno, orientacao: idOrientacao}
         ).then((res)=>{
             popupInfo().success(res?.data?.msg);
+            emits('modal:open', false)
         }).catch((e)=>{
             console.log(e)
             popupInfo().warning(e?.response?.data?.msg);
         })
     }
-    emits('modal:open', false)
 }
 
 </script>

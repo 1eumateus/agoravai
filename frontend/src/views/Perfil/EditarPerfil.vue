@@ -31,7 +31,7 @@
                         <div class="flex flex-col items-center w-full">
                             <label for="file" class="cursor-pointer w-full">
                                 <div class="flex items-center justify-center text-center min-w-full h-[140px] border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition duration-200">
-                                    <span class="text-gray-500" v-if="!imagePreview && !novaImagem">Selecione uma foto de até 5 MB.</span>
+                                    <span class="text-gray-500" v-if="!imagePreview && !novaImagem">Selecione uma foto de até 5 MB. (Opcional)</span>
                                     <span class="text-gray-500" v-else>Imagem {{ novaImagem.name  }} selecionada</span>
                                 </div>
                             </label>
@@ -54,7 +54,7 @@
                             label="Nome" 
                             id="nome" 
                             type="text"
-                            :opcional="false"
+                            :obrigatorio="true"
                             placeholder="ex.: Davi"
                             :maxLength="20"  
                         /> 
@@ -63,7 +63,7 @@
                             label="Sobrenome" 
                             id="sobrenome" 
                             type="text"
-                            :opcional="true"
+                            :obrigatorio="true"
                             placeholder="ex.: Barroso"
                             :maxLength="20"  
                         />
@@ -74,7 +74,7 @@
                         id="formacao" 
                         type="text"
                         :maxLength="500"
-                        :opcional="false"
+                        :obrigatorio="true"
                         placeholder="ex.: Mestrado em Inteligência artificial"
                         v-if="form.tipo === 'professor'"
                     />
@@ -84,15 +84,18 @@
                         id="interesse" 
                         type="text"
                         :maxLength="400"
-                        :opcional="false"
+                        :obrigatorio="true"
                         placeholder="ex.: Inteligência artificial, desenvolvimento web e automação"
                         v-if="form.tipo === 'professor'"
                     />
 
                     <div class="flex flex-col gap-[4px]"  v-if="form.tipo === 'professor'">
-                        <div>
+                        <div class="flex items-center gap-[4px]">
                             <Texto as="body" for="pesquisar">
                                 Disponibilidade
+                            </Texto>
+                            <Texto as="body-bold" for="pesquisar" color="red">
+                                *
                             </Texto>
                         </div>
                         <select 
@@ -116,7 +119,7 @@
                     /> -->
 
                     <div class="flex flex-col gap-[4px] ">
-                        <div class="flex items-center gap-[10px]">
+                        <div class="flex items-center gap-[4px]">
                             <Texto as="body" for="formdescricao">
                                 Descrição
                             </Texto>
@@ -142,7 +145,7 @@
                         label="Email" 
                         id="email" 
                         type="email"
-                        :opcional="false"
+                        :obrigatorio="true"
                         :maxLength="50"
                         placeholder="ex.: exemplo@exemplo.com"
                     /> 
@@ -152,17 +155,20 @@
                         id="telefone" 
                         type="text"
                         :maxLength="15"
-                        :opcional="true"
+                        :obrigatorio="false"
                         placeholder="ex.: (00) 90000-0000"
                         @input="form.telefone = formatMask.tel(form.telefone)"
                     />
+                    <Texto as="h4">
+                       Redes sociais (opcional)
+                    </Texto>
                     <Campo 
                         v-model="form.lattes" 
                         label="Currículo Lattes" 
                         id="lattes" 
                         type="text"
                         :maxLength="90"
-                        :opcional="true"
+                        :obrigatorio="false"
                         placeholder="ex.: http://lattes.cnpq.br/"
                     />
                     <Campo 
@@ -171,7 +177,7 @@
                         id="linkedin" 
                         type="text"
                         :maxLength="90"
-                        :opcional="true"
+                        :obrigatorio="false"
                         placeholder="ex.: https://www.linkedin.com/"
                     />
                     <Campo 
@@ -180,7 +186,7 @@
                         id="github" 
                         type="text"
                         :maxLength="90"
-                        :opcional="true"
+                        :obrigatorio="false"
                         placeholder="ex.: https://github.com/"
                     />
 

@@ -139,7 +139,7 @@
                                     {{ orientacao?.professor?.nome }} {{ orientacao?.professor?.sobrenome }}
                                 </Texto>
                             </div>
-                            <div class="flex flex-col">
+                            <div class="flex flex-col" v-if="orientacao?.coorientador?.nome">
                                 <Texto as="body-bold">
                                     Coorientador:
                                 </Texto>
@@ -169,9 +169,9 @@
                                     {{ orientacao.aluno.nome }} {{ orientacao.aluno.sobrenome }}
                                 </Texto>
                             </div>
-                            <div class="flex flex-col">
+                            <div class="flex flex-col" v-if="orientacao?.coorientador?.nome">
                                 <Texto as="body-bold">
-                                    Co-orientador:
+                                    Coorientador:
                                 </Texto>
                                 <Texto as="body">
                                     {{ orientacao?.coorientador?.nome }}
@@ -192,7 +192,7 @@
                         </div>
                     </div>
                     <div class="flex flex-col gap-[4px] col-span-1 md:col-span-7 lg:col-span-7">
-                        <div class="flex gap-1" v-if="orientacao.situacao === 'confirmado'">
+                        <div class="flex gap-1" v-if="orientacao.situacao === 'confirmado' && orientacao.dataDefesa">
                             <Texto as="body-bold">
                                 Data de defesa:
                             </Texto>

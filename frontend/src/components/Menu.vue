@@ -1,19 +1,23 @@
 <template>
-    <nav class="flex items-center justify-between px-[5px] md:px-[80px] lg:px-[80px] h-[40px] border-b-[2px] border-terciaria gap-[24px] bg-principal text-white">
+    <nav class="flex items-center justify-between px-[5px] md:px-[80px] lg:px-[80px]  border-b-[2px] border-terciaria gap-[24px] bg-principal text-white">
        <section class="flex items-center gap-[24px] ">
-            
-            <!-- <img src="/SOTCC.png" class="h-[60px] "/> -->
-            <!-- <Texto as="h3" color="white">
-                SOTCC - Sistema de orientação em TCC
-            </Texto> -->
-            <router-link to="/" class=" hover:text-terciaria">
+            <router-link to="/" class=" hover:text-terciaria hidden md:block lg:block">
                 <Texto as="h3" color="white" :cursorPointer="true">
-                    SOTCC - Sistema de orientação em TCC
+                    SOTCC 
+                </Texto>
+                <Texto as="h3" color="white" :cursorPointer="true">
+                    - Sistema de orientação em TCC
                 </Texto>
             </router-link> 
-            <!-- <router-link to="/" class=" hover:text-terciaria">
-                Início
-            </router-link> -->
+
+            <router-link to="/" class=" hover:text-terciaria block md:hidden lg:hidden">
+                <Texto as="body-bold" color="white" :cursorPointer="true">
+                    SOTCC 
+                </Texto>
+                <Texto as="body-bold" color="white" :cursorPointer="true">
+                    - Sistema de orientação em TCC
+                </Texto>
+            </router-link> 
         </section>
       
             

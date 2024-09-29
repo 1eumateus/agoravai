@@ -64,7 +64,7 @@
                             label="Email" 
                             id="formemail" 
                             type="email"
-                            :opcional="false"
+                            :obrigatorio="true"
                             :maxLength="50"
                             placeholder="ex.: exemplo@exemplo.com"
                         /> 
@@ -73,7 +73,7 @@
                             label="Senha" 
                             id="formsenha" 
                             type="password"
-                            :opcional="false"
+                            :obrigatorio="true"
                             :maxLength="20"
                             placeholder=""
                         /> 
@@ -85,7 +85,7 @@
                             label="Nome" 
                             id="registrarnome" 
                             type="text"
-                            :opcional="false"
+                            :obrigatorio="true"
                             :maxLength="50"
                             placeholder="ex.: Davi"
                         /> 
@@ -94,7 +94,7 @@
                             label="Sobrenome" 
                             id="registrarsobrenome" 
                             type="text"
-                            :opcional="true"
+                            :obrigatorio="false"
                             :maxLength="50"
                             placeholder="ex.: Barroso"
                         /> 
@@ -104,7 +104,7 @@
                                 label="Email" 
                                 id="registraremail" 
                                 type="email"
-                                :opcional="false"
+                                :obrigatorio="true"
                                 :maxLength="50"
                                 placeholder="ex.: exemplo@exemplo.com"
                             /> 
@@ -114,7 +114,7 @@
                             label="Senha" 
                             id="registrarsenha" 
                             type="password"
-                            :opcional="false"
+                            :obrigatorio="true"
                             :maxLength="20"
                             placeholder="" 
                         /> 
@@ -124,7 +124,7 @@
                             id="confirmarSenha" 
                             type="password"
                             :maxLength="20"
-                            :opcional="false"
+                            :obrigatorio="true"
                             placeholder="" 
                         /> 
                     </section>
@@ -139,7 +139,7 @@
                                 label="SIAPE" 
                                 id="siape" 
                                 type="text"
-                                :opcional="true"
+                                :obrigatorio="false"
                                 placeholder="ex.: 1234567" 
                             /> 
                             <div class="flex items-end gap-[4px] ">
@@ -185,7 +185,7 @@
                                     label="Nome" 
                                     id="registrarnome" 
                                     type="text"
-                                    :opcional="false"
+                                    :obrigatorio="true"
                                     placeholder="ex.: Davi"
                                     :maxLength="20" 
                                 /> 
@@ -194,7 +194,7 @@
                                     label="Sobrenome" 
                                     id="registrarsobrenome" 
                                     type="text"
-                                    :opcional="true"
+                                    :obrigatorio="false"
                                     placeholder="ex.: Barroso" 
                                     :maxLength="20" 
                                 />
@@ -205,7 +205,7 @@
                                 id="formacao" 
                                 type="text"
                                 :maxLength="500"
-                                :opcional="false"
+                                :obrigatorio="true"
                                 placeholder="ex.: Mestrado em Inteligência artificial"
                             />
                             <Campo 
@@ -214,7 +214,7 @@
                                 id="interesse" 
                                 type="text"
                                 :maxLength="400"
-                                :opcional="false"
+                                :obrigatorio="true"
                                 placeholder="ex.: Inteligência artificial, desenvolvimento web e automação"
                             />
                         </div>
@@ -227,9 +227,12 @@
                             </div>
 
                             <div class="flex flex-col gap-[4px]">
-                                <div>
+                                <div class="flex items-center gap-[4px]">
                                     <Texto as="body" for="pesquisar">
                                         Disponibilidade
+                                    </Texto>
+                                    <Texto as="body-bold" for="pesquisar" color="red">
+                                        *
                                     </Texto>
                                 </div>
                                 <select 
@@ -247,9 +250,6 @@
                                 <div class="flex items-center gap-[10px]">
                                     <Texto as="body" for="formdescricao">
                                         Descrição
-                                    </Texto>
-                                    <Texto as="body" color="gray" for="formdescricao">
-                                        Opcional
                                     </Texto>
                                 </div>
                                 <textarea 
@@ -276,7 +276,7 @@
                                 id="registraremail" 
                                 type="email"
                                 :maxLength="50"
-                                :opcional="false"
+                                :obrigatorio="true"
                                 placeholder="ex.: exemplo@exemplo.com"
                             />
                             <Campo 
@@ -285,7 +285,7 @@
                                 id="registrarsenha" 
                                 type="password"
                                 :maxLength="20"
-                                :opcional="false"
+                                :obrigatorio="true"
                                 placeholder=""
                             />
                             <Campo 
@@ -294,7 +294,7 @@
                                 id="confirmarSenha" 
                                 type="password"
                                 :maxLength="20"
-                                :opcional="false"
+                                :obrigatorio="true"
                                 placeholder=""
                             />
                         </div>
@@ -395,6 +395,7 @@ const emailEnviado = reactive({
 })
 
 const disponibilidades = [
+    { value: "", nome: "Selecione disponibilidade" },
     { value: "indisponível", nome: "Indisponível" },
     { value: "matutino", nome: "Matutino" },
     { value: "vespertino", nome: "Vespertino" },
@@ -414,7 +415,7 @@ const registrar = reactive({
     descricao: '',
     interesse: '',
     instituicao: '',
-    disponibilidade: 'indisponível',
+    disponibilidade: '',
     lattes: '',
     siape: '',
 })
@@ -454,6 +455,28 @@ function modalConfirmar(){
         abrirModal.value = false;
         return;
     } 
+
+    if(registrar.tipo === 'professor'){
+        if (!registrar.formacao) {
+            popupInfo().warning('Informe sua formação.');
+            aba.value = 0;
+            abrirModal.value = false;
+            return;
+        }
+        if (!registrar.interesse) {
+            popupInfo().warning('Informe áreas de interesse.');
+            aba.value = 0;
+            abrirModal.value = false;
+            return;
+        }
+        if (!registrar.disponibilidade) {
+            popupInfo().warning('Informe sua disponbilidade.');
+            aba.value = 1;
+            abrirModal.value = false;
+            return;
+        }
+    }
+
     if (!isValid.email(registrar.email)) {
         popupInfo().warning('Informe email válido.');
         abrirModal.value = false;
@@ -476,20 +499,6 @@ function modalConfirmar(){
         return;
     }
 
-    if(registrar.tipo === 'professor'){
-        if (!registrar.formacao) {
-            popupInfo().warning('Informe sua formação.');
-            aba.value = 0;
-            abrirModal.value = false;
-            return;
-        }
-        if (!registrar.interesse) {
-            popupInfo().warning('Informe áreas de interesse.');
-            aba.value = 0;
-            abrirModal.value = false;
-            return;
-        }
-    }
     abrirModal.value = true;
 }
 
@@ -562,7 +571,7 @@ function limparDados(){
         registrar[key] = '';
     }
     
-    registrar.disponibilidade= 'indisponível';
+    registrar.disponibilidade= '';
 
     if(opcao.value === 'cadastrarAluno'){
         registrar.tipo = 'aluno';

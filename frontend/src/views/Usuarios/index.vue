@@ -1,21 +1,40 @@
 <template>
    <main class="flex-grow relative ">
-        <section class="mx-auto max-w-5xl p-[14px] flex flex-col gap-[8px]">
-            <div>
-                <Texto as="body" for="pesquisar">
-                        Pesquisar
-                </Texto>
+        <section class="mx-auto max-w-5xl p-[14px] grid grid-cols-1 gap-[4px]">
+            <div class="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 items-center gap-2">
+                <div class="flex flex-col gap-[4px] col-span-1 md:col-span-8 lg:col-span-10">
+                    <div>
+                        <Texto as="body" for="pesquisar">
+                                Pesquisar
+                        </Texto>
+                    </div>
+                    <input 
+                        v-model="search" 
+                        type="text" 
+                        id="pesquisar" 
+                        class="p-[8px] w-full border h-11 border-principal rounded-md focus:outline-principal" 
+                        placeholder="Pesquise pelo nome do usuário"
+                        maxlength="65"
+                    />
+                </div>
+                <div class="flex flex-col gap-[4px] col-span-1 md:col-span-4 lg:col-span-2">
+                    <div>
+                        <Texto as="body" for="pesquisarTipo">
+                            Tipo de usuário
+                        </Texto>
+                    </div>
+                    <select 
+                        v-model="searchTipo" 
+                        id="pesquisarTipo" 
+                        class="p-[8px] w-full border border-principal rounded-md h-11 focus:outline-principal " >
+                        <option :value="''" selected>Todos</option>
+                        <option :value="'professor'">Professor</option>
+                        <option :value="'aluno'"> Aluno</option>
+                    </select>
+                </div>
             </div>
-            <input 
-                v-model="search" 
-                type="text" 
-                id="search" 
-                class="p-[8px] border border-black" 
-                placeholder="Pesquise pelo nome do usuário"
-                maxlength="65"
-            />
 
-            <div class="flex justify-between">
+            <div class="flex justify-between mt-2">
                 <Texto as="h3">
                     Usuários cadastrados
                 </Texto>
@@ -52,11 +71,12 @@ import { popupInfo } from '../../stores/util.js';
 
 const usuarios = ref([])
 const search = ref('')
+const searchTipo = ref('')
 
 defineProps(["usuario"]);
 
 async function start() {
-    await api.get(`/usuario?search=${search.value}`)
+    await api.get(`/usuario?search=${search.value}&&searchTipo=${searchTipo.value}`)
     .then((res)=>{
         usuarios.value = res.data.item;
     }).catch((e)=>{
@@ -65,6 +85,10 @@ async function start() {
 }
 
 watch(search, () => {
+    start();
+});
+
+watch(searchTipo, () => {
     start();
 });
 

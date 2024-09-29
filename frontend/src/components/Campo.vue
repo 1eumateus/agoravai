@@ -1,11 +1,11 @@
 <template>
     <div class="flex flex-col gap-[4px] " >
-        <div class="flex items-center gap-[10px]">
+        <div class="flex items-center gap-[4px]">
             <Texto as="body" :for="props?.id">
                 {{ props.label }}
             </Texto>
-            <Texto as="body" :for="props?.id" color="gray" for="registrarsobrenome" v-if="props?.opcional">
-                Opcional
+            <Texto as="body-bold" :for="props?.id" color="red" for="registrarsobrenome" v-if="props?.obrigatorio">
+                *
             </Texto>
        </div>
         <input 
@@ -48,7 +48,7 @@ const props = defineProps({
         type: String,
         default: ''
     },
-    opcional: {
+    obrigatorio: {
         type: Boolean,
         default: false,
     },
