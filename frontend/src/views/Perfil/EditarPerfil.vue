@@ -15,6 +15,36 @@
                     </button>
                        
                     </div>
+                    <section class="flex items-center gap-2">
+                        <img 
+                            v-if="form?.imagem?.filename && !imagePreview && !novaImagem" 
+                            :src="`${urlApi}/uploads/${form?.imagem?.filename}`" 
+                            :alt="form?.imagem?.originalname" 
+                              class="h-[140px] min-w-[140px] rounded border-2 border-principal"
+                        />
+                        <img 
+                            v-if="imagePreview && novaImagem" 
+                            :src="imagePreview" 
+                            :alt="novaImagem?.name" 
+                            class="h-[140px] min-w-[140px] rounded border-2 border-green-500"
+                        />
+                        <div class="flex flex-col items-center w-full">
+                            <label for="file" class="cursor-pointer w-full">
+                                <div class="flex items-center justify-center text-center min-w-full h-[140px] border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition duration-200">
+                                    <span class="text-gray-500" v-if="!imagePreview && !novaImagem">Selecione uma foto de até 5 MB.</span>
+                                    <span class="text-gray-500" v-else>Imagem {{ novaImagem.name  }} selecionada</span>
+                                </div>
+                            </label>
+                            <input 
+                                type="file" 
+                                id="file" 
+                                name="image" 
+                                accept="image/*" 
+                                class="hidden" 
+                                @change="handleFileUpload" 
+                            />
+                        </div>
+                    </section>
                     <Texto as="h4">
                         Informações principais
                     </Texto>
@@ -178,11 +208,15 @@
 import Campo from '@components/Campo.vue'
 import Texto from '@components/Texto.vue'
 import { PhX } from '@phosphor-icons/vue';
-import { onMounted, reactive } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import api from "@/api.js";
 import { popupInfo, formatMask } from '../../stores/util.js';
 
 const emits = defineEmits(['modal:open']);
+const urlApi = import.meta.env.VITE_URL;
+
+const novaImagem = ref(null)
+const imagePreview = ref(null);
 
 const disponibilidades = [
     { value: "indisponível", nome: "Indisponível" },
@@ -205,6 +239,7 @@ const form = reactive({
     telefone: "",
     disponibilidade: "",
     senha: "",
+    imagem: "",
     tipo: null,
     ativo: true,
 });
@@ -221,6 +256,33 @@ function start(){
     form.senha = "";
 }
 
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (file && file.size > 5 * 1024 * 1024) { // Limite de 5MB
+        return popupInfo().warning('Imagem muito grande. Limite de 5MB.');
+    }
+    if (file && !file.type.startsWith('image/')) {
+        return popupInfo().warning('Formato de arquivo inválido. Por favor, envie uma imagem.');
+    }
+    novaImagem.value = file;
+    imagePreview.value = URL.createObjectURL(file); 
+}
+
+async function salvarImagem() {
+    if (!novaImagem.value) {
+        return
+    }
+    form.imagem = novaImagem.value;
+    const formData = new FormData();
+    formData.append('image', form.imagem);
+
+    try {
+        await api.post(`/usuario/imagem/`, formData);
+    } catch (e) {
+        popupInfo().warning(e.response?.data?.msg || e);
+    }
+}
+
 async function salvar(){
 
     if(form.linkedin && !validateLinkedin(form.linkedin)){
@@ -234,13 +296,14 @@ async function salvar(){
     if(form.lattes && !validateLattes(form.lattes)){
         return popupInfo().warning('Currículo Lattes inválido.');
     }
-    
+    await salvarImagem();
+
     await api.put(`/usuario/editar`, form)
     .then(()=>{
         popupInfo().success('Usuário editado com sucesso.');
         emits('modal:open', false)
     }).catch((e)=>{
-        popupInfo().warning('Erro ao editar usuário.');
+        popupInfo().warning(e.response.data.msg || e);
     })
 }
 

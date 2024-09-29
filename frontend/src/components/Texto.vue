@@ -43,7 +43,7 @@ const computedClass = computed(() => {
             break;
         case 'gray':
             styleHover = props.as === 'button' ? ' hover:text-gray-700 ' : ''
-            colorText = ` text-gray-500 ` + styleHover;
+            colorText = ` text-gray-600 ` + styleHover;
             break;
         case 'blue':
             styleHover = props.as === 'button' ? ' hover:text-blue-900 ' : ''

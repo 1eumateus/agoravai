@@ -129,7 +129,10 @@
                         /> 
                     </section>
 
-                    <section class="grid grid-cols-1 gap-[10px]" v-if="opcao === 'cadastrarProfessor'">
+                    <section class="grid grid-cols-1 " v-if="opcao === 'cadastrarProfessor'">
+                        <Texto as="body" >
+                            Pegar dados via siape
+                        </Texto>
                         <div class="grid grid-cols-2 gap-[8px] items-end " >
                             <Campo 
                                 v-model="registrar.siape" 
@@ -142,10 +145,10 @@
                             <div class="flex items-end gap-[4px] ">
                                 <button 
                                     type="button" 
-                                    class="text-[16px] w-full font-normal border border-gray-400 hover:bg-gray-200 rounded-md p-[8px] " 
+                                    class="text-[16px] w-full font-normal border border-gray-400 hover:bg-gray-200 rounded-md p-[8px] flex gap-1 justify-center " 
                                     @click="buscarDados()"
                                 >
-                                    Buscar 
+                                    Buscar <PhMagnifyingGlass :size="24" class="  " /> 
                                 </button>
                                 <button 
                                     type="button" 
@@ -153,10 +156,10 @@
                                     @click="limparDados()"
                                 >
                                     Limpar <PhEraser :size="24" class="  " /> 
-                                </button>
+                                </button> 
                             </div>
                         </div>
-                        <div class="grid grid-cols-3 gap-1">
+                        <div class="grid grid-cols-3 gap-1 mt-2">
                             <button 
                                 :class="`${aba === 0 ? ' bg-principal border-terciaria ' : ' bg-gray-300 border-white ' } p-1 min-w-full border rounded-md`"
                                 @click="irParaAba(0)">
@@ -373,7 +376,7 @@
 </template>
 
 <script setup>
-import { PhCaretLeft, PhCaretRight, PhX, PhEraser } from '@phosphor-icons/vue';
+import { PhCaretLeft, PhCaretRight, PhX, PhEraser, PhMagnifyingGlass  } from '@phosphor-icons/vue';
 import api from "@/api.js";
 // util
 import { popupInfo, isValid } from '../stores/util.js';
