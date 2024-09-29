@@ -14,6 +14,12 @@ const modelSchema = new Schema({
         type: String,
         default: 'pendente',
     },
+    tema: {
+        type: String,
+    },
+    link: {
+        type: String,
+    },
     aluno: {
         type: mongoose.SchemaTypes.ObjectId,
         ref: "Usuario",
@@ -32,10 +38,13 @@ const modelSchema = new Schema({
         type: String,
         required: false,
     },
-    banca: [],
+    banca: [{
+        nome: String,
+        instituicao: String,
+    }],
     coorientador: {
         nome: String,
-        email: String,
+        instituicao: String,
     },
     dataDefesa:{
         type: Date,

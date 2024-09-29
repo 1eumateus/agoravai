@@ -4,6 +4,9 @@ import jwt from "jsonwebtoken";
 import nodemailer from 'nodemailer'
 import axios from "axios";
 import { decode } from 'html-entities';
+import mongoose from "mongoose";
+const { ObjectId } = mongoose.Types;
+import fs from 'fs';
 
 function clean (text) {
     if (text.indexOf ('<dd:')) {
@@ -158,7 +161,7 @@ async function listar(req, res) {
                     descricao: 1,
                     tipo: 1,
                     disponibilidade: 1,
-                    interesse: 1
+                    interesse: 1,
                 }
             }
         ]);
@@ -202,6 +205,7 @@ async function listarProfessores(req, res) {
                     tipo: 1,
                     disponibilidade: 1,
                     interesse: 1,
+                    imagem: 1,
                 }
             }
         ]);
@@ -327,6 +331,8 @@ async function editar(req, res) {
         editar.formacao = req.body.formacao;
         editar.lattes= req.body.lattes;
         editar.ativo = true;
+
+        console.log(editar)
         await editar.save();
         res.status(200).json({ msg: "Usuário editado com sucesso." });
     } catch (error) {
@@ -366,7 +372,7 @@ async function deletar(req, res) {
 async function pegarPorId(req, res) {
     try {
         const token = req.headers.authorization;
-        const filtro = { ativo: true, verificado: true, _id: req.params.id };
+        const filtro = { ativo: true, verificado: true, _id: new ObjectId(String(req.params.id)) };
 
         const { userID, userTipo } = jwt.verify(token, process.env.JWT_SECRET, (err, usuario) => {
             if (err) return false;
@@ -379,21 +385,57 @@ async function pegarPorId(req, res) {
             filtro.tipo = { $nin: ['admin'] };
         }
 
-        let selectFields = {};
-        if (userTipo === 'aluno' || userTipo === 'professor') {
-            selectFields = { senha: 0 };
-        }
+        const usuario = await Model.aggregate([
+            { $match: filtro },  
+            {
+                $project: {    
+                    senha: 0,       
+                }
+            },
+        ]);
 
-        const usuario = await Model.findOne(filtro).select(selectFields);
-        if (!usuario) {
+        if (!usuario[0]) {
             return res.sendStatus(404); 
         }
-
-        res.json({ usuario: usuario });
+        res.json({ usuario: usuario[0] });
     } catch (error) {
         return res.sendStatus(400); 
     }
 }
 
+async function adicionarImagem(req, res) {
+    try {
 
-export { listar, listarProfessores, siape, adicionarOrientacao, criar, deletar, editar, pegarPorId };
+        const token = req.headers.authorization;
+       
+        const { userID }= jwt.verify(token, process.env.JWT_SECRET, (err, usuario) => {
+            if (err) return false;
+            return {userID: usuario._id};
+        });
+        if (!userID) return res.status(400).json({msg: 'Usuário não encontrado.'});
+
+        const file = req.file;
+        if (!file) {
+            return res.status(400).json({ msg: "Nenhum arquivo enviado." });
+        }   
+
+        let editar = await Model.findOne({ ativo:true, verificado: true, _id: userID });
+        if (!editar) return res.status(400).json({msg: 'Usuário não encontrado.'});
+
+        if (editar?.imagem?.path) {
+            const imagePath = editar?.imagem?.path; 
+           
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+        }
+        editar.imagem = file;
+        await editar.save();
+        res.status(200).json();
+
+    } catch (error) {
+        return res.status(400).json({ msg: "Erro ao salvar imagem." });
+    }
+}
+
+export { listar, listarProfessores, siape, adicionarOrientacao, adicionarImagem, criar, deletar, editar, pegarPorId };

@@ -76,6 +76,14 @@ const modelSchema = new Schema({
         type: String,
         required: true
     },
+    imagem:{
+        originalname: String,
+        path: String,
+        filename: String,
+        encoding: String,
+        destination: String,
+        size: Number,
+    }
 });
 
 export default model("Usuario", modelSchema);

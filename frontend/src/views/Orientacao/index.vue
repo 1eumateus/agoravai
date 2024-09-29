@@ -2,11 +2,20 @@
    <main class="flex-grow relative ">
         <section class="mx-auto max-w-5xl p-[14px] flex flex-col gap-[8px]">
             
-            <div class="flex flex-col">
+            <div class="flex justify-between">
                 <div class="flex items-center gap-[8px] justify-between">
                     <Texto as="h3">
                         Orientação
                     </Texto>
+                </div>
+                <div class="flex justify-end">
+                    <button 
+                        @click="gerarConvite"
+                        type="button" 
+                        class="cursor-pointer py-[10px] px-[12px] h-11 border border border-terciaria hover:bg-terciaria hover:text-white rounded-md"
+                    >
+                            Gerar cartaz de divulgação
+                    </button>
                 </div>
             </div>
                 
@@ -25,75 +34,7 @@
                             </Texto>
                         </div>
                     </div>
-                    <div class=" gap-[6px] p-[10px] border border-secundaria-opaco rounded-md bg-white ">
-                        <div class="flex items-start justify-between">
-                            <Texto as="h4">
-                                Co-orientador
-                            </Texto>
-                            <button 
-                                type="button" 
-                                class="cursor-pointer py-[8px] px-[10px] border border-gray-300 hover:bg-gray-200 rounded-md"
-                                :onClick="()=>{
-                                    editandoCoorientador = true; 
-                                    coorientador.nome = form.coorientador.nome
-                                    coorientador.email = form.coorientador.email
-                                    }"
-                                v-if="!editandoCoorientador"
-                            >
-                                <PhPencilSimple :size="18" />
-                            </button>
-                        </div>
-                        <div class="flex flex-col">
-                            <div class="flex flex-col" v-if="!editandoCoorientador">
-                                <Texto as="body" >
-                                    {{ form.coorientador.nome }}
-                                </Texto>
-                                <Texto as="body">
-                                    {{ form.coorientador.email }}
-                                </Texto>
-                            </div>
-                        <div class="flex flex-col gap-1" v-if="!form.coorientador.nome || editandoCoorientador">
-                            <div class="">
-                                    <Campo 
-                                        v-model="coorientador.nome" 
-                                        label="Nome" 
-                                        id="coorientadorNome" 
-                                        type="text"
-                                        :opcional="false"
-                                        placeholder="ex.: Davi Barroso"
-                                        :maxLength="30"
-                                    />
-                            </div>
-                            <Campo 
-                                    v-model="coorientador.email" 
-                                    label="Email" 
-                                    id="coorientadorEmail" 
-                                    type="email"
-                                    placeholder="ex.: exemplo@exemplo.com"
-                                    :opcional="true"
-                                    :maxLength="50"
-                                />
-                                <div class="flex gap-2 justify-end" >
-                                    <button 
-                                        type="button" 
-                                        class="h-11 px-3 text-red-600 border border-gray-300 hover:bg-gray-200 font-bold text-sm rounded-md cursor-pointer"
-                                        :onClick="()=>{editandoCoorientador=false}"
-                                        v-if="editandoCoorientador"
-                                    >
-                                        Cancelar
-                                    </button>
-                                
-                                    <button 
-                                        type="button" 
-                                        class="h-11 px-3 text-white bg-principal hover:bg-principal-opaco font-bold text-sm rounded-md cursor-pointer"
-                                        :onClick="salvarOrientador"
-                                    >
-                                        Salvar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    
                     <div class=" gap-[6px] p-[10px] border border-secundaria-opaco rounded-md bg-white ">
                         <Texto as="h4">
                             Aluno
@@ -107,9 +48,6 @@
                             </Texto>
                         </div>
                     </div>
-                </section>
-
-                <section class="grid grid-cols-1 gap-[6px] col-span-1 md:col-span-2 lg:col-span-2 ">
                     <section class="gap-[6px] flex flex-col border border-secundaria-opaco rounded-md bg-white p-[10px]">
                         <div class="flex items-center justify-between">
                             <Texto as="h4">
@@ -126,15 +64,15 @@
                             </button>
                             <button 
                                 type="button" 
-                                class="cursor-pointer py-[8px] px-[10px] border border-gray-300 hover:bg-gray-200 rounded-md"
+                                class="cursor-pointer py-[8px] px-[10px] border border-red-600 hover:bg-gray-200 rounded-md"
                                 :onClick="()=>{ editandoProposta= false; propostaParaEditar = form.proposta }"
                                 v-else
                             >
-                                    <PhX :size="18"  />
+                                    <PhX :size="18" class="fill-red-600"  />
                             </button>
                             <button 
                                 type="button" 
-                                class="cursor-pointer py-[6px] px-[10px] border border-gray-300 hover:bg-gray-200 rounded-md"
+                                class="cursor-pointer py-[5px] px-[10px] border border-principal hover:bg-gray-200 rounded-md"
                                 :onClick="salvarProposta"
                                 v-if="editandoProposta"
                             >
@@ -149,75 +87,141 @@
                             <textarea 
                                 v-model="propostaParaEditar" 
                                 id="propostaParaEditar" 
-                                class="p-[8px] border border-principal rounded-md focus:outline-principal" 
+                                class="p-[8px] border border-terciaria rounded-md focus:outline-principal" 
                                 placeholder="Escreva a sua proposta de trabalho."
                                 maxlength="200"
                                 rows="4"
                             ></textarea>
                         </div>
                     </section>
+                </section>
 
+                <section class="grid grid-cols-1 gap-[6px] col-span-1 md:col-span-2 lg:col-span-2 ">
                     <section class="grid grid-cols-1 gap-2 border border-secundaria-opaco rounded-md bg-white p-2.5 gap-[8px]">
                         <div class="flex flex-col gap-[8px] w-full ">
                             <Texto as="h4">
                                 Informações para defesa
                             </Texto>
-                            <div class="flex gap-[8px] ">
-                                
-                                <Campo 
-                                    v-model="form.dataDefesa" 
-                                    label="Data de defesa" 
-                                    id="dataDefesa" 
-                                    type="date"
-                                    :opcional="false"
-                                />
-                                
-                                <div class="flex items-end gap-[8px] w-full">
-                                    <div class="w-full">
-                                        <Campo 
-                                            v-model="form.horaDefesa" 
-                                            label="Hora da defesa" 
-                                            id="horaDefesa" 
-                                            type="time"
-                                            placeholder="10:30"
-                                            :opcional="false"
-                                        />
-                                    </div>
-                                    <button 
-                                        type="button" 
-                                        @click="salvar"
-                                        class="h-11 w-full px-3 text-white bg-principal hover:bg-principal-opaco font-bold text-sm rounded-md cursor-pointer">
-                                        Salvar data e hora
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="flex items-end gap-2 ">
-                                <div class="w-full">
+                            <div class="grid grid-cols-12 gap-[8px] items-end">
+                                <div class="col-span-5">
                                     <Campo 
-                                        v-model="participanteBanca" 
-                                        label="Novo participante da banca" 
-                                        id="nome" 
+                                        v-model="form.coorientador.nome" 
+                                        label="Nome do coorientador" 
+                                        id="coorientadorNome" 
                                         type="text"
                                         :opcional="false"
                                         placeholder="ex.: Davi Barroso"
                                         :maxLength="30"
                                     />
                                 </div>
-                                <button 
-                                    type="button" 
-                                    :onClick="editar"
-                                    class="h-11 px-3 text-white bg-principal hover:bg-principal-opaco font-bold text-sm rounded-md cursor-pointer">
-                                    {{ editandoParticipante !==-1 ? 'Salvar alteração': 'Adicionar'}}
-                                </button>
+                                <div class="col-span-5">
+                                    <Campo 
+                                        v-model="form.coorientador.instituicao" 
+                                        label="Instituição" 
+                                        id="coorientadorinstituicao" 
+                                        type="text"
+                                        :opcional="false"
+                                        placeholder="ex.: UFPA/FECOMP"
+                                        :maxLength="20"
+                                    />
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-12 gap-[8px] items-end">
+                                <div class="col-span-5">
+                                    <Campo 
+                                        v-model="form.tema" 
+                                        label="Tema" 
+                                        id="tema" 
+                                        type="text"
+                                        :opcional="false"
+                                        placeholder="ex.: SOTCC - Sistema de orientação em TCC"
+                                    />
+                                </div>
+                                <div class="col-span-5">
+                                    <Campo 
+                                        v-model="form.link" 
+                                        label="Local virtual (link)" 
+                                        id="link" 
+                                        type="text"
+                                        :opcional="false"
+                                        placeholder="ex.: https://meet.google.com/"
+                                        :maxLength="200"
+                                    />
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-12 gap-[8px] items-end">
+                                <div class="col-span-5">
+                                    <Campo 
+                                        v-model="form.dataDefesa" 
+                                        label="Data de defesa" 
+                                        id="dataDefesa" 
+                                        type="date"
+                                        :opcional="false"
+                                    />
+                                </div>
+                                <div class="col-span-5">
+                                    <Campo 
+                                        v-model="form.horaDefesa" 
+                                        label="Hora da defesa" 
+                                        id="horaDefesa" 
+                                        type="time"
+                                        placeholder="10:30"
+                                        :opcional="false"
+                                    />
+                                </div>
+                                <div class="col-span-2">
+                                    <button 
+                                        type="button" 
+                                        @click="salvar"
+                                        class="h-11 w-full px-3 text-white bg-principal hover:bg-principal-opaco font-bold text-sm rounded-md cursor-pointer">
+                                        Salvar
+                                    </button>
+                                </div>
+                            </div>
+                            <hr/>
+                            <div class="grid grid-cols-12 items-end gap-2 ">
+                                <div class="col-span-5">
+                                    <Campo 
+                                        v-model="participanteBanca.nome" 
+                                        label="Novo participante da banca" 
+                                        id="nome" 
+                                        type="text"
+                                        :opcional="false"
+                                        placeholder="ex.: Prof. Dr. Davi Barroso"
+                                        :maxLength="30"
+                                    />
+                                </div>
+                                <div class="col-span-5">
+                                    <Campo 
+                                        v-model="participanteBanca.instituicao" 
+                                        label="Instituição" 
+                                        id="instituicao" 
+                                        type="text"
+                                        :opcional="false"
+                                        placeholder="ex.: UFPA/FECOMP"
+                                        :maxLength="20"
+                                    />
+                                </div>
+                                <div class="col-span-2">
+                                    <button 
+                                        type="button" 
+                                        :onClick="editar"
+                                        :class="`${editandoParticipante !==-1 ? ' bg-orange-600 ':' bg-principal hover:bg-principal-opaco '} w-full h-11 text-white px-3 font-bold text-sm rounded-md cursor-pointer`">
+                                        {{ editandoParticipante !==-1 ? 'Salvar alteração': 'Adicionar'}}
+                                    </button>
+                                </div>
                             </div>
                             <div class="flex flex-col gap-2">
                                 <Texto as="body-bold">
-                                    Banca
+                                    Banca examinadora
                                 </Texto>
                                 <div v-if="form.banca.length>0" class=" overflow-auto border">
                                     <div v-for="(participante, index) in form.banca" :key="index" class="even:bg-gray-200 flex items-center justify-between gap-2 p-1"> 
                                         <Texto as="body">
-                                            {{ participante }}
+                                            {{ participante.nome }}
+                                        </Texto>
+                                        <Texto as="body">
+                                            {{ participante.instituicao }}
                                         </Texto>
                                         <div class="flex items-center gap-2" > 
                                             <button 
@@ -244,7 +248,6 @@
                     </section>
                 </section>
             </div>
-
         </section>
     </main>
 </template>
@@ -269,18 +272,15 @@ const props = defineProps({
 
 const emits = defineEmits(['modal:open']);
 
-const participanteBanca = ref('')
+const participanteBanca = reactive({
+    nome: '',
+    instituicao: '',
+})
 const editandoParticipante = ref(-1);
 
 const editandoProposta = ref(false);
 const propostaParaEditar = ref('');
 
-const editandoCoorientador = ref(false);
-
-const coorientador = reactive({
-    nome: '',
-    email: '',
-})
 const form = reactive({
     _id: false,
     situacao: "",
@@ -288,7 +288,11 @@ const form = reactive({
     professor: "",
     proposta: "",
     resposta: "",
-    banca: [],
+    tema: "",
+    banca: [{
+        nome: '',
+        instituicao: '',
+    }],
     coorientador: {
         nome: '',
         email: '',
@@ -322,7 +326,7 @@ function removerParticipante(index){
 }
 
 function editarParticipante(index){
-    participanteBanca.value = form.banca[index]
+    Object.assign(participanteBanca, form.banca[index])
     editandoParticipante.value = index;
 }
 
@@ -333,30 +337,63 @@ function salvarProposta(){
 }
 
 async function editar(){
-    if(!participanteBanca.value.trim()) return;
-
+    if(!participanteBanca.nome.trim()) return popupInfo().warning('Informe nome do participante');
+    if(!participanteBanca.instituicao.trim()) return popupInfo().warning('Informe instituição do participante');
+  
     if(editandoParticipante.value !== -1){
-        form.banca[editandoParticipante.value] = participanteBanca.value
+        Object.assign(form.banca[editandoParticipante.value] , participanteBanca)
         editandoParticipante.value = -1;
     }else{
-        form.banca.push(participanteBanca.value)
+        console.log(participanteBanca)
+        form.banca.push({
+                nome: participanteBanca.nome, 
+                instituicao: participanteBanca.instituicao
+        })
     }
-    participanteBanca.value = ''
-    salvar()
-}
-
-function salvarOrientador(){
-    form.coorientador.nome = coorientador.nome
-    form.coorientador.email = coorientador.email
-    editandoCoorientador.value = false;
+    participanteBanca.nome = ''
+    participanteBanca.instituicao = ''
     salvar()
 }
 
 async function salvar(){
-    console.log(form)
     await api.put(`/orientacao/editar`, form)
     .then((res)=>{
         popupInfo().success(res?.data?.msg);
+    }).catch((e)=>{
+        popupInfo().warning(e?.response?.data?.msg || e);
+    })
+}
+
+async function gerarConvite(){
+
+    if(!form.tema.trim()){
+        return popupInfo().warning('Informe tema do TCC.');
+    }
+    if(!form.coorientador.nome.trim()){
+        return popupInfo().warning('Informe nome do coorientador.');
+    }
+    if(!form.coorientador.instituicao.trim()){
+        return popupInfo().warning('Informe instituição do coorientador.');
+    }
+    if(!form.dataDefesa){
+        return popupInfo().warning('Informe data de defesa do TCC.');
+    }
+    if(!form.horaDefesa){
+        return popupInfo().warning('Informe hora de defesa do TCC.');
+    }
+
+    await api.post(`/orientacao/gerarConvite`, form, {
+        responseType: 'blob' 
+    })
+    .then((res)=>{
+        const url = window.URL.createObjectURL(new Blob([res.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'cartaz de divulgação.pdf'); 
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        popupInfo().success('Cartaz gerado com sucesso.');
     }).catch((e)=>{
         popupInfo().warning(e?.response?.data?.msg || e);
     })
