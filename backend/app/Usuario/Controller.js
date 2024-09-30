@@ -82,7 +82,7 @@ function filtrar (text) {
         dados = filtrarPerfil1 (text);
     }
     
-    let nome = text.substring(text.indexOf('<h3>') + 4, text.indexOf('</h3>')).trim();
+    let nome = text.substring(text.indexOf('<h3>') + 4, text.indexOf('</h3>'))?.trim();
     let nomePartes = nome.split(' ');
     dados['nome'] = nomePartes[0];
     dados['sobrenome'] = nomePartes?.slice(1)?.join(' ');
@@ -92,12 +92,12 @@ function filtrar (text) {
     dados ['telefone'] = text.substring(
         text.indexOf('<dd>', text.indexOf('Telefone/Ramal')) + 4, 
         text.indexOf('</dd>', text.indexOf('Telefone/Ramal')) 
-    ).trim();
+    )?.trim();
 
     dados ['email'] = text.substring(
         text.indexOf('<dd>', text.indexOf('Endere&#231;o eletr&#244;nico')) + 4, 
         text.indexOf('</dd>', text.indexOf('Endere&#231;o eletr&#244;nico')) 
-    ).trim();
+    )?.trim();
     
     return dados;
 }
@@ -121,7 +121,7 @@ async function siape(req, res){
         .then((response)=>{
             let perfil = filtrar (response.data);
             
-            if(perfil.nome.trim() && (perfil.nome.trim() !== 'Docentes')){
+            if(perfil.nome?.trim() && (perfil.nome?.trim() !== 'Docentes')){
                 dados = {
                     nome: formatNome(formatHtmlTags(perfil.nome)),
                     sobrenome: formatNome(formatHtmlTags(perfil.sobrenome)),

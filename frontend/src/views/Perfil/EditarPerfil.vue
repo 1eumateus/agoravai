@@ -291,11 +291,11 @@ async function salvarImagem() {
 
 async function salvar(){
 
-    if(!form.nome.trim()){
+    if(!form.nome?.trim()){
         return popupInfo().warning('Informe seu nome.');
     }
 
-    if(!form.email.trim()){
+    if(!form.email?.trim()){
         return popupInfo().warning('Informe email.');
     }
     if(form.linkedin && !validateLinkedin(form.linkedin)){

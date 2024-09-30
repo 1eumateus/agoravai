@@ -337,8 +337,8 @@ function salvarProposta(){
 }
 
 async function editar(){
-    if(!participanteBanca.nome.trim()) return popupInfo().warning('Informe nome do participante');
-    if(!participanteBanca.instituicao.trim()) return popupInfo().warning('Informe instituição do participante');
+    if(!participanteBanca.nome?.trim()) return popupInfo().warning('Informe nome do participante');
+    if(!participanteBanca.instituicao?.trim()) return popupInfo().warning('Informe instituição do participante');
   
     if(editandoParticipante.value !== -1){
         Object.assign(form.banca[editandoParticipante.value] , participanteBanca)
@@ -366,14 +366,15 @@ async function salvar(){
 
 async function gerarConvite(){
 
-    if(!form.tema.trim()){
-        return popupInfo().warning('Informe tema do TCC.');
-    }
-    if(!form.coorientador.nome.trim()){
+    
+    if(!form.coorientador.nome?.trim()){
         return popupInfo().warning('Informe nome do coorientador.');
     }
-    if(!form.coorientador.instituicao.trim()){
+    if(!form.coorientador.instituicao?.trim()){
         return popupInfo().warning('Informe instituição do coorientador.');
+    }
+    if(!form.tema?.trim()){
+        return popupInfo().warning('Informe tema do TCC.');
     }
     if(!form.dataDefesa){
         return popupInfo().warning('Informe data de defesa do TCC.');
