@@ -50,22 +50,20 @@ async function getUser(req, res) {
 }
 
 async function confirmarEmail(req, res) {
-   
-    const token = req.query.confirmandoEmail
-    if(!token) return res.sendStatus(400);
+    try{
+        const idUser = req.query.confirmandoEmail
+        if(!idUser) return res.status(404).json({msg:'ID do usuário não informado.'});
 
-    jwt.verify(token, process.env.JWT_SECRET, async(err, usuario) => {
-        if (err) return res.sendStatus(403);
-        const user = await Usuario.findOne({ _id: usuario._id, verificado: false });
-        if(!user) return res.status(409).json({msg: 'Conta já verificada.'});
+        const user = await Usuario.findOne({ _id: idUser });
+        if(!user) return res.status(404).json({msg: 'O usuário não existe.'});
+        if(user.verificado) return res.status(200).json({msg: 'O usuário já foi verificado.'});
+        
         user.verificado = true;
         await user.save()
-        res.status(200).json({ 
-            tipo: user.tipo, 
-            nome: user.nome, 
-            id: user._id,
-        });
-    });
+        res.status(200).json({msg: 'Usuário verificado com sucesso.'});
+    }catch(error){
+        return res.sendStatus(400)
+    }
 }
 
 export { login, getUser, confirmarEmail };

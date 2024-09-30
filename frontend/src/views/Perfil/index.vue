@@ -1,7 +1,8 @@
 <template>
     <EditarPerfil
         :form="form"
-        @modal:open="recarregar($event)"
+        @modal:open="openEditarPerfil = $event"
+        @modal:update="start"
         v-if="openEditarPerfil"
     />
     <RespostaOrientacao
@@ -86,7 +87,7 @@
                             {{ form.email }}
                         </Texto>
                         <Texto as="body">
-                            {{ formatMask.tel(form.celular) }}
+                            {{ form.telefone?.length > 8 ? formatMask.tel(form.telefone) : form.telefone }}
                         </Texto>
                     </div>
                 </section>
@@ -287,8 +288,6 @@ const disponibilidades = [
     { value: "flexivel", nome: "Flexível", color:'bg-blue-100' },
 ];
 
-const emits = defineEmits(['modal:open']);
-
 const form = reactive({
     _id: false,
     nome: "",
@@ -324,7 +323,6 @@ async function listarOrientacao(){
 }
 
 function recarregar(event){
-    openEditarPerfil.value = event
     openRespostaOrientacao.value = event
     start()
 }

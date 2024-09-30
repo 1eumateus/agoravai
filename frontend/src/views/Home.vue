@@ -68,7 +68,7 @@
                                 v-if="professor?.imagem?.filename"
                                 :src="`${urlApi}/uploads/${professor?.imagem?.filename}`" 
                                 :alt="professor?.imagem?.originalname" 
-                                class="h-[80px] min-w-[80px] rounded-md"
+                                class="h-[80px] min-w-[80px] max-w-[80px] rounded-md"
                             />
                             <img 
                                 v-else

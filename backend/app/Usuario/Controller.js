@@ -31,6 +31,7 @@ function filtrarPerfil1 (text) {
     text = text.substring (text.indexOf ('<h4>Perfil Pessoal</h4>'));
     let descricao = text.substring (0, text.indexOf ('</div>'));
     descricao = clean (descricao)
+    
     text = text.substring (text.indexOf ('<h4>Forma&#231;&#227;o Acad&#234;mica</h4>'));
     let formacao = text.substring (0, text.indexOf ('</div>'));
     formacao = clean (formacao);
@@ -46,21 +47,23 @@ function filtrarPerfil2 (text) {
     text = text.substring (text.indexOf('<dl>') + 4);
     let descricao = text.substring (0, text.indexOf ('</dl>'));
     descricao = clean (descricao);
+    
     text = text.substring (text.indexOf ('<dl>') + 4);
     let formacao = text.substring (0, text.indexOf ('</dl>'));
     formacao = clean (formacao);
+    
     text = text.substring (text.indexOf ('<dl>') + 4);
     let interesse = text.substring (0, text.indexOf ('</dl>'));
     interesse = clean (interesse);
+    
     text = text.substring (text.indexOf ('<dl>') + 4);
     let lattes = text.substring (0, text.indexOf ('</dl>'));
-    if (lattes.indexOf ('n&#227;o informad') != -1) {
-        lattes = '';
-    }
+    if (lattes.indexOf ('n&#227;o informad') != -1)  lattes = '';
     else {
         lattes = lattes.substring (lattes.indexOf ('href') + 6);
         lattes = lattes.substring (0, lattes.indexOf ('"'));
     }
+
     return {
         'descricao': descricao,
         'formacao': formacao,
@@ -72,30 +75,30 @@ function filtrarPerfil2 (text) {
 function filtrar (text) {
     let tipo = text.substring (0, text.indexOf ('<div id="contato">'));
     let dados = null
-    if (tipo.indexOf ('<dl>')) dados = filtrarPerfil2 (text);
-    else dados = filtrarPerfil1 (text);
+
+    if(tipo.indexOf ('<dl>')){
+        dados = filtrarPerfil2 (text)
+    }else{
+        dados = filtrarPerfil1 (text);
+    }
     
-    let nome = text.substring (text.indexOf ('<h3>') + 4);
-    nome = nome.substring(0, nome.indexOf('</h3>')).trim(); 
+    let nome = text.substring(text.indexOf('<h3>') + 4, text.indexOf('</h3>')).trim();
     let nomePartes = nome.split(' ');
     dados['nome'] = nomePartes[0];
     dados['sobrenome'] = nomePartes?.slice(1)?.join(' ');
 
     text = text.substring (text.indexOf ('<div id="contato">'));
-    text = text.substring (text.indexOf ('<dl>') + 4);
     
-    let endereco = text.substring (0, text.indexOf ('</dl>'));
-    dados ['endereco'] = clean (endereco);
+    dados ['telefone'] = text.substring(
+        text.indexOf('<dd>', text.indexOf('Telefone/Ramal')) + 4, 
+        text.indexOf('</dd>', text.indexOf('Telefone/Ramal')) 
+    ).trim();
+
+    dados ['email'] = text.substring(
+        text.indexOf('<dd>', text.indexOf('Endere&#231;o eletr&#244;nico')) + 4, 
+        text.indexOf('</dd>', text.indexOf('Endere&#231;o eletr&#244;nico')) 
+    ).trim();
     
-    text = text.substring (text.indexOf ('<dl>') + 4);
-    let sala = text.substring (0, text.indexOf ('</dl>'));
-    dados ['sala'] = clean (sala);
-    text = text.substring (text.indexOf ('<dl>') + 4);
-    let telefone = text.substring (0, text.indexOf ('</dl>'));
-    dados ['telefone'] = clean (telefone);
-    text = text.substring (text.indexOf ('<dl>') + 4);
-    let email = text.substring (0, text.indexOf ('</dl>'));
-    dados ['email'] = clean (email);
     return dados;
 }
 
@@ -103,28 +106,41 @@ function formatHtmlTags(str) {
     return decode(str.replace(/<[^>]*>/g, ' '));
 }
 
+function formatTel(str) {
+    return str.replace(/\D/g, ''); 
+}
+
+function formatNome(str) {
+    return str.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase()); 
+}
+
 async function siape(req, res){
     try{
         let dados = null
         await axios.get(`https://sigaa.ufpa.br/sigaa/public/docente/portal.jsf?siape=${req.params.codigo}`)
-        .then((res)=>{
-            let perfil = filtrar (res.data);
-            dados = {
-                nome: formatHtmlTags(perfil.nome),
-                sobrenome: formatHtmlTags(perfil.sobrenome),
-                formacao: formatHtmlTags(perfil.formacao),
-                interesse: formatHtmlTags(perfil.interesse),
-                email: formatHtmlTags(perfil.email),
-                lattes: formatHtmlTags(perfil.lattes),
-                descricao: formatHtmlTags(perfil.descricao)?.substring(0, 200),
+        .then((response)=>{
+            let perfil = filtrar (response.data);
+            
+            if(perfil.nome.trim() && (perfil.nome.trim() !== 'Docentes')){
+                dados = {
+                    nome: formatNome(formatHtmlTags(perfil.nome)),
+                    sobrenome: formatNome(formatHtmlTags(perfil.sobrenome)),
+                    formacao: formatHtmlTags(perfil.formacao),
+                    interesse: formatHtmlTags(perfil.interesse),
+                    email: formatHtmlTags(perfil.email),
+                    lattes: formatHtmlTags(perfil.lattes),
+                    telefone: formatTel(formatHtmlTags(perfil.telefone)),
+                    descricao: formatHtmlTags(perfil.descricao)?.substring(0, 200),
+                }
             }
-        }).catch((e)=>{
-            console.log(e)
+        }).catch(()=>{
             return res.status(400).json({ msg: 'Tempo de consulta excedido.'})
         })
-        return res.status(200).json(dados)
-    }catch(e){
-        console.log(e)
+        if(!dados){
+            return res.status(200).json({ msg: 'Nenhuma informação encontrada.'})
+        }
+        return res.status(200).json({dados, msg: 'Dados encontradas.'})
+    }catch(error){
         return res.status(400).json({msg: 'Erro ao consultar dados do siape.'})
     }
 }
@@ -261,17 +277,6 @@ async function criar(req, res) {
             senha: hashSenha,
         });
 
-        const token = jwt.sign(
-            {
-                _id: novo._id,
-                ativo: novo.ativo,
-                nome: novo.nome,
-                email: novo.email,
-                tipo: novo.tipo,
-            },
-            process.env.JWT_SECRET
-        );
-
         if(userTipo !== 'admin'){
             const transport = nodemailer.createTransport({
                 host: 'smtp.gmail.com',
@@ -288,17 +293,15 @@ async function criar(req, res) {
             await transport.sendMail({
                 from: 'SOTCC',
                 to: req.body.email,
-                subject: 'Email de confirmação',
-                html: `<h3>Confirmação de email<h3/><a href='http://localhost:4444/login?token=${token}'>Clique para confirmar email.</a>`,
+                subject: 'SOTCC - Email de confirmação',
+                html: `<h3>Confirme seu email para entrar no sistema.<h3/><a href='http://localhost:4444/login?user=${novo._id}'>Clique para confirmar email.</a>`,
             })
             .then(()=>err = false)
             .catch(()=> err = true)
-
+            transport.close();
             if(err){
                 return res.status(400).json({ msg: "Erro ao enviar email de confirmação." })
             }
-            
-            transport.close();
         }
 
         await novo.save();
@@ -342,7 +345,6 @@ async function editar(req, res) {
         editar.lattes= req.body.lattes;
         editar.ativo = true;
 
-        console.log(editar)
         await editar.save();
         res.status(200).json({ msg: "Usuário editado com sucesso." });
     } catch (error) {

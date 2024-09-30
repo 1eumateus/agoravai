@@ -2,6 +2,8 @@
     <SolicitarOrientacao
         @modal:open="recarregar($event)"
         :professor="form._id"
+        :emailProfessor="form.email"
+        :nomeAluno="usuario.nome"
         :aluno="usuario.id"
         v-if="openSolicitarOrientacao"
     />
@@ -148,6 +150,8 @@ const disponibilidades = [
     { value: "flexivel", nome: "Flexível", color:'bg-blue-100' },
 ];
 
+const route = useRoute();
+
 const props = defineProps({
     usuario: {
         type: [Object],
@@ -161,6 +165,7 @@ const form = reactive({
     sobrenome: "",
     email: "",
     descricao: "",
+    telefone: "",
     github: "",
     linkedin: "",
     senha: "",
@@ -169,7 +174,7 @@ const form = reactive({
 });
 
 async function start() {
-    const route = useRoute();
+    
     if (route?.params?.id) {
         form._id = route.params.id;
         await api.get(`/usuario/${form._id}`)
