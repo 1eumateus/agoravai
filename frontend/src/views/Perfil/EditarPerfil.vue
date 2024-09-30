@@ -63,7 +63,7 @@
                             label="Sobrenome" 
                             id="sobrenome" 
                             type="text"
-                            :obrigatorio="true"
+                            :obrigatorio="false"
                             placeholder="ex.: Barroso"
                             :maxLength="20"  
                         />
@@ -218,7 +218,7 @@ import { onMounted, reactive, ref } from "vue";
 import api from "@/api.js";
 import { popupInfo, formatMask } from '../../stores/util.js';
 
-const emits = defineEmits(['modal:open']);
+const emits = defineEmits(['modal:open', 'modal:update']);
 const urlApi = import.meta.env.VITE_URL;
 
 const novaImagem = ref(null)
@@ -291,6 +291,13 @@ async function salvarImagem() {
 
 async function salvar(){
 
+    if(!form.nome.trim()){
+        return popupInfo().warning('Informe seu nome.');
+    }
+
+    if(!form.email.trim()){
+        return popupInfo().warning('Informe email.');
+    }
     if(form.linkedin && !validateLinkedin(form.linkedin)){
         return popupInfo().warning('Linkedin inválido.');
     }
@@ -308,6 +315,7 @@ async function salvar(){
     .then(()=>{
         popupInfo().success('Usuário editado com sucesso.');
         emits('modal:open', false)
+        emits('modal:update', true)
     }).catch((e)=>{
         popupInfo().warning(e.response.data.msg || e);
     })

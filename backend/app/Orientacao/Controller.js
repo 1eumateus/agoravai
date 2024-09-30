@@ -6,6 +6,7 @@ import PDFDocument from 'pdfkit';
 import axios from "axios";
 import { pipeline } from 'stream';
 import fs from 'fs';
+import nodemailer from 'nodemailer'
 
 async function listar(req, res) {
     try {
@@ -99,6 +100,34 @@ async function criar(req, res) {
         });
 
         await novo.save();
+
+        if(req.body.emailProfessor && req.body.nomeAluno){
+            const transport = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true,
+                auth:{
+                    user: process.env.EMAIL,
+                    pass: process.env.SENHA,
+                },
+                connectionTimeout: 20000
+            })
+
+            let err = false;
+            await transport.sendMail({
+                from: 'SOTCC',
+                to: req.body.emailProfessor,
+                subject: 'SOTCC - Solicitação de orientação',
+                html: `<h3>O aluno ${req.body.nomeAluno} deseja ser orientado por você, entre para ver mais detalhes.<h3/><a href='http://localhost:4444/login'>Clique aqui para entrar no sistema.</a>`,
+            })
+            .then(()=>err = false)
+            .catch(()=> err = true)
+            transport.close();
+            if(err){
+                return res.status(400).json({ msg: "Erro ao enviar email de confirmação." })
+            }
+        }
+
         res.json({ id: novo._id, msg: 'Pedido de orientação enviado.' });
 
     } catch (error) {

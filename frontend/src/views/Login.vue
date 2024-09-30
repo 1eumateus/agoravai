@@ -130,17 +130,15 @@
                     </section>
 
                     <section class="grid grid-cols-1 " v-if="opcao === 'cadastrarProfessor'">
-                        <Texto as="body" >
-                            Pegar dados via siape
-                        </Texto>
                         <div class="grid grid-cols-2 gap-[8px] items-end " >
                             <Campo 
                                 v-model="registrar.siape" 
-                                label="SIAPE" 
+                                label="Pegar dados via siape" 
                                 id="siape" 
                                 type="text"
                                 :obrigatorio="false"
                                 placeholder="ex.: 1234567" 
+                                :maxLength="10"
                             /> 
                             <div class="flex items-end gap-[4px] ">
                                 <button 
@@ -503,15 +501,22 @@ function modalConfirmar(){
 }
 
 async function buscarDados(){
-    if(!registrar.siape) {
+    if(!registrar.siape || registrar.siape.length<6) {
         popupInfo().warning('Código do SIAPE inválido.');
         return;
     }
     await api.get(`/usuario/siape/${registrar.siape}`)
         .then((res) => {
-            Object.assign(registrar, res.data)
+            console.log(res.data)
+            if(res?.data?.dados){
+                Object.assign(registrar, res.data.dados)
+                popupInfo().success(res.data?.msg);
+            }else{
+                popupInfo().warning(res.data?.msg);
+            }
         })
         .catch((e) => {
+            console.log(e)
             popupInfo().error(e.response?.data?.msg);
         });
 }
@@ -568,7 +573,7 @@ function limparDados(){
     confirmarSenha.value = '';
 
     for (let key in registrar) {
-        registrar[key] = '';
+        if(key !== 'siape') registrar[key] = '';
     }
     
     registrar.disponibilidade= '';
