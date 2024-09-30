@@ -313,7 +313,7 @@ async function gerarConvite(req, res) {
         
         doc.fontSize(16).text(`DATA E HORA: (${formatarData(form.dataDefesa)} às ${form.horaDefesa})`, { align: 'left' });
         
-        if (form.link.trim()) {
+        if (form.link?.trim()) {
             const qrCodeResponse = await axios.get(`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(form.link)}`, { responseType: 'arraybuffer' });
             const qrCodeBuffer = Buffer.from(qrCodeResponse.data, 'binary');
             const qrCodePath = 'temp/qrcode.png';

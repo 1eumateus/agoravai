@@ -50,8 +50,8 @@
             </div>
 
             <div class="flex flex-col justify-center gap-[24px] px-[10px] md:px-[10px] lg:px-[90px]">   
-                <div class="flex flex-col p-[20px] gap-[12px]"> 
-                    <section class="flex flex-col">
+                <div class="flex flex-col p-[10px] gap-[12px]"> 
+                    <section class="flex flex-col ">
                         <Texto as="h3" color="principal">
                             {{ opcao === 'entrar' ? 'Entrar': '' }}
                             {{ opcao === 'cadastrarAluno' ? 'Cadastrar aluno': '' }}
@@ -79,7 +79,7 @@
                         /> 
                     </section>
 
-                    <section class="grid grid-cols-1 lg:grid-cols-2 gap-[10px]" v-if="opcao === 'cadastrarAluno'">
+                    <section class="grid grid-cols-2 gap-[10px]" v-if="opcao === 'cadastrarAluno'">
                         <Campo 
                             v-model="registrar.nome" 
                             label="Nome" 
@@ -98,7 +98,7 @@
                             :maxLength="50"
                             placeholder="ex.: Barroso"
                         /> 
-                        <div class="col-span-1 lg:col-span-2">
+                        <div class="col-span-2">
                             <Campo 
                                 v-model="registrar.email" 
                                 label="Email" 
@@ -130,7 +130,7 @@
                     </section>
 
                     <section class="grid grid-cols-1 " v-if="opcao === 'cadastrarProfessor'">
-                        <div class="grid grid-cols-2 gap-[8px] items-end " >
+                        <div class="grid grid-cols-2 gap-[4px] items-end " >
                             <Campo 
                                 v-model="registrar.siape" 
                                 label="Pegar dados via siape" 
@@ -140,20 +140,26 @@
                                 placeholder="ex.: 1234567" 
                                 :maxLength="10"
                             /> 
-                            <div class="flex items-end gap-[4px] ">
+                            <div class="grid grid-cols-2 items-end gap-[4px] ">
                                 <button 
                                     type="button" 
                                     class="text-[16px] w-full font-normal border border-gray-400 hover:bg-gray-200 rounded-md p-[8px] flex gap-1 justify-center " 
                                     @click="buscarDados()"
                                 >
-                                    Buscar <PhMagnifyingGlass :size="24" class="  " /> 
+                                    <div class="hidden md:hidden lg:block">
+                                        Buscar
+                                    </div>
+                                    <PhMagnifyingGlass :size="24"/> 
                                 </button>
                                 <button 
                                     type="button" 
                                     class="text-[16px] w-full font-normal border border-gray-400 hover:bg-gray-200 rounded-md p-[8px] flex gap-1 justify-center" 
                                     @click="limparDados()"
                                 >
-                                    Limpar <PhEraser :size="24" class="  " /> 
+                                    <div class="hidden md:hidden lg:block">
+                                        Limpar
+                                    </div>
+                                    <PhEraser :size="24" /> 
                                 </button> 
                             </div>
                         </div>
