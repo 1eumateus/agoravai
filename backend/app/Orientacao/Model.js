@@ -53,7 +53,7 @@ const modelSchema = new Schema({
     },
     horaDefesa:{
         type: String,
-        default: '00:00',
+        default: null,
     }
 });
 

@@ -12,7 +12,7 @@
                     <button 
                         @click="gerarConvite"
                         type="button" 
-                        class="cursor-pointer py-[10px] px-[12px] h-11 border border border-terciaria hover:bg-terciaria hover:text-white rounded-md"
+                        class="cursor-pointer py-[10px] px-[12px] h-11 border border border-terciaria hover:border-principal hover:bg-terciaria hover:text-white rounded-md"
                     >
                             Gerar cartaz de divulgação
                     </button>
@@ -102,8 +102,8 @@
                             <Texto as="h4">
                                 Informações para defesa
                             </Texto>
-                            <div class="grid grid-cols-12 gap-[8px] items-end">
-                                <div class="col-span-5">
+                            <div class="grid grid-cols-2 md:grid-cols-12 md:grid-cols-12 gap-[12px] items-end">
+                                <div class="col-span-1 md:col-span-5 lg:col-span-5">
                                     <Campo 
                                         v-model="form.coorientador.nome" 
                                         label="Nome do coorientador" 
@@ -114,7 +114,7 @@
                                         :maxLength="30"
                                     />
                                 </div>
-                                <div class="col-span-5">
+                                <div class="col-span-1 md:col-span-5 lg:col-span-5">
                                     <Campo 
                                         v-model="form.coorientador.instituicao" 
                                         label="Instituição" 
@@ -125,9 +125,8 @@
                                         :maxLength="20"
                                     />
                                 </div>
-                            </div>
-                            <div class="grid grid-cols-12 gap-[8px] items-end">
-                                <div class="col-span-5">
+                           
+                                <div class="col-span-2 md:col-span-5 lg:col-span-5">
                                     <Campo 
                                         v-model="form.tema" 
                                         label="Tema" 
@@ -137,7 +136,7 @@
                                         placeholder="ex.: SOTCC - Sistema de orientação em TCC"
                                     />
                                 </div>
-                                <div class="col-span-5">
+                                <div class="col-span-2 md:col-span-5 lg:col-span-5">
                                     <Campo 
                                         v-model="form.link" 
                                         label="Local virtual (link)" 
@@ -148,9 +147,7 @@
                                         :maxLength="200"
                                     />
                                 </div>
-                            </div>
-                            <div class="grid grid-cols-12 gap-[8px] items-end">
-                                <div class="col-span-5">
+                                <div class="col-span-1 md:col-span-5 lg:col-span-5">
                                     <Campo 
                                         v-model="form.dataDefesa" 
                                         label="Data de defesa" 
@@ -159,7 +156,7 @@
                                         :obrigatorio="true"
                                     />
                                 </div>
-                                <div class="col-span-5">
+                                <div class="col-span-1 md:col-span-5 lg:col-span-5">
                                     <Campo 
                                         v-model="form.horaDefesa" 
                                         label="Hora da defesa" 
@@ -173,14 +170,14 @@
                                     <button 
                                         type="button" 
                                         @click="salvar"
-                                        class="h-11 w-full px-3 text-white bg-principal hover:bg-principal-opaco font-bold text-sm rounded-md cursor-pointer">
+                                        class="h-11 w-full text-white bg-principal hover:bg-principal-opaco font-bold text-sm rounded-md cursor-pointer">
                                         Salvar
                                     </button>
                                 </div>
                             </div>
-                            <hr/>
-                            <div class="grid grid-cols-12 items-end gap-2 ">
-                                <div class="col-span-5">
+                            <hr class="my-2" />
+                            <div class="grid grid-cols-2 md:grid-cols-12 lg:grid-cols-12 items-end gap-2 ">
+                                <div class="col-span-1 md:col-span-5 lg:col-span-5">
                                     <Campo 
                                         v-model="participanteBanca.nome" 
                                         label="Novo participante da banca" 
@@ -191,7 +188,7 @@
                                         :maxLength="30"
                                     />
                                 </div>
-                                <div class="col-span-5">
+                                <div class="col-span-1 md:col-span-5 lg:col-span-5">
                                     <Campo 
                                         v-model="participanteBanca.instituicao" 
                                         label="Instituição" 
@@ -202,11 +199,11 @@
                                         :maxLength="20"
                                     />
                                 </div>
-                                <div class="col-span-2">
+                                <div class="col-span-2 ">
                                     <button 
                                         type="button" 
                                         :onClick="editar"
-                                        :class="`${editandoParticipante !==-1 ? ' bg-orange-600 ':' bg-principal hover:bg-principal-opaco '} w-full h-11 text-white px-3 font-bold text-sm rounded-md cursor-pointer`">
+                                        :class="`${editandoParticipante !==-1 ? ' bg-orange-600 ':' bg-principal hover:bg-principal-opaco '} w-full h-11 text-white font-bold text-sm rounded-md cursor-pointer`">
                                         {{ editandoParticipante !==-1 ? 'Salvar alteração': 'Adicionar'}}
                                     </button>
                                 </div>
@@ -215,34 +212,52 @@
                                 <Texto as="body-bold">
                                     Banca examinadora
                                 </Texto>
-                                <div v-if="form.banca.length>0" class=" overflow-auto border">
-                                    <div v-for="(participante, index) in form.banca" :key="index" class="even:bg-gray-200 flex items-center justify-between gap-2 p-1"> 
-                                        <Texto as="body">
-                                            {{ participante.nome }}
-                                        </Texto>
-                                        <Texto as="body">
-                                            {{ participante.instituicao }}
-                                        </Texto>
-                                        <div class="flex items-center gap-2" > 
-                                            <button 
-                                                type="button" 
-                                                class="cursor-pointer py-[10px] px-[12px] h-11 border border-gray-400 hover:bg-gray-300 rounded-md"
-                                                :onClick="()=>removerParticipante(index)">
-                                                <PhTrash :size="22" />
-                                            </button>
-                                            <button 
-                                                type="button" 
-                                                class="cursor-pointer py-[10px] px-[12px] h-11 border border border-gray-400 hover:bg-gray-300 rounded-md"
-                                                :onClick="()=>editarParticipante(index)"
-                                            >
-                                                    <PhPencilSimple :size="22" />
-                                            </button>
-                                        </div>
-                                    </div>
+                                <div class="overflow-x-auto">
+                                    <table  v-if="form.banca.length>0" class="min-w-full text-center ">
+                                        <thead>
+                                            <tr class="bg-gray-400 font-bold border">
+                                                <td class="p-2 text-left" >
+                                                    Nome
+                                                </td>
+                                                <td class="p-2 text-left" >
+                                                    Instituição
+                                                </td>
+                                                <td class="p-2 text-center">
+                                                    Opções
+                                                </td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(participante, index) in form.banca" :key="index" class="even:bg-gray-200" >
+                                                <td class="p-2 text-left" >
+                                                    {{ participante.nome }}
+                                                </td>
+                                                <td class="p-2 text-left">
+                                                    {{ participante.instituicao }}
+                                                </td>
+                                                <td class="p-2 flex justify-center gap-1" >
+                                       
+                                                   <button 
+                                                        type="button" 
+                                                        class="cursor-pointer py-[10px] px-[12px] h-11 border border-gray-400 hover:bg-gray-300 rounded-md"
+                                                        :onClick="()=>removerParticipante(index)">
+                                                        <PhTrash :size="22" />
+                                                    </button>
+                                                    <button 
+                                                        type="button" 
+                                                        class="cursor-pointer py-[10px] px-[12px] h-11 border border border-gray-400 hover:bg-gray-300 rounded-md"
+                                                        :onClick="()=>editarParticipante(index)"
+                                                    >
+                                                            <PhPencilSimple :size="22" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table> 
+                                    <Texto as="label" v-else>
+                                        Sem participantes da banca.
+                                    </Texto>
                                 </div>
-                                <Texto as="label" v-else>
-                                    Sem participantes da banca.
-                                </Texto>
                             </div>
                         </div>
                     </section>
@@ -382,7 +397,7 @@ async function gerarConvite(){
     if(!form.horaDefesa){
         return popupInfo().warning('Informe hora de defesa do TCC.');
     }
-
+    popupInfo().info('Gerando cartaz...');
     await api.post(`/orientacao/gerarConvite`, form, {
         responseType: 'blob' 
     })

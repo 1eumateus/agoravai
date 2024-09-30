@@ -24,13 +24,13 @@
                         v-if="form?.imagem?.filename"
                         :src="`${urlApi}/uploads/${form?.imagem?.filename}`" 
                         :alt="form?.imagem?.originalname" 
-                        class="h-[180px] w-[180px] rounded-md"
+                        class="min-h-[180px] w-[180px] rounded-md"
                     />
                     <img 
                         v-else
                         :src="`/Sem_imagem.jpg`" 
                         :alt="'sem imagem'" 
-                        class="h-[180px] w-[180px] rounded-md"
+                        class="min-h-[180px] w-[180px] rounded-md"
                     />
                     <Texto as="body-bold">
                         {{ form.nome }} {{ form.sobrenome }}
@@ -55,7 +55,7 @@
                         <button 
                             v-if="solicitacaoEnviada"
                             class=" font-bold text-[14px] bg-orange-400 py-[8px] px-[12px] rounded-md cursor-not-allowed">
-                            Orientação solicitada
+                            {{ estadoOrientacao==='confirmado' ? 'Em orientação' : 'Orientação solicitada' }}
                         </button>
                    </div>
                     
@@ -86,6 +86,14 @@
                         </Texto>
                         <Texto as="body">
                             {{ formatMask.tel(form.celular) }}
+                        </Texto>
+                    </div>
+
+                    <div class="flex flex-col gap-[8px] w-full text-center justify-end h-full">
+                        <hr class="" />
+
+                        <Texto as="body">
+                            Orientando {{ totalOrientacao || 0 }} aluno(s)
                         </Texto>
                     </div>
                 </section>
@@ -139,6 +147,8 @@ const openSolicitarOrientacao = ref(false);
 const orientacoes = reactive([]);
 const solicitacaoEnviada = ref(false);
 const urlApi = import.meta.env.VITE_URL;
+const estadoOrientacao = ref('');
+const totalOrientacao = ref(0);
 
 const disponibilidades = [
     { value: "", nome: "Não aplicado", color:'bg-blue-200' },
@@ -202,10 +212,16 @@ async function listarOrientacao(){
     for(let i=0;i<orientacoes?.length;i++){
         const professor = orientacoes[i]?.professor
         if(professor?._id === form?._id){
+            estadoOrientacao.value = orientacoes[i].situacao
             solicitacaoEnviada.value = true;
             break;
         }
     }
+
+    await api.get(`/orientacao/professor/${form._id}`)
+    .then((res)=>{
+        totalOrientacao.value = res.data
+    })
 }
 
 async function recarregar(event){
