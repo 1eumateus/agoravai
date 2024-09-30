@@ -126,128 +126,97 @@
                 </section>
             </div>
             <div class="grid grid-cols-1 gap-[8px]">
-                <Texto as="h4">
-                    Orientações
-                </Texto>
-                <section class="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-[6px] border border-secundaria-opaco rounded-md bg-white p-[10px]" v-for="(orientacao, index) in orientacoes" :key="index" v-if="orientacoes.length>0">
-                    <div class="grid grid-cols-1 gap-[4px] col-span-1 md:col-span-3 lg:col-span-3">
-                        <div class="flex flex-col" v-if="props.usuario.tipo === 'aluno'">
-                            <div class="flex flex-col">
-                                <Texto as="body-bold">
-                                    Orientador: 
-                                </Texto>
-                                <Texto as="body">
-                                    {{ orientacao?.professor?.nome }} {{ orientacao?.professor?.sobrenome }}
-                                </Texto>
-                            </div>
-                            <div class="flex flex-col" v-if="orientacao?.coorientador?.nome">
-                                <Texto as="body-bold">
-                                    Coorientador:
-                                </Texto>
-                                <Texto as="body">
-                                    {{ orientacao?.coorientador?.nome }}
-                                </Texto>
-                            </div>
-                            <div class="flex gap-[4px]">
-                                <Texto as="body-bold">
-                                    Situação:
-                                </Texto>
-                                <Texto 
-                                    as="body" 
-                                    :color="`${orientacao.situacao=='pendente' 
-                                        ? 'orange' 
-                                        : orientacao.situacao=='confirmado' ? 'green' : 'red'}`">
-                                     {{ orientacao.situacao }}
-                                </Texto>
-                            </div>
-                        </div>
-                        <div class="flex flex-col" v-else>
-                            <div class="flex flex-col">
-                                <Texto as="body-bold">
-                                    Aluno:
-                                </Texto>
-                                <Texto as="body">
-                                    {{ orientacao.aluno.nome }} {{ orientacao.aluno.sobrenome }}
-                                </Texto>
-                            </div>
-                            <div class="flex flex-col" v-if="orientacao?.coorientador?.nome">
-                                <Texto as="body-bold">
-                                    Coorientador:
-                                </Texto>
-                                <Texto as="body">
-                                    {{ orientacao?.coorientador?.nome }}
-                                </Texto>
-                            </div>
-                            <div class="flex gap-[4px]">
-                                <Texto as="body">
-                                    Situação:
-                                </Texto>
-                                <Texto 
-                                    as="body" 
-                                    :color="`${orientacao.situacao=='pendente' 
-                                        ? 'orange' 
-                                        : orientacao.situacao=='confirmado' ? 'green' : 'red'}`">
-                                     {{ orientacao.situacao }}
-                                </Texto>
-                            </div>
-                        </div>
+                <section class="grid grid-cols-1 gap-[6px] border border-secundaria-opaco rounded-md bg-white p-[10px]" >
+                    <Texto as="h4">
+                        Orientações
+                    </Texto>
+                    <div class="overflow-x-auto">
+                        <table v-if="orientacoes.length>0" class="min-w-full text-center ">
+                            <thead>
+                                <tr class="bg-gray-400 font-bold border">
+                                    <td class="p-2 text-left" v-if="props?.usuario.tipo === 'aluno'">
+                                        Orientador
+                                    </td>
+                                    <td class="p-2 text-left" v-if="props?.usuario.tipo === 'professor'">
+                                        Aluno
+                                    </td>
+                                    <td class="p-2">
+                                        Situação
+                                    </td>
+                                    <td class="p-2 hidden md:block lg:block">
+                                        Proposta
+                                    </td>
+                                    <td class="p-2 ">
+                                        Resposta do orientador
+                                    </td>
+                                    <td class="p-2 ">
+                                        Data e hora de defesa
+                                    </td>
+                                    <td class="p-2 ">
+                                        Opções
+                                    </td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(orientacao, index) in orientacoes" :key="index"  class="  even:bg-gray-200" >
+                                    <td class="p-2 text-left min-w-40" v-if="props?.usuario.tipo === 'aluno'">
+                                        {{ orientacao?.professor?.nome }} {{ orientacao?.professor?.sobrenome }}
+                                    </td>
+                                    <td class="p-2 text-left min-w-40" v-if="props?.usuario.tipo === 'professor'">
+                                        {{ orientacao.aluno.nome }} {{ orientacao.aluno.sobrenome }}
+                                    </td>
+                                    <td class="p-2 ">
+                                        <Texto 
+                                            as="body" 
+                                            :color="`${orientacao.situacao=='pendente' 
+                                                ? 'orange' 
+                                                : orientacao.situacao=='confirmado' ? 'green' : 'red'}`"
+                                            >
+                                            {{ orientacao.situacao }}
+                                        </Texto>
+                                    </td>
+                                    <td class="p-2 text-left min-w-40 hidden md:block lg:block">
+                                        {{ orientacao.proposta || ' - ' }}
+                                    </td>
+                                    <td class="p-2 min-w-40">
+                                        {{ orientacao.resposta || ' - ' }}
+                                    </td>
+                                    <td class="p-2 ">
+                                        {{ orientacao.dataDefesa ? formatMask.viewDate(orientacao.dataDefesa) : '-'}}
+                                        {{ orientacao.horaDefesa ? orientacao.horaDefesa : ' : -'}}
+                                    </td>
+                                    <td class="p-2 flex flex-col items-center justify-center gap-[8px]">
+                                        <button 
+                                                type="button" 
+                                                :onClick="()=> usuario.tipo === 'aluno' ? cancelarPedido(orientacao): responderOrientacao(orientacao, 'negado')" 
+                                                class="cursor-pointer w-full flex flex-col items-center gap-[4px] p-[4px] border border-red-400 hover:bg-red-100 rounded-md"
+                                                v-if="props.usuario.tipo === 'aluno' || (props.usuario.tipo === 'professor' && orientacao.situacao !== 'negado')"
+                                            >  
+                                            {{ props.usuario.tipo === 'aluno' ? ' Deletar ' : 'Negar' }}
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            :onClick="()=> responderOrientacao(orientacao, 'confirmado')" 
+                                            v-if="props.usuario.tipo === 'professor' && orientacao.situacao !== 'confirmado'"
+                                            class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-green-400 hover:bg-green-100 rounded-md"
+                                        >  
+                                            Confirmar orientação
+                                        </button>
+                                        <router-link 
+                                            :to="`/orientacao/${orientacao._id}`" 
+                                            class="cursor-pointer flex flex-col justify-center items-center gap-[4px] p-[4px] border border-blue-400 hover:bg-blue-100 rounded-md"
+                                            v-if="orientacao.situacao === 'confirmado'"
+                                        >
+                                            Detalhes
+                                        </router-link>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table> 
+                        <Texto as="body" v-else>
+                            Nenhum pedido de orientação.
+                        </Texto>
                     </div>
-                    <div class="flex flex-col gap-[4px] col-span-1 md:col-span-7 lg:col-span-7">
-                        <div class="flex gap-1" v-if="orientacao.situacao === 'confirmado' && orientacao.dataDefesa">
-                            <Texto as="body-bold">
-                                Data de defesa:
-                            </Texto>
-                            <Texto as="body">
-                                {{ formatMask.viewDate(orientacao.dataDefesa) }} {{ orientacao.horaDefesa }}
-                            </Texto>
-                        </div>
-                        <div class="flex flex-col">
-                            <Texto as="body-bold">
-                                Proposta
-                            </Texto>
-                            <Texto as="body">
-                                {{ orientacao.proposta }}
-                            </Texto>
-                        </div>
-                        <div class="flex flex-col" v-if="orientacao.resposta">
-                            <Texto as="body-bold">
-                                Resposta do professor
-                            </Texto>
-                            <Texto as="body">
-                                {{ orientacao.resposta }}
-                            </Texto>
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-[8px] items-start md:items-end lg:items-end col-span-1 md:col-span-2 lg:col-span-2">
-                        <div class="flex justify-center h-full md:flex-col lg:flex-col gap-[8px]">
-                            <button 
-                                type="button" 
-                                :onClick="()=> usuario.tipo === 'aluno' ? cancelarPedido(orientacao): responderOrientacao(orientacao, 'negado')" 
-                                class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-red-400 hover:bg-red-100 rounded-md"
-                                v-if="props.usuario.tipo === 'aluno' || (props.usuario.tipo === 'professor' && orientacao.situacao !== 'negado')"
-                            >  
-                            {{ props.usuario.tipo === 'aluno' ? ' Deletar orientação' : 'Negar orientação' }}
-                            </button>
-                            <button 
-                                type="button" 
-                                :onClick="()=> responderOrientacao(orientacao, 'confirmado')" 
-                                v-if="props.usuario.tipo === 'professor' && orientacao.situacao !== 'confirmado'"
-                                class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-green-400 hover:bg-green-100 rounded-md"
-                            >  
-                                Confirmar orientação
-                            </button>
-                            <router-link 
-                                :to="`/orientacao/${orientacao._id}`" 
-                                class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-blue-400 hover:bg-blue-100 rounded-md"
-                                v-if="orientacao.situacao === 'confirmado'"
-                            >
-                               Detalhes
-                            </router-link>
-                        </div>
-                    </div>
-                </section>
-                <section class="grid grid-cols-1 gap-[8px] border border-secundaria-opaco rounded-md bg-white p-[10px]" v-else>
-                       Nenhum pedido de orientação.
                 </section>
             </div>
         </section>

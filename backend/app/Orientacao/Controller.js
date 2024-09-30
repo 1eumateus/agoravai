@@ -101,32 +101,32 @@ async function criar(req, res) {
 
         await novo.save();
 
-        if(req.body.emailProfessor && req.body.nomeAluno){
-            const transport = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                port: 465,
-                secure: true,
-                auth:{
-                    user: process.env.EMAIL,
-                    pass: process.env.SENHA,
-                },
-                connectionTimeout: 20000
-            })
+        // if(req.body.emailProfessor && req.body.nomeAluno){
+        //     const transport = nodemailer.createTransport({
+        //         host: 'smtp.gmail.com',
+        //         port: 465,
+        //         secure: true,
+        //         auth:{
+        //             user: process.env.EMAIL,
+        //             pass: process.env.SENHA,
+        //         },
+        //         connectionTimeout: 20000
+        //     })
 
-            let err = false;
-            await transport.sendMail({
-                from: 'SOTCC',
-                to: req.body.emailProfessor,
-                subject: 'SOTCC - Solicitação de orientação',
-                html: `<h3>O aluno ${req.body.nomeAluno} deseja ser orientado por você, entre para ver mais detalhes.<h3/><a href='http://localhost:4444/login'>Clique aqui para entrar no sistema.</a>`,
-            })
-            .then(()=>err = false)
-            .catch(()=> err = true)
-            transport.close();
-            if(err){
-                return res.status(400).json({ msg: "Erro ao enviar email de confirmação." })
-            }
-        }
+        //     let err = false;
+        //     await transport.sendMail({
+        //         from: 'SOTCC',
+        //         to: req.body.emailProfessor,
+        //         subject: 'SOTCC - Solicitação de orientação',
+        //         html: `<h3>O aluno ${req.body.nomeAluno} deseja ser orientado por você, entre para ver mais detalhes.<h3/><a href='http://localhost:4444/login'>Clique aqui para entrar no sistema.</a>`,
+        //     })
+        //     .then(()=>err = false)
+        //     .catch(()=> err = true)
+        //     transport.close();
+        //     if(err){
+        //         return res.status(400).json({ msg: "Erro ao enviar email de confirmação." })
+        //     }
+        // }
 
         res.json({ id: novo._id, msg: 'Pedido de orientação enviado.' });
 
@@ -207,6 +207,16 @@ async function alterarSituacao(req, res) {
         return res.status(200).json({msg: msg});
     } catch (error) {
         return res.status(400).json({msg: 'Erro ao cancelar orientação.'});
+    }
+}
+
+async function orientacaoPorProfessor(req, res) {
+    try {
+        const filtro = { ativo: true, professor: req.params.id, situacao: 'confirmado' };
+        const count = await Model.countDocuments(filtro);
+        res.json(count);
+    } catch (error) {
+        return res.status(400).json({msg: 'Erro ao procurar dados da orientação.'});
     }
 }
 
@@ -353,4 +363,4 @@ function formatarData(value) {
     return `${dia}/${mes}/${ano}`;
 }
 
-export { listar, criar, deletar, alterarSituacao, editar, pegarPorId, gerarConvite };
+export { listar, criar, deletar, alterarSituacao, editar, pegarPorId, gerarConvite, orientacaoPorProfessor };

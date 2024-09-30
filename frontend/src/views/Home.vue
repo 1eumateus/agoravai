@@ -92,8 +92,12 @@
                                 <div class="bg-orange-200 flex justify-center rounded-2xl p-1" v-else>
                                     <Texto as="label" >
                                         {{ 
-                                            orientacoes.find((item)=> item?.professor?._id === professor._id) !== -1 
-                                            ? 'Orientação solicitada' 
+                                            (orientacoes.find((item)=> item?.professor?._id === professor._id) !== -1 )
+                                            ?   (
+                                                    orientacoes.find((item)=> item?.professor?._id === professor._id).situacao==='confirmado' 
+                                                        ? 'Em orientação'
+                                                        :'Orientação solicitada'
+                                                ) 
                                             : (professor.disponibilidade || '-') 
                                         }} 
                                     </Texto>
