@@ -154,6 +154,8 @@ async function editar(req, res) {
         editar.horaDefesa = req.body.horaDefesa;
         editar.tema = req.body.tema;
         editar.link = req.body.link;
+        editar.presencial = req.body.presencial;
+        editar.local = req.body.local;
 
         await editar.save();
         res.status(200).json({ msg: "Orientação editada com sucesso." });
@@ -306,14 +308,15 @@ async function gerarConvite(req, res) {
         doc.fontSize(16).text(`${form.professor.nome} ${form.professor.sobrenome} (UFPA/FECOMP)`, { align: 'center' });
         doc.fontSize(16).text(`Orientador`, { align: 'center' });
 
-        doc.moveDown();
-
-        doc.fontSize(16).text(`${form.coorientador.nome} ${form.coorientador.instituicao ? `(${form.coorientador.instituicao})` : ''}`, { align: 'center' });
-        doc.fontSize(16).text(`Coorientador`, { align: 'center' });
+        if(form.coorientador.nome){
+            doc.moveDown();
+            doc.fontSize(16).text(`${form.coorientador.nome?.trim()} ${form.coorientador.instituicao ? `(${form.coorientador.instituicao})` : ''}`, { align: 'center' });
+            doc.fontSize(16).text(`Coorientador`, { align: 'center' });
+        }
 
         form.banca.forEach((membro) => {
             doc.moveDown();
-            doc.fontSize(16).text(`${membro.nome} ${membro.instituicao ? `(${membro.instituicao})` : ''}`, { align: 'center' });
+            doc.fontSize(16).text(`${membro.nome?.trim()} ${membro.instituicao ? `(${membro.instituicao?.trim()})` : ''}`, { align: 'center' });
             doc.fontSize(16).text(`Examinador`, { align: 'center' });
         });
 
@@ -323,7 +326,12 @@ async function gerarConvite(req, res) {
         
         doc.fontSize(16).text(`DATA E HORA: (${formatarData(form.dataDefesa)} às ${form.horaDefesa})`, { align: 'left' });
         
-        if (form.link?.trim()) {
+
+        if(form.presencial && form.local?.trim()){
+            doc.moveDown();
+            doc.fontSize(16).text(`LOCAL: ${form.local}`, { align: 'left', lineGap: 8 });
+        }
+        if (form.link?.trim() && !form.presencial) {
             const qrCodeResponse = await axios.get(`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(form.link)}`, { responseType: 'arraybuffer' });
             const qrCodeBuffer = Buffer.from(qrCodeResponse.data, 'binary');
             const qrCodePath = 'temp/qrcode.png';

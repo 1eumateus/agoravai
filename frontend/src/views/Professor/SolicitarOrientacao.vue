@@ -56,6 +56,8 @@ import { PhX } from '@phosphor-icons/vue';
 import { reactive } from "vue";
 import { popupInfo } from '../../stores/util.js';
 import api from "@/api.js";
+import { useLoaderState } from "../../stores/isLoading";
+const isLoading = useLoaderState();
 
 const props = defineProps({
     aluno: {
@@ -106,13 +108,14 @@ async function solicitar(){
     }
     let idOrientacao = '';
 
-    popupInfo().info('Avisando professor...');
+    
+    isLoading.changeStateTrue()
     await api.post(`/orientacao/criar`, form)
     .then((res)=>{
         idOrientacao = res.data.id
     }).catch((e)=>{
         popupInfo().warning(e?.response?.data?.msg);
-    })
+    }).finally(()=> isLoading.changeStateFalse())
 
     if(idOrientacao){
         await api.put(`/usuario/adicionarOrientacao`,

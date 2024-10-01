@@ -197,7 +197,7 @@ async function listar(req, res) {
 
 async function listarProfessores(req, res) {
     try {
-        const filtro = {ativo: true, verificado: true, tipo: 'professor'}
+        const filtro = {ativo: true, verificado: true, tipo: 'professor',  disponibilidade: { $ne: 'indisponível' }}
 
         const procurar = req.query.procurar || false;
         const procurarDisponibilidade = req.query.procurarDisponibilidade || false;
