@@ -151,7 +151,6 @@ const props = defineProps({
 
 const disponibilidades = [
     { value: "", nome: "Não aplicado", color:'bg-blue-200' },
-    { value: "indisponível", nome: "Indisponível", color:'bg-red-200' },
     { value: "matutino", nome: "Matutino", color:'bg-blue-200' },
     { value: "vespertino", nome: "Vespertino", color:'bg-blue-200' },
     { value: "noturno", nome: "Noturno", color:'bg-blue-200' },

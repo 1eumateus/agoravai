@@ -94,7 +94,6 @@
 
                 <section class="flex flex-col gap-[8px] border rounded-md border-secundaria-opaco p-[10px] col-span-2 bg-white">
                     <div class="flex flex-col gap-[8px]">
-                        <div class="flex flex-col gap-[8px]">
                         <Texto as="body-bold">
                             Descrição
                         </Texto>
@@ -122,7 +121,6 @@
                             {{ form.interesse || '-' }}
                         </Texto>
                     </div>
-                   </div>
                 </section>
             </div>
             <div class="grid grid-cols-1 gap-[8px]">
@@ -134,10 +132,10 @@
                         <table v-if="orientacoes.length>0" class="min-w-full text-center ">
                             <thead>
                                 <tr class="bg-gray-400 font-bold border">
-                                    <td class="p-2 text-left" v-if="props?.usuario.tipo === 'aluno'">
+                                    <td class="p-2 text-left" v-if="props?.usuario.tipo !== 'professor'">
                                         Orientador
                                     </td>
-                                    <td class="p-2 text-left" v-if="props?.usuario.tipo === 'professor'">
+                                    <td class="p-2 text-left" v-if="props?.usuario.tipo !== 'aluno'">
                                         Aluno
                                     </td>
                                     <td class="p-2">
@@ -146,7 +144,7 @@
                                     <td class="p-2 hidden md:block lg:block">
                                         Proposta
                                     </td>
-                                    <td class="p-2 ">
+                                    <td class="p-2 " v-if="props?.usuario.tipo !== 'admin'">
                                         Resposta do orientador
                                     </td>
                                     <td class="p-2 ">
@@ -159,10 +157,10 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(orientacao, index) in orientacoes" :key="index"  class="  even:bg-gray-200" >
-                                    <td class="p-2 text-left min-w-40" v-if="props?.usuario.tipo === 'aluno'">
+                                    <td class="p-2 text-left min-w-40" v-if="props?.usuario.tipo !== 'professor'">
                                         {{ orientacao?.professor?.nome }} {{ orientacao?.professor?.sobrenome }}
                                     </td>
-                                    <td class="p-2 text-left min-w-40" v-if="props?.usuario.tipo === 'professor'">
+                                    <td class="p-2 text-left min-w-40" v-if="props?.usuario.tipo !== 'aluno'">
                                         {{ orientacao.aluno.nome }} {{ orientacao.aluno.sobrenome }}
                                     </td>
                                     <td class="p-2 ">
@@ -178,7 +176,7 @@
                                     <td class="p-2 text-left min-w-40 hidden md:block lg:block">
                                         {{ orientacao.proposta || ' - ' }}
                                     </td>
-                                    <td class="p-2 min-w-40">
+                                    <td class="p-2 min-w-40" v-if="props?.usuario.tipo !== 'admin'">
                                         {{ orientacao.resposta || ' - ' }}
                                     </td>
                                     <td class="p-2 ">

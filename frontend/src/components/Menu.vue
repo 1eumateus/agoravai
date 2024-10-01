@@ -1,5 +1,5 @@
 <template>
-    <nav class="flex items-center justify-between px-[5px] md:px-[80px] lg:px-[80px]  border-b-[2px] border-terciaria gap-[24px] bg-principal text-white">
+    <nav class="flex items-center justify-between px-[5px] md:px-[80px] lg:px-[80px] border-b-[2px] border-terciaria gap-[24px] bg-principal text-white">
        <section class="flex items-center gap-[24px] ">
             <router-link to="/" class=" hover:text-terciaria hidden md:block lg:block">
                 <Texto as="h3" color="white" :cursorPointer="true">

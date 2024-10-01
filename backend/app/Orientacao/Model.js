@@ -20,6 +20,13 @@ const modelSchema = new Schema({
     link: {
         type: String,
     },
+    local: {
+        type: String,
+    },
+    presencial: {
+        type: Boolean,
+        default: false,
+    },
     aluno: {
         type: mongoose.SchemaTypes.ObjectId,
         ref: "Usuario",

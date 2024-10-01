@@ -109,7 +109,7 @@
                                         label="Nome do coorientador" 
                                         id="coorientadorNome" 
                                         type="text"
-                                        :obrigatorio="true"
+                                        :obrigatorio="false"
                                         placeholder="ex.: Davi Barroso"
                                         :maxLength="30"
                                     />
@@ -120,13 +120,13 @@
                                         label="Instituição" 
                                         id="coorientadorinstituicao" 
                                         type="text"
-                                        :obrigatorio="true"
+                                        :obrigatorio="false"
                                         placeholder="ex.: UFPA/FECOMP"
                                         :maxLength="20"
                                     />
                                 </div>
                            
-                                <div class="col-span-2 md:col-span-5 lg:col-span-5">
+                                <div class="col-span-2 md:col-span-10 lg:col-span-10">
                                     <Campo 
                                         v-model="form.tema" 
                                         label="Tema" 
@@ -136,7 +136,33 @@
                                         placeholder="ex.: SOTCC - Sistema de orientação em TCC"
                                     />
                                 </div>
-                                <div class="col-span-2 md:col-span-5 lg:col-span-5">
+                                <div class="col-span-2 md:col-span-10 lg:col-span-10">
+                                    <label class="inline-flex items-center cursor-pointer gap-[12px]">
+                                        <input
+                                            v-model="form.presencial"
+                                            type="checkbox"
+                                            class="sr-only peer"
+                                        />
+                                        <div
+                                            class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"
+                                        > </div>
+                                        <Texto as="body">
+                                            Presencial
+                                        </Texto>
+                                    </label>
+                                </div>
+                                <div class="col-span-2 md:col-span-10 lg:col-span-10" v-if="form.presencial">
+                                    <Campo 
+                                        v-model="form.local" 
+                                        label="Local (Endereço)" 
+                                        id="local" 
+                                        type="text"
+                                        :obrigatorio="false"
+                                        placeholder="ex.: R. Augusto Corrêa, 01 - Guamá"
+                                        :maxLength="200"
+                                    />
+                                </div>
+                                <div class="col-span-2 md:col-span-10 lg:col-span-10" v-else>
                                     <Campo 
                                         v-model="form.link" 
                                         label="Local virtual (link)" 
@@ -275,7 +301,9 @@ import { onMounted, reactive, ref } from "vue";
 import api from "@/api.js";
 import { formatMask, popupInfo } from '../../stores/util.js';
 import { useRouter, useRoute } from "vue-router";
+import { useLoaderState } from "../../stores/isLoading";
 
+const isLoading = useLoaderState();
 const router = useRouter();
 
 const props = defineProps({
@@ -303,6 +331,8 @@ const form = reactive({
     professor: "",
     proposta: "",
     resposta: "",
+    presencial: false,
+    local: "",
     tema: "",
     banca: [{
         nome: '',
@@ -371,6 +401,11 @@ async function editar(){
 }
 
 async function salvar(){
+
+    if (form.link?.trim() && !form.link?.startsWith('https://')) {
+        return popupInfo().warning('Informe um link válido.');
+    }
+
     await api.put(`/orientacao/editar`, form)
     .then((res)=>{
         popupInfo().success(res?.data?.msg);
@@ -381,13 +416,6 @@ async function salvar(){
 
 async function gerarConvite(){
 
-    
-    if(!form.coorientador.nome?.trim()){
-        return popupInfo().warning('Informe nome do coorientador.');
-    }
-    if(!form.coorientador.instituicao?.trim()){
-        return popupInfo().warning('Informe instituição do coorientador.');
-    }
     if(!form.tema?.trim()){
         return popupInfo().warning('Informe tema do TCC.');
     }
@@ -397,7 +425,11 @@ async function gerarConvite(){
     if(!form.horaDefesa){
         return popupInfo().warning('Informe hora de defesa do TCC.');
     }
-    popupInfo().info('Gerando cartaz...');
+    if(form.banca.length<2){
+        return popupInfo().warning('Informe ao menos 2 examinadores.');
+    }
+    
+    isLoading.changeStateTrue()
     await api.post(`/orientacao/gerarConvite`, form, {
         responseType: 'blob' 
     })
@@ -412,7 +444,7 @@ async function gerarConvite(){
         popupInfo().success('Cartaz gerado com sucesso.');
     }).catch((e)=>{
         popupInfo().warning(e?.response?.data?.msg || e);
-    })
+    }).finally(()=> isLoading.changeStateFalse())
 }
 
 onMounted(start);
