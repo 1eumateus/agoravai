@@ -387,6 +387,9 @@ import { popupInfo, isValid } from '../stores/util.js';
 import { ref, reactive } from "vue";
 import Texto from '@components/Texto.vue'
 import Campo from '@components/Campo.vue'
+import { useLoaderState } from "../stores/isLoading";
+const isLoading = useLoaderState();
+
 const opcao = ref('entrar');
 defineProps(["usuario"]);
 const confirmarSenha = ref('');
@@ -511,9 +514,9 @@ async function buscarDados(){
         popupInfo().warning('Código do SIAPE inválido.');
         return;
     }
+    isLoading.changeStateTrue()
     await api.get(`/usuario/siape/${registrar.siape}`)
         .then((res) => {
-            console.log(res.data)
             if(res?.data?.dados){
                 Object.assign(registrar, res.data.dados)
                 popupInfo().success(res.data?.msg);
@@ -522,9 +525,8 @@ async function buscarDados(){
             }
         })
         .catch((e) => {
-            console.log(e)
             popupInfo().error(e.response?.data?.msg);
-        });
+        }).finally(()=> isLoading.changeStateFalse())
 }
 
 async function login() {
@@ -555,16 +557,16 @@ async function register(){
         popupInfo().info('Email de confirmação enviado, verifique sua caixa de spam.');
         return;
     }
-    popupInfo().info('Enviando email de confirmação.');
+    isLoading.changeStateTrue()
     await api.post('/usuario/criar', registrar)
-        .then((res) => {
-            popupInfo().info(res?.data?.msg);
-            emailEnviado.situacao = true;
-            emailEnviado.email = registrar.email
-        })
-        .catch((e) => {
-            popupInfo().error(e.response?.data?.msg);
-        });
+    .then((res) => {
+        popupInfo().info(res?.data?.msg);
+        emailEnviado.situacao = true;
+        emailEnviado.email = registrar.email
+    })
+    .catch((e) => {
+        popupInfo().error(e.response?.data?.msg);
+    }).finally(()=> isLoading.changeStateFalse())
 
 }
 

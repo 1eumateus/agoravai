@@ -135,6 +135,8 @@ import { onMounted, ref, watch, reactive } from "vue";
 import api from "@/api.js";
 import { popupInfo } from '../stores/util.js';
 import Texto from '@components/Texto.vue'
+import { useLoaderState } from "../stores/isLoading";
+const isLoading = useLoaderState();
 
 const professores = ref([])
 const procurar = ref('')
@@ -161,6 +163,7 @@ const disponibilidades = [
 const areaProfessores = reactive([])
 
 async function start() {
+    isLoading.changeStateTrue()
     await api.get(`/usuario/professores?procurar=${procurar.value}&&procurarDisponibilidade=${procurarDisponibilidade.value}&&procurarInteresse=${procurarInteresse.value}`)
     .then((res)=>{
         professores.value = res.data.item;
@@ -174,7 +177,7 @@ async function start() {
         }
     }).catch((e)=>{
         popupInfo().warning('Erro ao pesquisar usuários.');
-    })
+    }).finally(()=> isLoading.changeStateFalse())
     if(props?.usuario.tipo === 'aluno'){
         listarOrientacao()
     }
