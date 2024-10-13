@@ -136,7 +136,72 @@
                         >
                         </textarea>
                     </div>  
-
+                    <Texto as="h4" v-if="form.tipo === 'professor'">
+                        Trabalhos de conclusão de curso
+                    </Texto>
+                    <div class="grid grid-cols-12 items-end gap-2" v-if="form.tipo === 'professor'">
+                        <div class="col-span-10">
+                            <Campo 
+                                v-model="trabalho" 
+                                label="Descrição" 
+                                id="trabalho" 
+                                type="text"
+                                :obrigatorio="false"
+                                placeholder=""
+                                :maxLength="300"
+                            />
+                        </div>
+                        <div class="col-span-2">
+                            <button 
+                                type="button" 
+                                :onClick="editar"
+                                :class="`${editandoTrabalho !==-1 ? ' bg-orange-600 ':' bg-principal hover:bg-principal-opaco '} w-full h-11 text-white font-bold text-sm rounded-md cursor-pointer`">
+                                {{ editandoTrabalho !==-1 ? 'Salvar': 'Adicionar'}}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-[4px] " v-if="form.tipo === 'professor'">
+                        <div class="overflow-x-auto">
+                            <table v-if="form?.trabalhosFimCurso?.length>0" class="min-w-full text-center ">
+                                <thead>
+                                    <tr class="bg-gray-400 font-bold border">
+                                        <td class="p-2 text-left" >
+                                            Descrição
+                                        </td>
+                                        <td class="p-2 text-left">
+                                            Opções
+                                        </td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(participante, index) in form?.trabalhosFimCurso" :key="index" class="even:bg-gray-200" >
+                                        <td class="p-2 text-left" >
+                                            {{ participante }}
+                                        </td>
+                                        <td class="p-2 flex justify-center gap-1" >
+                                
+                                            <button 
+                                                type="button" 
+                                                class="cursor-pointer py-[10px] px-[12px] h-11 border border-gray-400 hover:bg-gray-300 rounded-md"
+                                                :onClick="()=>removerTrabalho(index)">
+                                                <PhTrash :size="22" />
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                class="cursor-pointer py-[10px] px-[12px] h-11 border border border-gray-400 hover:bg-gray-300 rounded-md"
+                                                :onClick="()=>editarTrabalho(index)"
+                                            >
+                                                    <PhPencilSimple :size="22" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table> 
+                            <Texto as="label" v-else>
+                                Sem trabalhos adicionados.
+                            </Texto>
+                        </div>
+                    </div>
                     <Texto as="h4">
                         Informações de contato
                     </Texto>
@@ -213,7 +278,7 @@
 <script setup>
 import Campo from '@components/Campo.vue'
 import Texto from '@components/Texto.vue'
-import { PhX } from '@phosphor-icons/vue';
+import { PhTrash, PhPencilSimple, PhX } from '@phosphor-icons/vue';
 import { onMounted, reactive, ref } from "vue";
 import api from "@/api.js";
 import { popupInfo, formatMask } from '../../stores/util.js';
@@ -223,6 +288,7 @@ const urlApi = import.meta.env.VITE_URL;
 
 const novaImagem = ref(null)
 const imagePreview = ref(null);
+const editandoTrabalho = ref(-1);
 
 const disponibilidades = [
     { value: "indisponível", nome: "Indisponível" },
@@ -246,6 +312,7 @@ const form = reactive({
     disponibilidade: "",
     senha: "",
     imagem: "",
+    trabalhosFimCurso: [],
     tipo: null,
     ativo: true,
 });
@@ -334,6 +401,32 @@ function validateLinkedin(link) {
 function validateLattes(link) {
     const lattes = /^http:\/\/lattes\.cnpq\.br\/\d{15,17}$/;
     return lattes.test(link);
+}
+
+function removerTrabalho(index){
+    editandoTrabalho.value = -1;
+     trabalho.value = ''
+    form.trabalhosFimCurso.splice(index, 1);
+}
+
+const trabalho = ref('')
+
+function editarTrabalho(index){
+    trabalho.value = form.trabalhosFimCurso[index]
+    editandoTrabalho.value = index;
+}
+
+async function editar(){
+    if(!trabalho.value.trim()) return popupInfo().warning('Informe descrição');
+
+    if(editandoTrabalho.value !== -1){
+        form.trabalhosFimCurso[editandoTrabalho.value] = trabalho.value
+        editandoTrabalho.value = -1;
+    }
+    else{
+        form.trabalhosFimCurso.push(trabalho.value)
+    }
+    trabalho.value = ''
 }
 
 onMounted(start);

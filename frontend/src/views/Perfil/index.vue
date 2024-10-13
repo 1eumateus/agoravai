@@ -24,13 +24,22 @@
                         {{ form.tipo !=='admin' ? ' Perfil público': 'Perfil privado' }}
                     </Texto>
                 </div>
-                <button 
-                    type="button" 
-                    :onClick="()=> openEditarPerfil = true" 
-                    class="cursor-pointer flex items-center gap-[4px] px-[12px] py-[8px] border border-gray-400 bg-principal text-white hover:bg-principal-opaco rounded-md"
-                >   Editar
-                    <PhPencil :size="20" />
-                </button>
+                <div class="flex gap-2">
+                    <button 
+                        v-if="form.tipo === 'professor'"
+                        type="button" 
+                         @click="()=>scrollTo('orientacoes')"
+                        class="cursor-pointer flex items-center gap-[4px] px-[12px] py-[8px] border border-principal bg-terciaria text-white hover:bg-terciaria-opaco rounded-md"
+                    >   Pedidos de orientação
+                    </button>
+                    <button 
+                        type="button" 
+                        :onClick="()=> openEditarPerfil = true" 
+                        class="cursor-pointer flex items-center gap-[4px] px-[12px] py-[8px] border border-gray-400 bg-principal text-white hover:bg-principal-opaco rounded-md"
+                    >   Editar
+                        <PhPencil :size="20" />
+                    </button>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-[8px]">
@@ -90,6 +99,12 @@
                             {{ form.telefone?.length > 8 ? formatMask.tel(form.telefone) : form.telefone }}
                         </Texto>
                     </div>
+                    <div class="flex flex-col gap-[8px] w-full text-center justify-end h-full" v-if="form.tipo === 'professor'">
+                        <hr class="" />
+                        <Texto as="body">
+                            Orientando {{ orientacoes.length }} aluno(s)
+                        </Texto>
+                    </div>
                 </section>
 
                 <section class="flex flex-col gap-[8px] border rounded-md border-secundaria-opaco p-[10px] col-span-2 bg-white">
@@ -121,9 +136,23 @@
                             {{ form.interesse || '-' }}
                         </Texto>
                     </div>
+                    <hr class="" v-if="form.tipo === 'professor'"/>
+                    <div class="flex flex-col gap-[8px]" v-if="form.tipo === 'professor'">
+                        <Texto as="body-bold">
+                            Trabalhos de conclusão orientados ({{ form.trabalhosFimCurso.length }})
+                        </Texto>
+                        <div v-for="(trabalho, index) in form.trabalhosFimCurso" :key='index' v-if="form.trabalhosFimCurso.length>0">
+                            <Texto as="body">
+                              <b>{{ index+1 }}.</b>  {{ trabalho }}
+                            </Texto>
+                        </div>
+                        <Texto as="body" v-else>
+                            Sem trabalhos de conclusão orientados.
+                        </Texto>
+                    </div>
                 </section>
             </div>
-            <div class="grid grid-cols-1 gap-[8px]">
+            <div class="grid grid-cols-1 gap-[8px]" id="orientacoes">
                 <section class="grid grid-cols-1 gap-[6px] border border-secundaria-opaco rounded-md bg-white p-[10px]" >
                     <Texto as="h4">
                         Orientações
@@ -141,13 +170,13 @@
                                     <td class="p-2">
                                         Situação
                                     </td>
-                                    <td class="p-2 hidden md:block lg:block">
+                                    <td class="p-2">
                                         Proposta
                                     </td>
                                     <td class="p-2 " v-if="props?.usuario.tipo !== 'admin'">
                                         Resposta do orientador
                                     </td>
-                                    <td class="p-2 ">
+                                    <td class="p-2 min-w-40">
                                         Data e hora de defesa
                                     </td>
                                     <td class="p-2 ">
@@ -173,10 +202,10 @@
                                             {{ orientacao.situacao }}
                                         </Texto>
                                     </td>
-                                    <td class="p-2 text-left min-w-40 hidden md:block lg:block">
+                                    <td class="p-2 text-left min-w-40">
                                         {{ orientacao.proposta || ' - ' }}
                                     </td>
-                                    <td class="p-2 min-w-40" v-if="props?.usuario.tipo !== 'admin'">
+                                    <td class="p-2 text-left min-w-40 " v-if="props?.usuario.tipo !== 'admin'">
                                         {{ orientacao.resposta || ' - ' }}
                                     </td>
                                     <td class="p-2 ">
@@ -196,13 +225,13 @@
                                             type="button" 
                                             :onClick="()=> responderOrientacao(orientacao, 'confirmado')" 
                                             v-if="props.usuario.tipo === 'professor' && orientacao.situacao !== 'confirmado'"
-                                            class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-green-400 hover:bg-green-100 rounded-md"
+                                            class="cursor-pointer flex flex-col items-center gap-[4px] p-[4px] border border-green-400 hover:bg-green-100 rounded-md w-full"
                                         >  
                                             Confirmar orientação
                                         </button>
                                         <router-link 
                                             :to="`/orientacao/${orientacao._id}`" 
-                                            class="cursor-pointer flex flex-col justify-center items-center gap-[4px] p-[4px] border border-blue-400 hover:bg-blue-100 rounded-md"
+                                            class="cursor-pointer flex flex-col justify-center items-center gap-[4px] p-[4px] border border-blue-400 hover:bg-blue-100 rounded-md w-full"
                                             v-if="orientacao.situacao === 'confirmado'"
                                         >
                                             Detalhes
@@ -303,6 +332,13 @@ async function responderOrientacao(orientacaoParaNegar, novaSituacao){
     openRespostaOrientacao.value = true;
     situacao.value = novaSituacao;
     Object.assign(orientacao, orientacaoParaNegar)
+}
+
+function scrollTo(nome){
+    const div = document.getElementById(nome);
+    if (div) {
+        div.scrollIntoView({ behavior: 'smooth' });
+    }
 }
 
 onMounted(start);

@@ -12,6 +12,7 @@ export default {
         'secundaria': "#e9e9e9",
         'secundaria-opaco': '#c8d5ec',
         'terciaria': "#d99c44",
+        'terciaria-opaco': "#a6752e",
       },
     },
   },

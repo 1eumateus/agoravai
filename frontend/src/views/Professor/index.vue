@@ -127,6 +127,20 @@
                             {{ form.interesse || '-' }}
                         </Texto>
                     </div>
+                    <hr class=""/>
+                    <div class="flex flex-col gap-[8px]">
+                        <Texto as="body-bold">
+                            Trabalhos de conclusão orientados ({{ form?.trabalhosFimCurso?.length }})
+                        </Texto>
+                        <div v-for="(trabalho, index) in form?.trabalhosFimCurso" :key='index' v-if="form?.trabalhosFimCurso?.length>0">
+                            <Texto as="body">
+                              <b>{{ index+1 }}.</b>  {{ trabalho }}
+                            </Texto>
+                        </div>
+                        <Texto as="body" v-else>
+                            Sem trabalhos de conclusão orientados.
+                        </Texto>
+                    </div>
                 </section>
             </div>
         </section>
@@ -179,6 +193,7 @@ const form = reactive({
     github: "",
     linkedin: "",
     senha: "",
+    trabalhosFimCurso: [],
     tipo: null,
     ativo: true,
 });

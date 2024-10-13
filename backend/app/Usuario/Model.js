@@ -10,6 +10,10 @@ const modelSchema = new Schema({
         type: Date,
         default: Date.now,
     },
+    siape: {
+        type: String,
+        required: false,
+    },
     ativo: {
         type: Boolean,
         default: true,
@@ -52,6 +56,7 @@ const modelSchema = new Schema({
         required: false,
         default: 'Universidade Federal do Pará (UFPA)'
     },
+    trabalhosFimCurso: [],
     interesse: {
         type: String,
         required: false,

@@ -102,6 +102,21 @@ function filtrar (text) {
     return dados;
 }
 
+function filtrarTrabalhoFimCurso (text) {
+    text = text.substring (text.indexOf ('<div id="producao-docente">'));
+    text = text.substring(text.indexOf('<h2>Trabalho de Fim de'), text.length)
+    const lista = text.substring(text.indexOf('<ul>'), text.indexOf('</ul>'));
+
+    const items = lista.split('<li>').slice(1);
+    
+    const resultados = items.map(item => {
+        let corrigido = formatHtmlTags(item.substring(0, item.indexOf('</li>')))
+        return corrigido.replace(/\s+/g, ' ').trim();
+    });
+
+    return resultados
+}
+
 function formatHtmlTags(str) {
     return decode(str.replace(/<[^>]*>/g, ' '));
 }
@@ -136,11 +151,18 @@ async function siape(req, res){
         }).catch(()=>{
             return res.status(400).json({ msg: 'Tempo de consulta excedido.'})
         })
+
+        await axios.get(`https://sigaa.ufpa.br/sigaa/public/docente/producao.jsf?siape=${req.params.codigo}`)
+        .then((response)=>{
+            dados.trabalhosFimCurso = filtrarTrabalhoFimCurso(response.data)
+        })
+
         if(!dados){
-            return res.status(200).json({ msg: 'Nenhuma informação encontrada.'})
+            return res.status(400).json({ msg: 'Nenhuma informação encontrada.'})
         }
         return res.status(200).json({dados, msg: 'Dados encontradas.'})
     }catch(error){
+        console.log(error)
         return res.status(400).json({msg: 'Erro ao consultar dados do siape.'})
     }
 }
@@ -252,6 +274,8 @@ async function criar(req, res) {
         });
 
         let isNew = await Model.findOne({ ativo: true, verificado:false, email: req.body.email });
+
+        if (isNew && !isNew.verificado) return res.status(400).json({ msg: "Email de confirmação já foi enviado." });
         if (isNew) return res.status(400).json({ msg: "Usuário já cadastrado." });
 
         if(req.body?.senha?.length < 6){
@@ -264,6 +288,8 @@ async function criar(req, res) {
             nome: req.body.nome,
             sobrenome: req.body.sobrenome,
             email: req.body.email,
+            siape: req.body.siape,
+            trabalhosFimCurso: req.body.trabalhosFimCurso,
             descricao: req.body.descricao,
             github: req.body.github,
             linkedin: req.body.linkedin,
@@ -283,8 +309,8 @@ async function criar(req, res) {
                 port: 465,
                 secure: true,
                 auth:{
-                    user: process.env.EMAIL,
-                    pass: process.env.SENHA,
+                    user: process.env.SMTP_EMAIL,
+                    pass: process.env.SMTP_SENHA,
                 },
                 connectionTimeout: 20000
             })
@@ -343,6 +369,7 @@ async function editar(req, res) {
         editar.orientacoes = req.body.orientacoes;
         editar.formacao = req.body.formacao;
         editar.lattes= req.body.lattes;
+        editar.trabalhosFimCurso = req.body.trabalhosFimCurso
         editar.ativo = true;
 
         await editar.save();
