@@ -357,7 +357,7 @@ async function gerarConvite(req, res) {
         });
 
     } catch (error) {
-        console.error('Erro ao gerar convite:', error);
+        console.error('error:', error);
         return res.status(400).json({ msg: "Erro ao gerar convite." });
     }
 }
