@@ -163,7 +163,6 @@ const disponibilidades = [
 const areaProfessores = reactive([])
 
 async function start() {
-    isLoading.changeStateTrue()
     await api.get(`/usuario/professores?procurar=${procurar.value}&&procurarDisponibilidade=${procurarDisponibilidade.value}&&procurarInteresse=${procurarInteresse.value}`)
     .then((res)=>{
         professores.value = res.data.item;
@@ -177,7 +176,7 @@ async function start() {
         }
     }).catch((e)=>{
         popupInfo().warning('Erro ao pesquisar usuários.');
-    }).finally(()=> isLoading.changeStateFalse())
+    })
     if(props?.usuario.tipo === 'aluno'){
         listarOrientacao()
     }
@@ -202,5 +201,9 @@ watch([procurar, procurarDisponibilidade, procurarInteresse], () => {
     start();
 });
 
-onMounted(start);
+onMounted(async()=>{
+    isLoading.changeStateTrue();
+    await start();
+    isLoading.changeStateFalse();
+});
 </script>
