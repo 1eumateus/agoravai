@@ -453,13 +453,19 @@ async function adicionarImagem(req, res) {
         });
         if (!userID) return res.status(400).json({msg: 'Usuário não encontrado.'});
 
-        const file = req.file;
-        if (!file) {
-            return res.status(400).json({ msg: "Nenhum arquivo enviado." });
-        }   
-
         let editar = await Model.findOne({ ativo:true, verificado: true, _id: userID });
         if (!editar) return res.status(400).json({msg: 'Usuário não encontrado.'});
+        const file = req.file;
+        
+        if (!file) {
+            const imagePath = editar?.imagem?.path; 
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+            editar.imagem = null;
+            await editar.save();
+            return res.status(200).json({ msg: "Nenhum arquivo enviado." });
+        }   
 
         if (editar?.imagem?.path) {
             const imagePath = editar?.imagem?.path; 
