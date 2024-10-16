@@ -15,23 +15,37 @@
                     </button>
                        
                     </div>
-                    <section class="flex items-center gap-2">
-                        <img 
-                            v-if="form?.imagem?.filename && !imagePreview && !novaImagem" 
-                            :src="`${urlApi}/uploads/${form?.imagem?.filename}`" 
-                            :alt="form?.imagem?.originalname" 
-                              class="h-[140px] min-w-[140px] rounded border-2 border-principal"
-                        />
-                        <img 
-                            v-if="imagePreview && novaImagem" 
-                            :src="imagePreview" 
-                            :alt="novaImagem?.name" 
-                            class="h-[140px] min-w-[140px] rounded border-2 border-green-500"
-                        />
+                    <section class="flex items-center gap-2 relative">
+                        <div v-if="form?.imagem?.filename && !imagePreview && !novaImagem" class="relative" >
+                            <PhTrash 
+                                :size="22" 
+                                class="absolute right-0 bg-white border-2 border-principal fill-red-700 cursor-pointer"
+                                @click="()=> form.imagem = null" 
+                            />
+                            <img 
+                                :src="`${urlApi}/uploads/${form?.imagem?.filename}`" 
+                                :alt="form?.imagem?.originalname" 
+                                class="h-[140px] min-w-[140px] rounded border-2 border-principal"
+                            />
+                        </div>
+                        <div v-if="imagePreview && novaImagem"  class="relative" >
+                            <PhTrash 
+                                :size="22" 
+                                class="absolute right-0 bg-white border-2 border-principal fill-red-700 cursor-pointer"
+                                @click="()=> {novaImagem = null; imagePreview = null}" 
+                            />
+                            <img 
+                                v-if="imagePreview && novaImagem" 
+                                :src="imagePreview" 
+                                :alt="novaImagem?.name" 
+                                class="h-[140px] min-w-[140px] rounded border-2 border-green-500"
+                            />
+                        </div>
+                       
                         <div class="flex flex-col items-center w-full">
                             <label for="file" class="cursor-pointer w-full">
                                 <div class="flex items-center justify-center text-center min-w-full h-[140px] border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition duration-200">
-                                    <span class="text-gray-500" v-if="!imagePreview && !novaImagem">Selecione uma foto de até 5 MB. (Opcional)</span>
+                                    <span class="text-gray-500" v-if="!imagePreview && !novaImagem">Selecione uma foto de até 10 MB. (Opcional)</span>
                                     <span class="text-gray-500" v-else>Imagem {{ novaImagem.name  }} selecionada</span>
                                 </div>
                             </label>
@@ -331,8 +345,8 @@ function start(){
 
 function handleFileUpload(event) {
     const file = event.target.files[0];
-    if (file && file.size > 5 * 1024 * 1024) { // Limite de 5MB
-        return popupInfo().warning('Imagem muito grande. Limite de 5MB.');
+    if (file && file.size > 10 * 1024 * 1024) { // Limite de 10MB
+        return popupInfo().warning('Imagem muito grande. Limite de 10MB.');
     }
     if (file && !file.type.startsWith('image/')) {
         return popupInfo().warning('Formato de arquivo inválido. Por favor, envie uma imagem.');
@@ -342,12 +356,11 @@ function handleFileUpload(event) {
 }
 
 async function salvarImagem() {
-    if (!novaImagem.value) {
-        return
-    }
-    form.imagem = novaImagem.value;
     const formData = new FormData();
-    formData.append('image', form.imagem);
+    if (novaImagem.value) {
+        form.imagem = novaImagem.value;
+        formData.append('image', form.imagem);
+    }
 
     try {
         await api.post(`/usuario/imagem/`, formData);

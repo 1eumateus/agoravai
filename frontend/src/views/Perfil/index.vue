@@ -318,9 +318,9 @@ async function listarOrientacao(){
     })
 }
 
-function recarregar(event){
+async function recarregar(event){
     openRespostaOrientacao.value = event
-    start()
+    await start()
 }
 
 async function cancelarPedido(orientacaoParaCancelar){
