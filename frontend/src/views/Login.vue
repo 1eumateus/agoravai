@@ -74,7 +74,7 @@
                             id="formsenha" 
                             type="password"
                             :obrigatorio="true"
-                            :maxLength="20"
+                            :maxLength="90"
                             placeholder=""
                         /> 
                     </section>
