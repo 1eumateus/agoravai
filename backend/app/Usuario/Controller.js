@@ -273,7 +273,7 @@ async function criar(req, res) {
             return { userTipo: usuario.tipo };
         });
 
-        let isNew = await Model.findOne({ ativo: true, verificado:false, email: req.body.email });
+        let isNew = await Model.findOne({ ativo: true, email: req.body.email });
 
         if (isNew && !isNew.verificado) return res.status(400).json({ msg: "Email de confirmação já foi enviado." });
         if (isNew) return res.status(400).json({ msg: "Usuário já cadastrado." });
