@@ -320,7 +320,7 @@ async function criar(req, res) {
                 from: 'SOTCC',
                 to: req.body.email,
                 subject: 'SOTCC - Email de confirmação',
-                html: `<h3>Confirme seu email para entrar no sistema.<h3/><a href='http://localhost:4444/login?user=${novo._id}'>Clique para confirmar email.</a>`,
+                html: `<h3>Confirme seu email para entrar no sistema.<h3/><a href='${process.env.HOST_ROOT}/login?user=${novo._id}'>Clique para confirmar email.</a>`,
             })
             .then(()=>err = false)
             .catch(()=> err = true)
