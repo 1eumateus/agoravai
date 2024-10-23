@@ -230,7 +230,7 @@
                                             Confirmar orientação
                                         </button>
                                         <router-link 
-                                            :to="`/orientacao/${orientacao._id}`" 
+                                            :to="`/ui/orientacao/${orientacao._id}`" 
                                             class="cursor-pointer flex flex-col justify-center items-center gap-[4px] p-[4px] border border-blue-400 hover:bg-blue-100 rounded-md w-full"
                                             v-if="orientacao.situacao === 'confirmado'"
                                         >

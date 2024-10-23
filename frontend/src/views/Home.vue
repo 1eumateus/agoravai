@@ -116,7 +116,7 @@
                         </section>
                     </div>
                     <router-link 
-                        :to="`/professor/${professor._id}`" 
+                        :to="`/ui/professor/${professor._id}`" 
                         class="flex items-center gap-[2px] cursor-pointer"
                     >
                         <Texto as="button" color="blue">
