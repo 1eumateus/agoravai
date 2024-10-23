@@ -3,56 +3,56 @@ import { checkToken } from "../stores/checkToken";
 
 const routes = [
   {
-    path: '/:pathMatch(.*)*',
+    path: '/ui/:pathMatch(.*)*',
     name: "NotFound",
     component: () => import('../views/NotFound.vue')
   },
   {
-    path: '/',
+    path: '/ui/',
     name: "Home",
     component: () => import('../views/Home.vue')
   },
   {
-    path: '/login',
+    path: '/ui/login',
     name: "Login",
     component: () => import('../views/Login.vue')
   },
 
   {
-    path: '/perfil',
+    path: '/ui/perfil',
     name: "Perfil",
     component: () => import('../views/Perfil/index.vue'),
     meta: {
-      breadcrumb: [{ name: "Perfil", href: "/perfil", current: true }],
+      breadcrumb: [{ name: "Perfil", href: "ui/perfil", current: true }],
     },
   },
 
   {
-    path: '/usuarios',
+    path: '/ui/usuarios',
     name: "Usuarios",
     component: () => import('../views/Usuarios/index.vue'),
     meta: {
-      breadcrumb: [{ name: "Usuários", href: "/usuarios", current: true }],
+      breadcrumb: [{ name: "Usuários", href: "ui/usuarios", current: true }],
     },
   },
 
   {
-    path: '/professor/:id',
+    path: '/ui/professor/:id',
     name: "Professor",
     component: () => import('../views/Professor/index.vue'),
     meta: {
-      breadcrumb: [ { name: "Perfil professor", href: "/professor/:id", current: true }],
+      breadcrumb: [ { name: "Perfil professor", href: "ui/professor/:id", current: true }],
     },
   },
 
   {
-    path: '/orientacao/:id',
+    path: '/ui/orientacao/:id',
     name: "Orientacao",
     component: () => import('../views/Orientacao/index.vue'),
     meta: {
       breadcrumb: [
-          { name: "Perfil", href: "/perfil", current: false },
-          { name: "Orientação", href: "/orientacao/:id", current: true }
+          { name: "Perfil", href: "/ui/perfil", current: false },
+          { name: "Orientação", href: "/ui/orientacao/:id", current: true }
       ],
     },
   },
