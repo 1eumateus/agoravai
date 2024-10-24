@@ -22,6 +22,9 @@ app.use('/api/v1/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/api/v1/usuario', usuario);
 app.use("/api/v1/orientacao", orientacao);
 app.use("/api/v1/login", login);
+app.use('/', function(req, res, next) {
+    res.redirect ('/ui/#' + req.url);
+})
 
 app.listen(port);
 console.log('port ' + port)

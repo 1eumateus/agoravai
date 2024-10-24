@@ -69,6 +69,7 @@ cd ..
 cd frontend
 npm install
 npm run build
+cd ..
 
 # Criação da distribuição
 rm -rf dist
@@ -80,7 +81,7 @@ cp -r frontend/dist/* dist/public/ui
 cp -r frontend/public/* dist/public
 
 # pm2
-if [ "st" = "y" ]; then
+if [ "$st" = "y" ]; then
     npm install pm2@latest -g
     cd dist
     pm2 delete all
