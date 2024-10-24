@@ -126,7 +126,8 @@
                             type="password"
                             :maxLength="20"
                             :obrigatorio="true"
-                            placeholder="" 
+                            placeholder=""
+                            v-on:keyup.enter="modalConfirmar()"
                         /> 
                     </section>
 
@@ -302,6 +303,7 @@
                                 :maxLength="20"
                                 :obrigatorio="true"
                                 placeholder=""
+                                v-on:keyup.enter="modalConfirmar()"
                             />
                         </div>
                     </section>
@@ -554,7 +556,7 @@ async function login() {
 };
 
 async function register(){
-    
+    abrirModal.value = false;
     if(emailEnviado.situacao && registrar.email === emailEnviado.email){
         popupInfo().info('Email de confirmação enviado, verifique sua caixa de spam.');
         return;

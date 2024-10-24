@@ -273,35 +273,54 @@ async function criar(req, res) {
             return { userTipo: usuario.tipo };
         });
 
-        let isNew = await Model.findOne({ ativo: true, email: req.body.email });
+        let novo = await Model.findOne({ ativo: true, email: req.body.email });
 
-        if (isNew && !isNew.verificado) return res.status(400).json({ msg: "Email de confirmação já foi enviado." });
-        if (isNew) return res.status(400).json({ msg: "Usuário já cadastrado." });
+        if (novo && novo.verificado) return res.status(400).json({ msg: "Usuário já cadastrado." });
 
         if(req.body?.senha?.length < 6){
             return res.status(400).json({ msg: "Senha inválida." });
         }
         const hashSenha = await bcrypt.hash(req.body?.senha, 10);
 
-        const novo = new Model({
-            ativo: true,
-            nome: req.body.nome,
-            sobrenome: req.body.sobrenome,
-            email: req.body.email,
-            siape: req.body.siape,
-            trabalhosFimCurso: req.body.trabalhosFimCurso,
-            descricao: req.body.descricao,
-            github: req.body.github,
-            linkedin: req.body.linkedin,
-            disponibilidade: req.body.disponibilidade,
-            telefone: req.body.telefone,
-            interesse: req.body.interesse,
-            tipo: req.body.tipo,
-            solicitacoes: req.body.solicitacoes,
-            formacao: req.body.formacao,
-            lattes: req.body.lattes,
-            senha: hashSenha,
-        });
+        if (!novo) {
+            novo = new Model({
+                ativo: true,
+                nome: req.body.nome,
+                sobrenome: req.body.sobrenome,
+                email: req.body.email,
+                siape: req.body.siape,
+                trabalhosFimCurso: req.body.trabalhosFimCurso,
+                descricao: req.body.descricao,
+                github: req.body.github,
+                linkedin: req.body.linkedin,
+                disponibilidade: req.body.disponibilidade,
+                telefone: req.body.telefone,
+                interesse: req.body.interesse,
+                tipo: req.body.tipo,
+                solicitacoes: req.body.solicitacoes,
+                formacao: req.body.formacao,
+                lattes: req.body.lattes,
+                senha: hashSenha,
+            });
+        }
+        else {
+            novo.ativo = true;
+            novo.nome = req.body.nome;
+            novo.sobrenome = req.body.sobrenome;
+            novo.email = req.body.email;
+            novo.siape = req.body.siape,
+            novo.trabalhosFimCurso = req.body.trabalhosFimCurso,
+            novo.descricao = req.body.descricao;
+            novo.github = req.body.github;
+            novo.linkedin = req.body.linkedin;
+            novo.disponibilidade = req.body.disponibilidade;
+            novo.telefone = req.body.telefone;
+            novo.interesse = req.body.interesse;
+            novo.tipo = req.body.tipo;
+            novo.formacao = req.body.formacao;
+            novo.lattes= req.body.lattes;
+            novo.senha = hashSenha;
+        }
 
         if(userTipo !== 'admin'){
             const transport = nodemailer.createTransport({
@@ -320,7 +339,7 @@ async function criar(req, res) {
                 from: 'SOTCC',
                 to: req.body.email,
                 subject: 'SOTCC - Email de confirmação',
-                html: `<h3>Confirme seu email para entrar no sistema.<h3/><a href='${process.env.HOST_ROOT}/login?user=${novo._id}'>Clique para confirmar email.</a>`,
+                html: `<h3>Confirme seu email para entrar no sistema.<h3/><a href='${process.env.HOST_ROOT}/ui/login?user=${novo._id}'>Clique para confirmar email.</a>`,
             })
             .then(()=>err = false)
             .catch(()=> err = true)
@@ -329,7 +348,6 @@ async function criar(req, res) {
                 return res.status(400).json({ msg: "Erro ao enviar email de confirmação." })
             }
         }
-
         await novo.save();
         res.json({ 
             msg: 'Email de confirmação enviado.' 
