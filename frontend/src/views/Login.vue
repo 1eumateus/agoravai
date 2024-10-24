@@ -69,13 +69,14 @@
                             placeholder="ex.: exemplo@exemplo.com"
                         /> 
                         <Campo 
-                            v-model="form.senha" 
+                            v-model="form.senha"
                             label="Senha" 
                             id="formsenha" 
                             type="password"
                             :obrigatorio="true"
                             :maxLength="90"
                             placeholder=""
+                            v-on:keyup.enter="login()"
                         /> 
                     </section>
 
@@ -133,12 +134,13 @@
                         <div class="grid grid-cols-2 gap-[4px] items-end " >
                             <Campo 
                                 v-model="registrar.siape" 
-                                label="Pegar dados via siape" 
+                                label="Buscar os dados do SIAPE" 
                                 id="siape" 
                                 type="text"
                                 :obrigatorio="false"
                                 placeholder="ex.: 1234567" 
                                 :maxLength="10"
+                                v-on:keyup.enter="buscarDados()"
                             /> 
                             <div class="grid grid-cols-2 items-end gap-[4px] ">
                                 <button 
