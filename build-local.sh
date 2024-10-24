@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # install && build do frontend
 cd frontend
 npm install
