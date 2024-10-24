@@ -72,7 +72,7 @@
                             />
                             <img 
                                 v-else
-                                :src="`/Sem_imagem.jpg`" 
+                                :src="`/ui/Sem_imagem.jpg`" 
                                 :alt="'sem imagem'" 
                                 class="h-[80px] min-w-[80px] rounded-md"
                             />

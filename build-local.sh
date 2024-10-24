@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # install && build do frontend
 cd frontend
 npm install
@@ -14,6 +15,8 @@ cp -r backend/.* dist
 mkdir dist/public/ui
 cp -r frontend/dist/* dist/public/ui
 cp -r frontend/public/* dist/public
+
+sed -r "s/port=(.*)/port=3008/" backend/.env > dist/.env
 
 # Inicialização do servidor
 cd dist
