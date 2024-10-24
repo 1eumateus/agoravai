@@ -14,4 +14,5 @@ export default defineConfig({
       { "find": "@", "replacement": path.resolve(projectRootDir, 'src') },  
     ],
   },
+  base: 'ui'
 });

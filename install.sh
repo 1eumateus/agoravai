@@ -7,6 +7,8 @@ if [ "$user_is" != "root" ]; then
     exit 1
 fi
 
+cat ./backend/.env
+
 #.env
 echo "Entre a porta do servidor:"
 read port
@@ -30,6 +32,9 @@ echo "SMTP_SENHA='$senha'" >> ./backend/.env
 echo "ADMIN_EMAIL='$usuario_base'" >> ./backend/.env
 echo "ADMIN_SENHA='$senha_base'" >> ./backend/.env
 echo "VITE_URL=http://localhost:$port" >  ./frontend/.env
+
+echo "Inicializar o servidor na ignição da máquina? (N/y)"
+read st
 
 apt install -y npm nodejs
 
@@ -64,15 +69,24 @@ cd ..
 cd frontend
 npm install
 npm run build
-cd ..
-cp -R frontend/dist/* backend/public/
+
+# Criação da distribuição
+rm -rf dist
+mkdir dist
+cp -r backend/* dist
+cp -r backend/.* dist
+mkdir dist/public/ui
+cp -r frontend/dist/* dist/public/ui
+cp -r frontend/public/* dist/public
 
 # pm2
-npm install pm2@latest -g
-cd backend
-pm2 delete all
-pm2 start servidor.js -i max
-pm2 startup
-pm2 save
+if [ "st" = "y" ]; then
+    npm install pm2@latest -g
+    cd dist
+    pm2 delete all
+    pm2 start servidor.js -i max
+    pm2 startup
+    pm2 save
+fi
 
 

@@ -15,6 +15,9 @@ app.use(express.static (__dirname + '/public'));
 app.use(cors());
 app.use(express.json());
 const port = process.env.port || 3007;
+app.use('/ui/', function(req, res, next) {
+    res.redirect ('/ui/#' + req.url);
+ })
 app.use('/api/v1/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/api/v1/usuario', usuario);
 app.use("/api/v1/orientacao", orientacao);
