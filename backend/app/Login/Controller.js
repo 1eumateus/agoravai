@@ -33,7 +33,6 @@ async function login(req, res) {
 }
 
 async function getUser(req, res) {
-   
     const token = req.headers["authorization"] || req.query.token;    
     if (token == null) return res.sendStatus(401);
 
@@ -66,4 +65,4 @@ async function confirmarEmail(req, res) {
     }
 }
 
-export { login, getUser, confirmarEmail };
+export { login, getUser, confirmarEmail};

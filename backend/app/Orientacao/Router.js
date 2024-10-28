@@ -3,13 +3,13 @@ import { listar, pegarPorId, alterarSituacao, criar, deletar, editar, gerarConvi
 
 const router = express.Router();
 
-router.get("/", listar);
-router.get("/:id", pegarPorId);
 router.post("/criar", criar);
-router.delete("/:id", deletar);
 router.put("/alterarSituacao", alterarSituacao);
 router.put("/editar", editar);
 router.post("/gerarConvite", gerarConvite);
 router.get("/professor/:id", orientacaoPorProfessor);
+router.get("/:id", pegarPorId);
+router.delete("/:id", deletar);
+router.get("/", listar);
 
 export default router;

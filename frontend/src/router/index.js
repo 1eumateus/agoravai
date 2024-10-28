@@ -17,7 +17,11 @@ const routes = [
     name: "Login",
     component: () => import('../views/Login.vue')
   },
-
+  {
+    path: '/ui/redefinir/:id',
+    name: "Redefinir",
+    component: () => import('../views/Usuarios/redefinir.vue')
+  },
   {
     path: '/ui/perfil',
     name: "Perfil",
@@ -26,7 +30,6 @@ const routes = [
       breadcrumb: [{ name: "Perfil", href: "ui/perfil", current: true }],
     },
   },
-
   {
     path: '/ui/usuarios',
     name: "Usuarios",
@@ -35,7 +38,6 @@ const routes = [
       breadcrumb: [{ name: "Usuários", href: "ui/usuarios", current: true }],
     },
   },
-
   {
     path: '/ui/professor/:id',
     name: "Professor",
@@ -44,7 +46,6 @@ const routes = [
       breadcrumb: [ { name: "Perfil professor", href: "ui/professor/:id", current: true }],
     },
   },
-
   {
     path: '/ui/orientacao/:id',
     name: "Orientacao",
@@ -56,7 +57,6 @@ const routes = [
       ],
     },
   },
-
 ]
 
 const router = createRouter({
@@ -77,7 +77,10 @@ router.beforeEach(async (to, from, next) => {
   const tokenValido = res.valid;
   const userType = res.tipo;
 
-  if (to.name !== "Login" && !tokenValido) {
+  if (to.name === 'Redefinir') {
+    next();
+  }
+  else  if (to.name !== "Login" && !tokenValido) {
     next({ name: "Login" });
   }
   else if (tokenValido && to.name === "Login") {

@@ -199,7 +199,6 @@ const form = reactive({
 });
 
 async function start() {
-    
     if (route?.params?.id) {
         form._id = route.params.id;
         await api.get(`/usuario/${form._id}`)

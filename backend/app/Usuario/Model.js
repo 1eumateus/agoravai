@@ -88,6 +88,10 @@ const modelSchema = new Schema({
         encoding: String,
         destination: String,
         size: Number,
+    },
+    codigo_recuperacao : {
+        type: mongoose.Schema.Types.UUID,
+        required: false,
     }
 });
 
