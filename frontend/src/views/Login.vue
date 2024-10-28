@@ -68,16 +68,24 @@
                             :maxLength="50"
                             placeholder="ex.: exemplo@exemplo.com"
                         /> 
-                        <Campo 
-                            v-model="form.senha"
-                            label="Senha" 
-                            id="formsenha" 
-                            type="password"
-                            :obrigatorio="true"
-                            :maxLength="90"
-                            placeholder=""
-                            v-on:keyup.enter="login()"
-                        /> 
+                        <div>
+                            <Campo 
+                                v-model="form.senha"
+                                label="Senha" 
+                                id="formsenha" 
+                                type="password"
+                                :obrigatorio="true"
+                                :maxLength="90"
+                                placeholder=""
+                                v-on:keyup.enter="login()"
+                            /> 
+                            <button 
+                                class="text-[14px] hover:underline font-normal text-left hover:cursor-pointer" 
+                                @click="recuperarSenha()"
+                            >
+                                Recuperar a senha
+                            </button>
+                        </div>
                     </section>
 
                     <section class="grid grid-cols-2 gap-[10px]" v-if="opcao === 'cadastrarAluno'">
@@ -445,6 +453,7 @@ function proximaAbaProfessor(){
         aba.value++
     }
 }
+
 function voltarAbaProfessor(){
     if(aba.value > 0){
         aba.value--
@@ -452,7 +461,6 @@ function voltarAbaProfessor(){
 }
 
 function modalConfirmar(){
-
     if(opcao.value === 'cadastrarAluno'){
         registrar.tipo = 'aluno';
     }
@@ -505,7 +513,7 @@ function modalConfirmar(){
     }
 
     if (registrar.senha !== confirmarSenha.value) {
-        popupInfo().warning('Senhas não coincidem');
+        popupInfo().warning('As senhas não coincidem');
         abrirModal.value = false;
         return;
     }
@@ -534,25 +542,25 @@ async function buscarDados(){
 }
 
 async function login() {
-        if (form.email === "") {
-            popupInfo().warning('Informe email.');
-            return;
-        } if (form.senha === "") {
-            popupInfo().warning('Informe senha.');
-            return;
-        }
-        if (form.senha.length<6) {
-            popupInfo().warning('Senha muito curta.');
-            return;
-        }
-        await api.post('/login', form)
-            .then((res) => {
-                localStorage.setItem('token', res.data.token);
-                window.location.reload();
-            })
-            .catch((e) => {
-                popupInfo().error(e.response?.data?.msg);
-            });
+    if (form.email === "") {
+        popupInfo().warning('Informe email.');
+        return;
+    } if (form.senha === "") {
+        popupInfo().warning('Informe senha.');
+        return;
+    }
+    if (form.senha.length<6) {
+        popupInfo().warning('A senha deve ter 6 caracteres no mínimo.');
+        return;
+    }
+    await api.post('/login', form)
+        .then((res) => {
+            localStorage.setItem('token', res.data.token);
+            window.location.reload();
+        })
+        .catch((e) => {
+            popupInfo().error(e.response?.data?.msg);
+        });
 };
 
 async function register(){
@@ -596,6 +604,22 @@ function limparDados(){
     if(opcao.value === 'cadastrarProfessor'){
         registrar.tipo = 'professor';
     }
+}
+
+async function recuperarSenha() {
+    if (form.email === "") {
+        popupInfo().warning('Informe email.');
+        return;
+    }
+    isLoading.changeStateTrue();
+    await api.post('/usuario/recuperar_solicitacao', form)
+        .then((res) => {
+            popupInfo().info('Um email de recuperação da senha foi enviado, verifique sua caixa de spam.');
+        })
+        .catch((e) => {
+            popupInfo().error(e.response?.data?.msg);
+        })
+        .finally (() => {isLoading.changeStateFalse()});
 }
 
 </script>

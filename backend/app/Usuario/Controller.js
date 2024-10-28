@@ -1,133 +1,13 @@
 import Model from "./Model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import nodemailer from 'nodemailer'
 import axios from "axios";
-import { decode } from 'html-entities';
 import mongoose from "mongoose";
+import { v4 as uuidv4} from "uuid";
 const { ObjectId } = mongoose.Types;
 import fs from 'fs';
-
-function clean (text) {
-    if (text.indexOf ('<dd:')) {
-        text = text.substring (text.indexOf ('<dd>') + 4);
-        text = text.substring (0, text.indexOf ('</dd>'));
-    }
-    text = text.replaceAll ('\n', '');
-    text = text.replaceAll ('\t', '');
-    if (text.indexOf ('n&#227;o cadastrad') != -1 || text.indexOf ('n&#227;o informad') != -1) {
-        text = '';
-    }
-    while (text.charAt (0) == ' ') {
-        text = text.substring (1);
-    }
-    while (text.charAt (text.length - 1) == ' ') {
-        text = text.substring (0, text.length - 1);
-    }
-    return text;
-}
-
-function filtrarPerfil1 (text) {
-    text = text.substring (text.indexOf ('<h4>Perfil Pessoal</h4>'));
-    let descricao = text.substring (0, text.indexOf ('</div>'));
-    descricao = clean (descricao)
-    
-    text = text.substring (text.indexOf ('<h4>Forma&#231;&#227;o Acad&#234;mica</h4>'));
-    let formacao = text.substring (0, text.indexOf ('</div>'));
-    formacao = clean (formacao);
-    return {
-        'descricao': descricao,
-        'formacao': formacao,
-        'interesse': '',
-        'lattes': '',
-    }
-}
-
-function filtrarPerfil2 (text) {
-    text = text.substring (text.indexOf('<dl>') + 4);
-    let descricao = text.substring (0, text.indexOf ('</dl>'));
-    descricao = clean (descricao);
-    
-    text = text.substring (text.indexOf ('<dl>') + 4);
-    let formacao = text.substring (0, text.indexOf ('</dl>'));
-    formacao = clean (formacao);
-    
-    text = text.substring (text.indexOf ('<dl>') + 4);
-    let interesse = text.substring (0, text.indexOf ('</dl>'));
-    interesse = clean (interesse);
-    
-    text = text.substring (text.indexOf ('<dl>') + 4);
-    let lattes = text.substring (0, text.indexOf ('</dl>'));
-    if (lattes.indexOf ('n&#227;o informad') != -1)  lattes = '';
-    else {
-        lattes = lattes.substring (lattes.indexOf ('href') + 6);
-        lattes = lattes.substring (0, lattes.indexOf ('"'));
-    }
-
-    return {
-        'descricao': descricao,
-        'formacao': formacao,
-        'interesse': interesse,
-        'lattes': lattes
-    }
-}
-
-function filtrar (text) {
-    let tipo = text.substring (0, text.indexOf ('<div id="contato">'));
-    let dados = null
-
-    if(tipo.indexOf ('<dl>')){
-        dados = filtrarPerfil2 (text)
-    }else{
-        dados = filtrarPerfil1 (text);
-    }
-    
-    let nome = text.substring(text.indexOf('<h3>') + 4, text.indexOf('</h3>'))?.trim();
-    let nomePartes = nome.split(' ');
-    dados['nome'] = nomePartes[0];
-    dados['sobrenome'] = nomePartes?.slice(1)?.join(' ');
-
-    text = text.substring (text.indexOf ('<div id="contato">'));
-    
-    dados ['telefone'] = text.substring(
-        text.indexOf('<dd>', text.indexOf('Telefone/Ramal')) + 4, 
-        text.indexOf('</dd>', text.indexOf('Telefone/Ramal')) 
-    )?.trim();
-
-    dados ['email'] = text.substring(
-        text.indexOf('<dd>', text.indexOf('Endere&#231;o eletr&#244;nico')) + 4, 
-        text.indexOf('</dd>', text.indexOf('Endere&#231;o eletr&#244;nico')) 
-    )?.trim();
-    
-    return dados;
-}
-
-function filtrarTrabalhoFimCurso (text) {
-    text = text.substring (text.indexOf ('<div id="producao-docente">'));
-    text = text.substring(text.indexOf('<h2>Trabalho de Fim de'), text.length)
-    const lista = text.substring(text.indexOf('<ul>'), text.indexOf('</ul>'));
-
-    const items = lista.split('<li>').slice(1);
-    
-    const resultados = items.map(item => {
-        let corrigido = formatHtmlTags(item.substring(0, item.indexOf('</li>')))
-        return corrigido.replace(/\s+/g, ' ').trim();
-    });
-
-    return resultados
-}
-
-function formatHtmlTags(str) {
-    return decode(str.replace(/<[^>]*>/g, ' '));
-}
-
-function formatTel(str) {
-    return str.replace(/\D/g, ''); 
-}
-
-function formatNome(str) {
-    return str.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase()); 
-}
+import { sendEmail } from '../shared/Mailer.js';
+import {formatNome, formatTel, formatHtmlTags, filtrarTrabalhoFimCurso, filtrar} from '../shared/SigaaParser.js'
 
 async function siape(req, res){
     try{
@@ -267,21 +147,16 @@ async function listarProfessores(req, res) {
 async function criar(req, res) {
     try {
         const tokenUser = req.headers.authorization;
-
         const { userTipo } = jwt.verify(tokenUser, process.env.JWT_SECRET, (err, usuario) => {
             if (err) return false;
             return { userTipo: usuario.tipo };
         });
-
         let novo = await Model.findOne({ ativo: true, email: req.body.email });
-
         if (novo && novo.verificado) return res.status(400).json({ msg: "Usuário já cadastrado." });
-
         if(req.body?.senha?.length < 6){
             return res.status(400).json({ msg: "Senha inválida." });
         }
         const hashSenha = await bcrypt.hash(req.body?.senha, 10);
-
         if (!novo) {
             novo = new Model({
                 ativo: true,
@@ -321,38 +196,19 @@ async function criar(req, res) {
             novo.lattes= req.body.lattes;
             novo.senha = hashSenha;
         }
-
         if(userTipo !== 'admin'){
-            const transport = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                port: 465,
-                secure: true,
-                auth:{
-                    user: process.env.SMTP_EMAIL,
-                    pass: process.env.SMTP_SENHA,
-                },
-                connectionTimeout: 20000
-            })
-
-            let err = false;
-            await transport.sendMail({
-                from: 'SOTCC',
-                to: req.body.email,
-                subject: 'SOTCC - Email de confirmação',
-                html: `<h3>Confirme seu email para entrar no sistema.<h3/><a href='${process.env.HOST_ROOT}/ui/login?user=${novo._id}'>Clique para confirmar email.</a>`,
-            })
-            .then(()=>err = false)
-            .catch(()=> err = true)
-            transport.close();
+            let err = sendEmail (
+                req.body.email, 
+                'SOTCC - Email de confirmação',
+                `<h3>Confirme seu email para entrar no sistema.<h3/><a href='${process.env.HOST_ROOT}/ui/login?user=${novo._id}'>Clique para confirmar email.</a>`);
             if(err){
-                return res.status(400).json({ msg: "Erro ao enviar email de confirmação." })
+                return res.status(400).json({ msg: "Erro ao enviar email de confirmação. Confere o endereço." })
             }
         }
         await novo.save();
         res.json({ 
             msg: 'Email de confirmação enviado.' 
         });
-
     } catch (error) {
         console.log(error)
         return res.status(400).json({ msg: "Erro 400." });
@@ -462,9 +318,7 @@ async function pegarPorId(req, res) {
 
 async function adicionarImagem(req, res) {
     try {
-
         const token = req.headers.authorization;
-       
         const { userID }= jwt.verify(token, process.env.JWT_SECRET, (err, usuario) => {
             if (err) return false;
             return {userID: usuario._id};
@@ -501,4 +355,54 @@ async function adicionarImagem(req, res) {
     }
 }
 
-export { listar, listarProfessores, siape, adicionarOrientacao, adicionarImagem, criar, deletar, editar, pegarPorId };
+async function recuperarSenhaSolicitacao (req, res) {
+    try{
+        let user = await Model.findOne({ ativo: true, email: req.body.email });
+        if(!user) return res.status(404).json({msg: 'Endereço não cadastrado no sistema.'});
+        let codigo = uuidv4();
+        user.codigo_recuperacao = codigo;
+        user.save()
+        let err = await sendEmail(
+            req.body.email, 
+            'SOTCC - Recuperação de senha',
+            `<h3>Clique no link seguinte para redefinir a sua senha.<h3/><a href='${process.env.HOST_ROOT}/ui/redefinir/${codigo}/'>Clique para confirmar email.</a>`);
+        if (err == false) return res.json({ 
+            msg: 'Email de recuperação enviado com sucesso.' 
+        });
+        else {
+            return res.status(400).json({ msg: "Erro ao enviar email de recuperação. Confere o endereço." })
+        }
+    } catch (error) {
+        console.log(error);
+        
+        return res.sendStatus(400).json({ 
+            msg: error 
+        })
+    }
+}
+
+async function redefinirSenha (req, res) {
+    try{
+        const idUser = req.body._id
+        if(!idUser) return res.status(400).json({msg:'ID do usuário não informado.'});
+        const user = await Model.findOne({ codigo_recuperacao: idUser });
+        if(!user) return res.status(400).json({msg: 'O usuário não existe.'});
+        user.verificado = true;
+        user.senha = await bcrypt.hash(req.body?.senha, 10);
+        await user.save()
+        const token = jwt.sign (
+            {
+                _id: user._id,
+                nome: user.nome,
+                email: user.email,
+                tipo: user.tipo,
+            },
+            process.env.JWT_SECRET
+        );
+        return res.json({ token });
+    } catch (error){
+        return res.sendStatus(400).json ({msg: error});
+    }
+}
+
+export { listar, listarProfessores, siape, adicionarOrientacao, adicionarImagem, criar, deletar, editar, pegarPorId, recuperarSenhaSolicitacao, redefinirSenha};
