@@ -59,7 +59,7 @@ cd ..
 # install && build do frontend
 cd frontend
 mv .env .tmp
-echo "VITE_URL=$host:$port" > .env
+echo "VITE_URL=$host:$port/api/v1" > .env
 npm install
 npm run build
 mv .tmp .env
@@ -70,13 +70,13 @@ rm -rf dist
 mkdir dist
 cp -r backend/* dist
 cp -r backend/.* dist
-echo "port=$port" >> .env
-echo "JWT_SECRET=$jwt" >  .env
-echo "DATABASE_URL=$database" >> .env
-echo "SMTP_EMAIL='$email'" >> .env
-echo "SMTP_SENHA='$senha'" >> .env
-echo "ADMIN_EMAIL='$email'" >> .env
-echo "ADMIN_SENHA='$senha_base'" >> .env
+echo "port=$port" > dist/.env
+echo "JWT_SECRET=$jwt" >>  dist/.env
+echo "DATABASE_URL=$database" >> dist/.env
+echo "SMTP_EMAIL='$email'" >> dist/.env
+echo "SMTP_SENHA='$senha'" >> dist/.env
+echo "ADMIN_EMAIL='$email'" >> dist/.env
+echo "ADMIN_SENHA='$senha_base'" >> dist/.env
 mkdir dist/public/ui
 cp -r frontend/dist/* dist/public/ui
 cp -r frontend/public/* dist/public
