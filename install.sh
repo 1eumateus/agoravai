@@ -10,29 +10,20 @@ fi
 cat ./backend/.env
 
 #.env
+echo "Entre o HOST:"
+read host
 echo "Entre a porta do servidor:"
 read port
 echo "Entre o JWT secret key:"
 read jwt
+echo "Entre a URL do banco de dados:"
+read database
 echo "Entre o email:"
 read email
 echo "Entre a senha do email:"
 read senha
-echo "Entre a URL do banco de dados:"
-read database
-echo "Entre o email do admin do banco de dados:"
-read usuario_base
 echo "Entre a senha do admin do banco de dados:"
 read senha_base
-echo "JWT_SECRET=$jwt" >  ./backend/.env
-echo "DATABASE_URL=$database" >> ./backend/.env
-echo "port=$port" >> ./backend/.env
-echo "SMTP_EMAIL='$email'" >> ./backend/.env
-echo "SMTP_SENHA='$senha'" >> ./backend/.env
-echo "ADMIN_EMAIL='$usuario_base'" >> ./backend/.env
-echo "ADMIN_SENHA='$senha_base'" >> ./backend/.env
-echo "VITE_URL=http://localhost:$port" >  ./frontend/.env
-
 echo "Inicializar o servidor na ignição da máquina? (N/y)"
 read st
 
@@ -67,8 +58,11 @@ cd ..
 
 # install && build do frontend
 cd frontend
+mv .env .tmp
+echo "VITE_URL=$host:$port" > .env
 npm install
 npm run build
+mv .tmp .env
 cd ..
 
 # Criação da distribuição
@@ -76,6 +70,13 @@ rm -rf dist
 mkdir dist
 cp -r backend/* dist
 cp -r backend/.* dist
+echo "port=$port" >> .env
+echo "JWT_SECRET=$jwt" >  .env
+echo "DATABASE_URL=$database" >> .env
+echo "SMTP_EMAIL='$email'" >> .env
+echo "SMTP_SENHA='$senha'" >> .env
+echo "ADMIN_EMAIL='$email'" >> .env
+echo "ADMIN_SENHA='$senha_base'" >> .env
 mkdir dist/public/ui
 cp -r frontend/dist/* dist/public/ui
 cp -r frontend/public/* dist/public
