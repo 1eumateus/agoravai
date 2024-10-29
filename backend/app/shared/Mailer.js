@@ -17,9 +17,11 @@ async function sendEmail (dest,subject,content) {
         to: dest,
         subject: subject,
         html: content,
-    })
-    .then(()=>err = false)
-    .catch(()=> err = true)
+    }).then(() => err = false)
+      .catch((erro) => {
+        console.log (erro);
+        err = true
+      })
     transport.close();
     return err;
 }

@@ -201,7 +201,7 @@ async function criar(req, res) {
                 req.body.email, 
                 'SOTCC - Email de confirmação',
                 `<h3>Confirme seu email para entrar no sistema.<h3/><a href='${process.env.HOST_ROOT}/ui/login?user=${novo._id}'>Clique para confirmar email.</a>`);
-            if(err){
+            if(err == true){
                 return res.status(400).json({ msg: "Erro ao enviar email de confirmação. Confere o endereço." })
             }
         }
@@ -361,20 +361,15 @@ async function recuperarSenhaSolicitacao (req, res) {
         if(!user) return res.status(404).json({msg: 'Endereço não cadastrado no sistema.'});
         let codigo = uuidv4();
         user.codigo_recuperacao = codigo;
-        user.save()
+        user.save();
         let err = await sendEmail(
             req.body.email, 
             'SOTCC - Recuperação de senha',
             `<h3>Clique no link seguinte para redefinir a sua senha.<h3/><a href='${process.env.HOST_ROOT}/ui/redefinir/${codigo}/'>Clique para confirmar email.</a>`);
-        if (err == false) return res.json({ 
-            msg: 'Email de recuperação enviado com sucesso.' 
-        });
-        else {
-            return res.status(400).json({ msg: "Erro ao enviar email de recuperação. Confere o endereço." })
-        }
+        if (err == false) return res.json({msg: 'Email de recuperação enviado com sucesso.'});
+        else return res.status(400).json({ msg: "Erro ao enviar email de recuperação. Confere o endereço." })
     } catch (error) {
         console.log(error);
-        
         return res.sendStatus(400).json({ 
             msg: error 
         })
