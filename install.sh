@@ -77,6 +77,7 @@ echo "SMTP_EMAIL='$email'" >> dist/.env
 echo "SMTP_SENHA='$senha'" >> dist/.env
 echo "ADMIN_EMAIL='$email'" >> dist/.env
 echo "ADMIN_SENHA='$senha_base'" >> dist/.env
+echo "HOST_ROOT='$host'" >> dist/.env
 mkdir dist/public/ui
 cp -r frontend/dist/* dist/public/ui
 cp -r frontend/public/* dist/public
