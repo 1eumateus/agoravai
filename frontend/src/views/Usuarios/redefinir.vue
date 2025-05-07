@@ -33,46 +33,44 @@
 <script setup>
 
 import api from "@/api.js";
-// util
-import { popupInfo, isValid } from '../../stores/util.js';
-import { onMounted, ref, reactive } from "vue";
+import { popupInfo } from '../../stores/util.js';
+import { onMounted, reactive } from "vue";
 import {useRoute } from "vue-router";
-import Texto from '@components/Texto.vue'
 import Campo from '@components/Campo.vue'
 
-const route = useRoute();
+const route = useRoute ();
 
-const form = reactive({
+const form = reactive ({
     _id: '',
     senha: '',
     confirmacao: '',
 })
 
-async function redefinirSenha() {
+async function redefinirSenha () {
     if (form.senha === "") {
-        popupInfo().warning('Informe a senha.');
+        popupInfo ().warning ('Informe a senha.');
         return;
     } 
-    if (form.senha.length<6) {
-        popupInfo().warning('A senha precisa ter no mínimo 6 caracteres.');
+    if (form.senha.length < 6) {
+        popupInfo ().warning ('A senha precisa ter no mínimo 6 caracteres.');
         return;
     }
     if (form.confirmacao === "") {
-        popupInfo().warning('Confirme a senha.');
+        popupInfo ().warning ('Confirme a senha.');
         return;
     }
     if (form.senha !== form.confirmacao) {
-        popupInfo().warning('As senhas não coincidem');
+        popupInfo ().warning ('As senhas não coincidem');
         return;
     }
-    await api.post('/usuario/redefinir', form)
-        .then((res) => {
-            localStorage.setItem('token', res.data.token);
+    await api.post ('/usuario/redefinir', form)
+        .then ((res) => {
+            localStorage.setItem ('token', res.data.token);
             window.location = '/ui';
-            popupInfo().success("Senha redefinida com sucesso");
+            popupInfo ().success ("Senha redefinida com sucesso");
         })
-        .catch((e) => {
-            popupInfo().error(e.response?.data?.msg);
+        .catch ((e) => {
+            popupInfo ().error (e.response?.data?.msg);
         });
 }
 

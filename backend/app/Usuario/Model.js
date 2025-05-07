@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
-const modelSchema = new Schema({
+const modelSchema = new Schema ({
     verificado: {
         type: Boolean,
         default: false,
@@ -10,7 +10,7 @@ const modelSchema = new Schema({
         type: Date,
         default: Date.now,
     },
-    siape: {
+    matricula: {
         type: String,
         required: false,
     },
@@ -92,7 +92,11 @@ const modelSchema = new Schema({
     codigo_recuperacao : {
         type: mongoose.Schema.Types.UUID,
         required: false,
-    }
+    },
+    subunidades: [{
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: "Subunidade",
+    }],
 });
 
-export default model("Usuario", modelSchema);
+export default model ("Usuario", modelSchema);

@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer'
 
 async function sendEmail (dest,subject,content) {
-    const transport = nodemailer.createTransport({
+    const transport = nodemailer.createTransport ({
         host: 'smtp.gmail.com',
         port: 465,
         secure: true,
@@ -12,17 +12,17 @@ async function sendEmail (dest,subject,content) {
         connectionTimeout: 20000
     })
     let err = false;
-    await transport.sendMail({
+    await transport.sendMail ({
         from: 'SOTCC',
         to: dest,
         subject: subject,
         html: content,
-    }).then(() => err = false)
-      .catch((erro) => {
+    }).then (() => err = false)
+      .catch ((erro) => {
         console.log (erro);
         err = true
       })
-    transport.close();
+    transport.close ();
     return err;
 }
 

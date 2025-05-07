@@ -88,10 +88,8 @@
                             {{ formatMask.tel(form.celular) }}
                         </Texto>
                     </div>
-
                     <div class="flex flex-col gap-[8px] w-full text-center justify-end h-full">
                         <hr class="" />
-
                         <Texto as="body">
                             Orientando {{ totalOrientacao || 0 }} aluno(s)
                         </Texto>
@@ -155,7 +153,7 @@ import api from "@/api.js";
 import { popupInfo } from '../../stores/util.js';
 import {useRoute } from "vue-router";
 import { formatMask } from '../../stores/util.js';
-import SolicitarOrientacao from './SolicitarOrientacao.vue';
+import SolicitarOrientacao from '../Orientacao/SolicitarOrientacao.vue';
 
 const openSolicitarOrientacao = ref(false);
 const orientacoes = reactive([]);

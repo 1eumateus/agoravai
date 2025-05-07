@@ -73,12 +73,12 @@
                             :maxLength="20"  
                         /> 
                         <Campo 
-                            v-model="form.sobrenome" 
-                            label="Sobrenome" 
-                            id="sobrenome" 
+                            v-model="form.matricula" 
+                            label="Matrícula" 
+                            id="matricula" 
                             type="text"
                             :obrigatorio="false"
-                            placeholder="ex.: Barroso"
+                            placeholder="ex.: 202033840046"
                             :maxLength="20"  
                         />
                     </section>
@@ -149,7 +149,15 @@
                             maxlength="200"
                         >
                         </textarea>
-                    </div>  
+                    </div>
+                    <texto as="h4">
+                        Lotação
+                    </texto>
+                    <Lotacoes 
+                        :subunidades="form.subunidades" 
+                        :unidades="form.unidades"
+                        :multiplas-lotacoes="form.tipo === 'professor'"
+                    />
                     <Texto as="h4" v-if="form.tipo === 'professor'">
                         Trabalhos de conclusão de curso
                     </Texto>
@@ -290,12 +298,13 @@
 </template>
 
 <script setup>
-import Campo from '@components/Campo.vue'
-import Texto from '@components/Texto.vue'
+import Campo from '@components/Campo.vue';
+import Texto from '@components/Texto.vue';
 import { PhTrash, PhPencilSimple, PhX } from '@phosphor-icons/vue';
 import { onMounted, reactive, ref } from "vue";
 import api from "@/api.js";
 import { popupInfo, formatMask } from '../../stores/util.js';
+import Lotacoes from './Lotacoes.vue';
 
 const emits = defineEmits(['modal:open', 'modal:update']);
 const urlApi = import.meta.env.VITE_URL;
@@ -316,7 +325,7 @@ const disponibilidades = [
 const form = reactive({
     _id: false,
     nome: "",
-    sobrenome: "",
+    matricula: "",
     formacao: "",
     email: "",
     descricao: "",
@@ -327,6 +336,8 @@ const form = reactive({
     senha: "",
     imagem: "",
     trabalhosFimCurso: [],
+    subunidades: [],
+    unidades: [],
     tipo: null,
     ativo: true,
 });
@@ -336,111 +347,104 @@ const props = defineProps({
         type: Object,
         required: true
     },
-})
+});
 
-function start(){
-    Object.assign(form, props?.form)
+function start () {
+    Object.assign(form, props?.form);
     form.senha = "";
 }
 
-function handleFileUpload(event) {
+function handleFileUpload (event) {
     const file = event.target.files[0];
     if (file && file.size > 10 * 1024 * 1024) { // Limite de 10MB
-        return popupInfo().warning('Imagem muito grande. Limite de 10MB.');
+        return popupInfo ().warning ('Imagem muito grande. Limite de 10MB.');
     }
-    if (file && !file.type.startsWith('image/')) {
-        return popupInfo().warning('Formato de arquivo inválido. Por favor, envie uma imagem.');
+    if (file && !file.type.startsWith ('image/')) {
+        return popupInfo ().warning ('Formato de arquivo inválido. Por favor, envie uma imagem.');
     }
     novaImagem.value = file;
     imagePreview.value = URL.createObjectURL(file); 
 }
 
-async function salvarImagem() {
-    const formData = new FormData();
+async function salvarImagem () {
+    const formData = new FormData ();
     if (novaImagem.value) {
         form.imagem = novaImagem.value;
-        formData.append('image', form.imagem);
+        formData.append ('image', form.imagem);
     }
-
     try {
-        await api.post(`/usuario/imagem/`, formData);
+        await api.post (`/usuario/imagem/`, formData);
     } catch (e) {
-        popupInfo().warning(e.response?.data?.msg || e);
+        popupInfo ().warning (e.response?.data?.msg || e);
     }
 }
 
-async function salvar(){
-
-    if(!form.nome?.trim()){
-        return popupInfo().warning('Informe seu nome.');
+async function salvar () {
+    if (!form.nome?.trim ()){
+        return popupInfo ().warning ('Informe seu nome.');
     }
-
-    if(!form.email?.trim()){
-        return popupInfo().warning('Informe email.');
+    if (!form.email?.trim ()){
+        return popupInfo ().warning ('Informe email.');
     }
-    if(form.linkedin && !validateLinkedin(form.linkedin)){
-        return popupInfo().warning('Linkedin inválido.');
+    if (form.linkedin && !validateLinkedin (form.linkedin)){
+        return popupInfo ().warning ('Linkedin inválido.');
     }
-
-    if(form.github && !validateGithub(form.github)){
-        return popupInfo().warning('Github inválido.');
+    if (form.github && !validateGithub (form.github)){
+        return popupInfo ().warning ('Github inválido.');
     }
-
-    if(form.lattes && !validateLattes(form.lattes)){
-        return popupInfo().warning('Currículo Lattes inválido.');
+    if (form.lattes && !validateLattes (form.lattes)){
+        return popupInfo ().warning ('Currículo Lattes inválido.');
     }
-    await salvarImagem();
-
-    await api.put(`/usuario/editar`, form)
-    .then(()=>{
-        popupInfo().success('Usuário editado com sucesso.');
-        emits('modal:open', false)
-        emits('modal:update', true)
-    }).catch((e)=>{
-        popupInfo().warning(e.response.data.msg || e);
+    await salvarImagem ();
+    await api.put (`/usuario/editar`, form)
+    .then (() => {
+        popupInfo ().success ('Usuário editado com sucesso.');
+        emits ('modal:open', false)
+        emits ('modal:update', true)
+    }).catch ((e) => {
+        popupInfo ().warning (e.response.data.msg || e);
     })
 }
 
-function validateGithub(link) {
+function validateGithub (link) {
     const github = /^https:\/\/github\.com\/[A-z0-9_-]+\/?$/;
-    return github.test(link);
+    return github.test (link);
 }
 
-function validateLinkedin(link) {
+function validateLinkedin (link) {
     const linkedin = /^https:\/\/(www\.)?linkedin\.com\/in\/[A-z0-9_-]+\/?$/;
-    return linkedin.test(link);
+    return linkedin.test (link);
 }
 
-function validateLattes(link) {
+function validateLattes (link) {
     const lattes = /^http:\/\/lattes\.cnpq\.br\/\d{15,17}$/;
-    return lattes.test(link);
+    return lattes.test (link);
 }
 
-function removerTrabalho(index){
+function removerTrabalho (index){
     editandoTrabalho.value = -1;
-     trabalho.value = ''
-    form.trabalhosFimCurso.splice(index, 1);
+    trabalho.value = '';
+    form.trabalhosFimCurso.splice (index, 1);
 }
 
-const trabalho = ref('')
+const trabalho = ref ('');
 
-function editarTrabalho(index){
-    trabalho.value = form.trabalhosFimCurso[index]
+function editarTrabalho (index) {
+    trabalho.value = form.trabalhosFimCurso [index];
     editandoTrabalho.value = index;
 }
 
-async function editar(){
-    if(!trabalho.value.trim()) return popupInfo().warning('Informe descrição');
-
-    if(editandoTrabalho.value !== -1){
-        form.trabalhosFimCurso[editandoTrabalho.value] = trabalho.value
+async function editar () {
+    if (!trabalho.value.trim ()) return popupInfo ().warning ('Informe descrição');
+    if (editandoTrabalho.value !== -1){
+        form.trabalhosFimCurso [editandoTrabalho.value] = trabalho.value;
         editandoTrabalho.value = -1;
     }
-    else{
-        form.trabalhosFimCurso.push(trabalho.value)
+    else {
+        form.trabalhosFimCurso.push (trabalho.value)
     }
-    trabalho.value = ''
+    trabalho.value = '';
 }
 
-onMounted(start);
+onMounted (start);
 </script>

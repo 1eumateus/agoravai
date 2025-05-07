@@ -96,17 +96,24 @@
                             type="text"
                             :obrigatorio="true"
                             :maxLength="50"
-                            placeholder="ex.: Davi"
+                            placeholder="ex.: Davi Costa Barroso"
                         /> 
                         <Campo 
-                            v-model="registrar.sobrenome" 
-                            label="Sobrenome" 
+                            v-model="registrar.matricula" 
+                            label="Matricula" 
                             id="registrarsobrenome" 
                             type="text"
                             :obrigatorio="false"
                             :maxLength="50"
-                            placeholder="ex.: Barroso"
-                        /> 
+                            placeholder="ex.: 202033840046"
+                        />
+                        <div class="flex flex-col gap-[4px] col-span-2">
+                            <Lotacoes
+                                :subunidades="lotacoes.subunidades"
+                                :unidades="lotacoes.unidades"
+                                :multiplasLotacoes="false"
+                            />
+                        </div>
                         <div class="col-span-2">
                             <Campo 
                                 v-model="registrar.email" 
@@ -142,11 +149,11 @@
                     <section class="grid grid-cols-1 " v-if="opcao === 'cadastrarProfessor'">
                         <div class="grid grid-cols-2 gap-[4px] items-end " >
                             <Campo 
-                                v-model="registrar.siape" 
-                                label="Buscar os dados do SIAPE" 
-                                id="siape" 
+                                v-model="registrar.matricula" 
+                                label="SIAPE" 
+                                id="matricula" 
                                 type="text"
-                                :obrigatorio="false"
+                                :obrigatorio="true"
                                 placeholder="ex.: 1234567" 
                                 :maxLength="10"
                                 v-on:keyup.enter="buscarDados()"
@@ -174,7 +181,7 @@
                                 </button> 
                             </div>
                         </div>
-                        <div class="grid grid-cols-3 gap-1 mt-2">
+                        <div class="grid grid-cols-4 gap-1 mt-2">
                             <button 
                                 :class="`${aba === 0 ? ' bg-principal border-terciaria ' : ' bg-gray-300 border-white ' } p-1 min-w-full border rounded-md`"
                                 @click="irParaAba(0)">
@@ -187,6 +194,10 @@
                                 :class="`${aba === 2 ? ' bg-principal border-terciaria ' : ' bg-gray-300 border-white ' } p-1 min-w-full border rounded-md `"
                                 @click="irParaAba(2)">
                             </button>
+                            <button 
+                                :class="`${aba === 3 ? ' bg-principal border-terciaria ' : ' bg-gray-300 border-white ' } p-1 min-w-full border rounded-md `"
+                                @click="irParaAba(3)">
+                            </button>
                         </div>
                         <div class="flex flex-col gap-[10px]" v-if="aba===0">
                             <div class="flex flex-col gap-[4px] col-span-2">
@@ -194,25 +205,16 @@
                                     Informações principais
                                 </Texto>
                             </div>
-                            <div class="grid grid-cols-2 gap-[8px]">
+                            <div class="grid grid-cols-1 gap-[8px]">
                                 <Campo 
                                     v-model="registrar.nome" 
                                     label="Nome" 
                                     id="registrarnome" 
                                     type="text"
                                     :obrigatorio="true"
-                                    placeholder="ex.: Davi"
+                                    placeholder="ex.: Davi Barroso"
                                     :maxLength="20" 
                                 /> 
-                                <Campo 
-                                    v-model="registrar.sobrenome" 
-                                    label="Sobrenome" 
-                                    id="registrarsobrenome" 
-                                    type="text"
-                                    :obrigatorio="false"
-                                    placeholder="ex.: Barroso" 
-                                    :maxLength="20" 
-                                />
                             </div>
                             <Campo 
                                 v-model="registrar.formacao" 
@@ -233,14 +235,23 @@
                                 placeholder="ex.: Inteligência artificial, desenvolvimento web e automação"
                             />
                         </div>
-
                         <div class="flex flex-col gap-[10px]" v-if="aba===1">
+                            <div class="flex flex-col gap-[4px] col-span-2">
+                                <Texto as="h4" >
+                                    Lotação
+                                </Texto>
+                            </div>
+                            <Lotacoes 
+                                :subunidades="lotacoes.subunidades" 
+                                :unidades="lotacoes.unidades"
+                            />
+                        </div>
+                        <div class="flex flex-col gap-[10px]" v-if="aba===2">
                             <div class="flex flex-col gap-[4px] col-span-2">
                                 <Texto as="h4" >
                                     Informações adicionais
                                 </Texto>
                             </div>
-
                             <div class="flex flex-col gap-[4px]">
                                 <div class="flex items-center gap-[4px]">
                                     <Texto as="body" for="pesquisar">
@@ -260,8 +271,7 @@
                                     </option>
                                 </select>
                             </div>
-
-                            <div class="flex flex-col gap-[4px] ">
+                            <div class="flex flex-col gap-[4px]">
                                 <div class="flex items-center gap-[10px]">
                                     <Texto as="body" for="formdescricao">
                                         Descrição
@@ -278,8 +288,7 @@
                                 </textarea>
                             </div>  
                         </div>
-
-                        <div class="flex flex-col gap-[10px]" v-if="aba===2">
+                        <div class="flex flex-col gap-[10px]" v-if="aba===3">
                             <div class="flex flex-col gap-[4px] col-span-2">
                                 <Texto as="h4" >
                                     Informações de login
@@ -330,7 +339,7 @@
                                 type="button" 
                                 :class="`border flex items-center bg-white hover:bg-gray-200 border-gray-300 text-[16px] font-normal rounded-md py-[6px] px-[12px] text-black`" 
                                 @click="proximaAbaProfessor()"
-                                v-if="opcao ==='cadastrarProfessor' && aba < 2 "
+                                v-if="opcao ==='cadastrarProfessor' && aba < 3 "
                             >
                                 próximo <PhCaretRight :size="20"  />
                             </button>
@@ -338,7 +347,7 @@
                                 type="button" 
                                 :class="`border transition-all bg-principal text-white hover:bg-principal-opaco text-[16px] font-normal rounded-md py-[6px] px-[12px] text-black`" 
                                     @click="modalConfirmar"
-                                v-if="opcao ==='cadastrarProfessor' && aba === 2"
+                                v-if="opcao ==='cadastrarProfessor' && aba === 3"
                             >
                                 Cadastrar
                             </button>
@@ -394,24 +403,24 @@
 <script setup>
 import { PhCaretLeft, PhCaretRight, PhX, PhEraser, PhMagnifyingGlass  } from '@phosphor-icons/vue';
 import api from "@/api.js";
-// util
 import { popupInfo, isValid } from '../stores/util.js';
 import { ref, reactive } from "vue";
 import Texto from '@components/Texto.vue'
 import Campo from '@components/Campo.vue'
-import { useLoaderState } from "../stores/isLoading";
-const isLoading = useLoaderState();
+import Lotacoes from './Perfil/Lotacoes.vue';
+import { useLoaderState } from "../stores/isLoading.js";
+const isLoading = useLoaderState ();
 
-const opcao = ref('entrar');
-defineProps(["usuario"]);
-const confirmarSenha = ref('');
-const aba = ref(0);
-const abrirModal = ref(false)
+const opcao = ref ('entrar');
+defineProps (["usuario"]);
+const confirmarSenha = ref ('');
+const aba = ref (0);
+const abrirModal = ref (false);
 
-const emailEnviado = reactive({
+const emailEnviado = reactive ({
     situacao: false,
     email: '',
-})
+});
 
 const disponibilidades = [
     { value: "", nome: "Selecione disponibilidade" },
@@ -423,10 +432,9 @@ const disponibilidades = [
     { value: "flexivel", nome: "Flexível" },
 ];
 
-const registrar = reactive({
+const registrar = reactive ({
     nome: '',
     tipo: 'aluno',
-    sobrenome: '',
     email: '',
     senha: '',
     formacao: '',
@@ -436,190 +444,199 @@ const registrar = reactive({
     instituicao: '',
     disponibilidade: '',
     lattes: '',
-    siape: '',
-})
+    matricula: '',
+    subunidades: [],
+    unidades: [],
+});
 
-const form = reactive({
+const lotacoes = reactive ({
+    subunidades: [],
+    unidades: [],
+});
+
+const form = reactive ({
     email: '',
     senha: '',
-})
+});
 
-function irParaAba(numeroAba){
+function irParaAba (numeroAba) {
     aba.value = numeroAba
 }
 
-function proximaAbaProfessor(){
-    if(aba.value < 2){
+function proximaAbaProfessor () {
+    if (aba.value < 3) {
         aba.value++
     }
 }
 
-function voltarAbaProfessor(){
-    if(aba.value > 0){
+function voltarAbaProfessor () {
+    if (aba.value > 0) {
         aba.value--
     }
 }
 
-function modalConfirmar(){
-    if(opcao.value === 'cadastrarAluno'){
+function modalConfirmar () {
+    if (opcao.value === 'cadastrarAluno') {
         registrar.tipo = 'aluno';
     }
-    if(opcao.value === 'cadastrarProfessor'){
+    if (opcao.value === 'cadastrarProfessor') {
         registrar.tipo = 'professor';
     }
-
     if (!registrar.nome) {
-        popupInfo().warning('Informe seu nome.');
+        popupInfo ().warning ('Informe seu nome.');
         aba.value = 0;
         abrirModal.value = false;
         return;
     } 
-
-    if(registrar.tipo === 'professor'){
+    if (!registrar.matricula) {
+        popupInfo ().warning ('Informe sua matrícula.');
+        aba.value = 0;
+        abrirModal.value = false;
+        return;
+    } 
+    if (registrar.tipo === 'professor') {
         if (!registrar.formacao) {
-            popupInfo().warning('Informe sua formação.');
+            popupInfo ().warning ('Informe sua formação.');
             aba.value = 0;
             abrirModal.value = false;
             return;
         }
         if (!registrar.interesse) {
-            popupInfo().warning('Informe áreas de interesse.');
+            popupInfo ().warning ('Informe áreas de interesse.');
             aba.value = 0;
             abrirModal.value = false;
             return;
         }
         if (!registrar.disponibilidade) {
-            popupInfo().warning('Informe sua disponbilidade.');
+            popupInfo ().warning ('Informe sua disponbilidade.');
             aba.value = 1;
             abrirModal.value = false;
             return;
         }
     }
-
-    if (!isValid.email(registrar.email)) {
-        popupInfo().warning('Informe email válido.');
+    if (!isValid.email (registrar.email)) {
+        popupInfo ().warning ('Informe email válido.');
         abrirModal.value = false;
         return;
     } 
     if (!registrar.senha) {
-        popupInfo().warning('Informe sua senha.');
+        popupInfo ().warning ('Informe sua senha.');
         abrirModal.value = false;
         return;
     }
     if (registrar.senha.length<6) {
-        popupInfo().warning('A senha deve ter 6 caracteres no mínimo.');
+        popupInfo ().warning ('A senha deve ter 6 caracteres no mínimo.');
         abrirModal.value = false;
         return;
     }
-
     if (registrar.senha !== confirmarSenha.value) {
-        popupInfo().warning('As senhas não coincidem');
+        popupInfo ().warning ('As senhas não coincidem');
         abrirModal.value = false;
         return;
     }
-
     abrirModal.value = true;
 }
 
-async function buscarDados(){
-    if(!registrar.siape || registrar.siape.length<6) {
-        popupInfo().warning('Código do SIAPE inválido.');
+async function buscarDados () {
+    if (!registrar.matricula || registrar.matricula.length < 6) {
+        popupInfo ().warning ('Código do SIAPE inválido.');
         return;
     }
-    isLoading.changeStateTrue()
-    await api.get(`/usuario/siape/${registrar.siape}`)
-        .then((res) => {
-            if(res?.data?.dados){
-                Object.assign(registrar, res.data.dados)
-                popupInfo().success(res.data?.msg);
-            }else{
-                popupInfo().warning(res.data?.msg);
+    isLoading.changeStateTrue ();
+    await api.get (`/usuario/siape/${registrar.matricula}`)
+        .then ((res) => {
+            if (res?.data?.dados){
+                Object.assign (registrar, res.data.dados)
+                popupInfo ().success (res.data?.msg);
+            } else {
+                popupInfo ().warning (res.data?.msg);
             }
         })
-        .catch((e) => {
-            popupInfo().error(e.response?.data?.msg);
-        }).finally(()=> isLoading.changeStateFalse())
+        .catch ((e) => {
+            popupInfo ().error (e.response?.data?.msg);
+        }).finally (() => isLoading.changeStateFalse ())
 }
 
-async function login() {
+async function login () {
     if (form.email === "") {
-        popupInfo().warning('Informe email.');
+        popupInfo ().warning ('Informe email.');
         return;
-    } if (form.senha === "") {
-        popupInfo().warning('Informe senha.');
+    } 
+    if (form.senha === "") {
+        popupInfo ().warning ('Informe senha.');
         return;
     }
     if (form.senha.length<6) {
-        popupInfo().warning('A senha deve ter 6 caracteres no mínimo.');
+        popupInfo ().warning ('A senha deve ter 6 caracteres no mínimo.');
         return;
     }
     await api.post('/login', form)
-        .then((res) => {
-            localStorage.setItem('token', res.data.token);
-            window.location.reload();
+        .then ((res) => {
+            localStorage.setItem ('token', res.data.token);
+            window.location.reload ();
         })
-        .catch((e) => {
-            popupInfo().error(e.response?.data?.msg);
+        .catch ((e) => {
+            popupInfo ().error (e.response?.data?.msg);
         });
 };
 
-async function register(){
+async function register () {
     abrirModal.value = false;
-    if(emailEnviado.situacao && registrar.email === emailEnviado.email){
-        popupInfo().info('Email de confirmação enviado, verifique sua caixa de spam.');
+    if (emailEnviado.situacao && registrar.email === emailEnviado.email) {
+        popupInfo ().info ('Email de confirmação enviado, verifique sua caixa de spam.');
         return;
     }
-    isLoading.changeStateTrue()
-    await api.post('/usuario/criar', registrar)
-    .then((res) => {
-        popupInfo().info(res?.data?.msg);
-        emailEnviado.situacao = true;
-        emailEnviado.email = registrar.email
-    })
-    .catch((e) => {
-        popupInfo().error(e.response?.data?.msg);
-    }).finally(()=> isLoading.changeStateFalse())
-
+    isLoading.changeStateTrue ();
+    registrar.subunidades = lotacoes.subunidades;
+    registrar.unidades = lotacoes.unidades;
+    await api.post ('/usuario/criar', registrar)
+        .then ((res) => {
+            popupInfo ().info (res?.data?.msg);
+            emailEnviado.situacao = true;
+            emailEnviado.email = registrar.email;
+            irParaAba (0);
+            alterarForm ('entrar');
+        })
+        .catch ((e) => {
+            popupInfo ().error (e.response?.data?.msg);
+        })
+        .finally (()=> isLoading.changeStateFalse ());
 }
 
-function alterarForm(page){
-    opcao.value = page
-    limparDados()
-    
+function alterarForm (page) {
+    opcao.value = page;
+    limparDados ();
 }
-function limparDados(){
+
+function limparDados () {
     form.email = '';
     form.senha = '';
-    confirmarSenha.value = '';
-
+    form.sipae = '';
     for (let key in registrar) {
-        if(key !== 'siape') registrar[key] = '';
+        if (key !== 'matricula') registrar [key] = '';
     }
-    
-    registrar.disponibilidade= '';
-
-    if(opcao.value === 'cadastrarAluno'){
+    if (opcao.value === 'cadastrarAluno') {
         registrar.tipo = 'aluno';
     }
-    if(opcao.value === 'cadastrarProfessor'){
+    if (opcao.value === 'cadastrarProfessor') {
         registrar.tipo = 'professor';
     }
 }
 
-async function recuperarSenha() {
+async function recuperarSenha () {
     if (form.email === "") {
-        popupInfo().warning('Informe email.');
+        popupInfo ().warning ('Informe email.');
         return;
     }
-    isLoading.changeStateTrue();
-    await api.post('/usuario/recuperar_solicitacao', form)
-        .then((res) => {
-            popupInfo().info('Um email de recuperação da senha foi enviado, verifique sua caixa de spam.');
+    isLoading.changeStateTrue ();
+    await api.post ('/usuario/recuperar_solicitacao', form)
+        .then ((res) => {
+            popupInfo ().info ('Um email de recuperação da senha foi enviado, verifique sua caixa de spam.');
         })
-        .catch((e) => {
-            popupInfo().error(e.response?.data?.msg);
+        .catch ((e) => {
+            popupInfo ().error (e.response?.data?.msg);
         })
-        .finally (() => {isLoading.changeStateFalse()});
+        .finally (() => {isLoading.changeStateFalse ()});
 }
 
 </script>

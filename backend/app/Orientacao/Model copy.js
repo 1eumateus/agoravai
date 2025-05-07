@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
-const modelSchema = new Schema({
+const modelSchema = new Schema ({
     ativo: {
         type: Boolean,
         default: true,
@@ -64,4 +64,4 @@ const modelSchema = new Schema({
     }
 });
 
-export default model("Orientacao", modelSchema);
+export default model ("Orientacao", modelSchema);
