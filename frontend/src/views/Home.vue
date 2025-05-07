@@ -1,6 +1,7 @@
 <template>
-   <main class="flex-grow relative " >
+    <main class="flex-grow relative " >
         <section class="mx-auto max-w-7xl p-[14px] flex flex-col gap-[24px]">
+            <ListaOrientacao :usuario="props?.usuario"></ListaOrientacao>
             <section class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-[12px] items-center">
                 <div class="flex flex-col gap-[4px] col-span-1 md:col-span-3 lg:col-span-4">
                     <div>
@@ -136,6 +137,7 @@ import api from "@/api.js";
 import { popupInfo } from '../stores/util.js';
 import Texto from '@components/Texto.vue'
 import { useLoaderState } from "../stores/isLoading";
+import ListaOrientacao from './Orientacao/ListaOrientacao.vue';
 const isLoading = useLoaderState();
 
 const professores = ref([])

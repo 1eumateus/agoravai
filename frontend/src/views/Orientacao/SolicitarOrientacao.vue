@@ -56,7 +56,7 @@ import { PhX } from '@phosphor-icons/vue';
 import { reactive } from "vue";
 import { popupInfo } from '../../stores/util.js';
 import api from "@/api.js";
-import { useLoaderState } from "../../stores/isLoading";
+import { useLoaderState } from "../../stores/isLoading.js";
 const isLoading = useLoaderState();
 
 const props = defineProps({

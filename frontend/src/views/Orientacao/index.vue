@@ -389,7 +389,6 @@ async function editar(){
         Object.assign(form.banca[editandoParticipante.value] , participanteBanca)
         editandoParticipante.value = -1;
     }else{
-        console.log(participanteBanca)
         form.banca.push({
                 nome: participanteBanca.nome, 
                 instituicao: participanteBanca.instituicao
