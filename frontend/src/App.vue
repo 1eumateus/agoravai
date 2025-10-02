@@ -1,5 +1,5 @@
 <template>
-
+  
   <Menu v-if="tokenValid" :user="usuario"></Menu>
   <Breadcumbs v-if="tokenValid"></Breadcumbs>
   <router-view :usuario="usuario"/>
