@@ -14,5 +14,9 @@ export default defineConfig({
       { "find": "@", "replacement": path.resolve(projectRootDir, 'src') },  
     ],
   },
-  base: 'ui'
+  base: '/ui/', 
+  server: {
+    port: 4444,
+  }
+    
 }); 

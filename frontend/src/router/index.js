@@ -2,10 +2,14 @@ import { createWebHistory, createRouter } from 'vue-router'
 import { checkToken } from "../stores/checkToken";
 
 const routes = [
+  
+
+
+
   {
-    path: '/ui/:pathMatch(.*)*',
-    name: "NotFound",
-    component: () => import('../views/NotFound.vue')
+      path: '/ui/acompanhamento',
+    name: "Acompanhamento",
+    component: () => import('../views/Orientacao/Acompanhamento.vue'),
   },
   {
     path: '/ui/',
@@ -57,6 +61,7 @@ const routes = [
       ],
     },
   },
+  
 ]
 
 const router = createRouter({
@@ -73,7 +78,10 @@ router.beforeEach(async (to, from, next) => {
     next({ path: to.path, query: {} }); 
     return; 
   }
-
+  if (to.name === "Acompanhamento") {    // excecção para desenvolver a página de acompanhamento sem precisar de login
+    next();
+    return;
+  }
   const tokenValido = res.valid;
   const userType = res.tipo;
 
