@@ -125,10 +125,28 @@
                         </Texto>
                         <PhCaretRight :size="18" class="fill-blue-700 hover:fill-blue-900" />
                     </router-link>
+                    <router-link
+                        to="/ui/acompanhamento"
+                        class="text-blue-600 hover:underline"
+                        >
+                        <Texto as="button" color="blue">
+                            Acompanhar
+                        </Texto>
+                        
+                        <PhCaretRight :size="18" class="fill-blue-700 hover:fill-blue-900" />
+                    </router-link>
+
                 </section>
+
             </section>
+
+
         </section>
+        
     </main>
+      <div class="p-4">
+
+  </div> 
 </template>
 <script setup>
 import { PhCaretRight } from '@phosphor-icons/vue';
