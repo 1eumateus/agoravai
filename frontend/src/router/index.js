@@ -1,67 +1,65 @@
 import { createWebHistory, createRouter } from 'vue-router'
-import { checkToken } from "../stores/checkToken";
+import { checkToken } from '../stores/checkToken'
 
 const routes = [
-  
-
-
-
   {
-      path: '/ui/acompanhamento',
-    name: "Acompanhamento",
+    path: '/ui/acompanhamento',
+    name: 'Acompanhamento',
     component: () => import('../views/Orientacao/Acompanhamento.vue'),
+
   },
   {
     path: '/ui/',
-    name: "Home",
-    component: () => import('../views/Home.vue')
+    name: 'Home',
+    component: () => import('../views/Home.vue'),
   },
   {
     path: '/ui/login',
-    name: "Login",
-    component: () => import('../views/Login.vue')
+    name: 'Login',
+    component: () => import('../views/Login.vue'),
   },
   {
     path: '/ui/redefinir/:id',
-    name: "Redefinir",
-    component: () => import('../views/Usuarios/redefinir.vue')
+    name: 'Redefinir',
+    component: () => import('../views/Usuarios/redefinir.vue'),
   },
   {
     path: '/ui/perfil',
-    name: "Perfil",
+    name: 'Perfil',
     component: () => import('../views/Perfil/index.vue'),
     meta: {
-      breadcrumb: [{ name: "Perfil", href: "ui/perfil", current: true }],
+      breadcrumb: [{ name: 'Perfil', href: 'ui/perfil', current: true }],
     },
   },
   {
     path: '/ui/usuarios',
-    name: "Usuarios",
+    name: 'Usuarios',
     component: () => import('../views/Usuarios/index.vue'),
     meta: {
-      breadcrumb: [{ name: "Usuários", href: "ui/usuarios", current: true }],
+      breadcrumb: [{ name: 'Usuários', href: 'ui/usuarios', current: true }],
     },
   },
   {
     path: '/ui/professor/:id',
-    name: "Professor",
+    name: 'Professor',
     component: () => import('../views/Professor/index.vue'),
     meta: {
-      breadcrumb: [ { name: "Perfil professor", href: "ui/professor/:id", current: true }],
+      breadcrumb: [
+        { name: 'Perfil professor', href: 'ui/professor/:id', current: true },
+      ],
     },
   },
   {
     path: '/ui/orientacao/:id',
-    name: "Orientacao",
-    component: () => import('../views/Orientacao/index.vue'),
+    name: 'Orientacao',
+    component: () => import('../views/Orientacao/Editar.vue'),
     meta: {
       breadcrumb: [
-          { name: "Perfil", href: "/ui/perfil", current: false },
-          { name: "Orientação", href: "/ui/orientacao/:id", current: true }
+        { name: 'Perfil', href: '/ui/perfil', current: false },
+        { name: 'Orientação', href: '/ui/orientacao/:id', current: true },
       ],
     },
   },
-  
 ]
 
 const router = createRouter({
@@ -70,47 +68,47 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  let confirmandoEmail = to.query?.user || null;
+  const confirmandoEmail = to.query?.user || null
 
-  const res = await checkToken(confirmandoEmail);
+  // exceção: acompanhamento sem login
+  if (to.name === 'Acompanhamento') {
+    next()
+    return
+  }
+
+  const res = await checkToken(confirmandoEmail)
 
   if (confirmandoEmail) {
-    next({ path: to.path, query: {} }); 
-    return; 
+    next({ path: to.path, query: {} })
+    return
   }
-  if (to.name === "Acompanhamento") {    // excecção para desenvolver a página de acompanhamento sem precisar de login
-    next();
-    return;
-  }
-  const tokenValido = res.valid;
-  const userType = res.tipo;
+
+  const tokenValido = res.valid
+  const userType = res.tipo
 
   if (to.name === 'Redefinir') {
-    next();
-  }
-  else  if (to.name !== "Login" && !tokenValido) {
-    next({ name: "Login" });
-  }
-  else if (tokenValido && to.name === "Login") {
-    next({ name: "Home" });
-  }
-  else if (tokenValido && userType !== 'admin') {
-    let routesForUser = [
+    next()
+  } else if (to.name !== 'Login' && !tokenValido) {
+    next({ name: 'Login' })
+  } else if (tokenValido && to.name === 'Login') {
+    next({ name: 'Home' })
+  } else if (tokenValido && userType !== 'admin') {
+    const routesForUser = [
       'Home',
       'Perfil',
       'Professor',
       'Orientacao',
       'NotFound',
-    ];
-    if (routesForUser.includes(to.name)) {
-      next();
-    } else {
-      next({ name: "NotFound" });
-    }
-  }
-  else {
-    next();
-  }
-});
+    ]
 
-export default router;
+    if (routesForUser.includes(to.name)) {
+      next()
+    } else {
+      next({ name: 'NotFound' })
+    }
+  } else {
+    next()
+  }
+})
+
+export default router
