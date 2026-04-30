@@ -114,78 +114,65 @@
         </button>
       </div>
 
-      <div class="flex flex-1 overflow-hidden">
-        <!-- PDF Viewer com zoom controlado -->
-        <div class="flex-1 h-full overflow-auto">
-          <PdfViewer
-            ref="pdfViewerRef"
-            :key="selectedPdfUrl"
-            :pdfUrl="selectedPdfUrl"
-            :comments="selectedFile?.comments || {}"
-            :zoomLevel="zoomLevel"
-          />
-        </div>
-
-        <!-- Painel de comentários (sidebar fixa) -->
-        <div
-          class="w-80 bg-white border-l flex flex-col shadow-lg flex-shrink-0"
-        >
-          <div class="p-3 bg-indigo-50 border-b">
-            <h3 class="font-semibold text-indigo-900 flex items-center gap-2">
-              <span>💬</span> Comentários
-            </h3>
-          </div>
-          <div class="flex-1 overflow-y-auto p-3">
-            <div
-              v-if="(selectedFile?.commentsList || []).length === 0"
-              class="text-gray-400 text-center text-sm py-4"
-            >
-              Nenhum comentário ainda
-            </div>
-            <div
-              v-for="(c, index) in selectedFile?.commentsList || []"
-              :key="index"
-              class="text-sm border-b py-2 mb-2"
-            >
-              <p class="text-gray-800">{{ c.text }}</p>
-              <span class="text-gray-400 text-[10px]">{{ c.date }}</span>
-            </div>
-          </div>
-          <div class="p-3 border-t bg-white">
-            <textarea
-              v-model="newComment"
-              placeholder="Digite um comentário..."
-              rows="3"
-              class="w-full border border-gray-300 p-2 rounded text-sm focus:outline-none focus:border-indigo-500"
-            ></textarea>
-            <button
-              @click="addComment"
-              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded mt-2 transition-colors"
-            >
-              Enviar comentário
-            </button>
-          </div>
-        </div>
+      <div class="flex-1 overflow-hidden">
+        <!-- PDF Viewer em tela cheia (sem sidebar fixa) -->
+        <PdfViewer
+          ref="pdfViewerRef"
+          :key="selectedPdfUrl"
+          :pdfUrl="selectedPdfUrl"
+          :comments="allAnnotations"
+          :zoomLevel="zoomLevel"
+          @add-annotation="handleAddAnnotation"
+          @annotation-clicked="handleAnnotationClick"
+        />
       </div>
     </div>
+
+    <!-- Sidebar flutuante de comentários -->
+    <CommentSidebar
+      ref="commentSidebar"
+      @save-comment="saveCommentFromSidebar"
+      @delete-comment="deleteComment"
+    />
   </div>
 </template>
 
 <script>
-import PdfViewer from "../../components/pdfViewer.vue";
+import PdfViewer from "@components/pdfViewer.vue";
+import CommentSidebar from "@components/orientacao/CommentSidebar.vue";
 
 export default {
   name: "Acompanhamento",
-  components: { PdfViewer },
+  components: {
+    PdfViewer,
+    CommentSidebar,
+  },
   data() {
     return {
       file: [],
       selectedPdfUrl: null,
       selectedFile: null,
       viewing: false,
-      newComment: "",
       zoomLevel: 1.0,
+      pendingAnnotation: null, // Para novo comentário
     };
+  },
+  computed: {
+    // Converte anotações para o formato esperado pelo PdfViewer (compatibilidade)
+    allAnnotations() {
+      if (!this.selectedFile?.annotations) return [];
+
+      // Converte o formato antigo para o novo, se necessário
+      return this.selectedFile.annotations.map((ann) => ({
+        ...ann,
+        id: ann.id || Date.now() + Math.random(),
+        page: ann.page,
+        x: ann.x,
+        y: ann.y,
+        text: ann.text,
+        createdAt: ann.date || ann.createdAt,
+      }));
+    },
   },
   methods: {
     handleFileChange(event) {
@@ -195,15 +182,14 @@ export default {
           name: file.name,
           date: new Date().toLocaleString(),
           url: URL.createObjectURL(file),
-          comments: {},
-          commentsList: [],
-          annotations: [],
+          annotations: [], // Array de anotações
         });
       } else {
         alert("Selecione um PDF válido.");
       }
       event.target.value = "";
     },
+
     removeFile(index) {
       const removed = this.file.splice(index, 1)[0];
       if (removed?.url) {
@@ -213,38 +199,120 @@ export default {
         URL.revokeObjectURL(removed.url);
       }
     },
+
     viewPdf(file) {
       this.selectedPdfUrl = file.url;
       this.selectedFile = file;
       this.viewing = true;
       this.zoomLevel = 1.0;
+
+      // Garante que o arquivo tenha a estrutura de anotações
+      if (!this.selectedFile.annotations) {
+        this.selectedFile.annotations = [];
+      }
     },
+
     closePdfViewer() {
       this.selectedPdfUrl = null;
       this.selectedFile = null;
       this.viewing = false;
       this.zoomLevel = 1.0;
-    },
-    addComment() {
-      if (!this.newComment.trim() || !this.selectedFile) return;
-      const comment = {
-        text: this.newComment,
-        date: new Date().toLocaleString(),
-      };
-      this.selectedFile.commentsList.push(comment);
-      this.newComment = "";
-    },
-    updateZoom() {
-      // Apenas atualiza o valor, o componente PdfViewer reage ao zoomLevel via watch
-      if (this.$refs.pdfViewerRef) {
-        this.$refs.pdfViewerRef.updateZoom(this.zoomLevel);
+      this.pendingAnnotation = null;
+
+      // Fecha o sidebar se estiver aberto
+      if (this.$refs.commentSidebar) {
+        this.$refs.commentSidebar.closeSidebar();
       }
     },
+
+    // Quando clica no PDF para criar um novo comentário
+    handleAddAnnotation(annotation) {
+      this.pendingAnnotation = {
+        ...annotation,
+        id: Date.now(),
+        text: "",
+        createdAt: new Date(),
+      };
+
+      // Abre o sidebar em modo de criação
+      this.$refs.commentSidebar.openForNewComment(
+        this.pendingAnnotation,
+        "Criar Comentário",
+      );
+    },
+
+    // Quando clica em um marcador existente
+    handleAnnotationClick({ annotation, position }) {
+      // Abre o sidebar em modo de VISUALIZAÇÃO (não edição direta)
+      this.$refs.commentSidebar.openForView(annotation); // Mudou de openForEdit para openForView
+    },
+
+    // Salva comentário vindo do sidebar
+    // Salva comentário vindo do sidebar
+    // Salva comentário vindo do sidebar
+    saveCommentFromSidebar(commentData) {
+      if (!this.selectedFile) return;
+
+      if (
+        commentData.id &&
+        this.selectedFile.annotations.find((a) => a.id === commentData.id)
+      ) {
+        // Atualiza comentário existente
+        const index = this.selectedFile.annotations.findIndex(
+          (a) => a.id === commentData.id,
+        );
+        if (index !== -1) {
+          this.selectedFile.annotations[index] = {
+            ...this.selectedFile.annotations[index],
+            text: commentData.text,
+            updatedAt: new Date(),
+          };
+        }
+      } else {
+        // Adiciona novo comentário
+        const newComment = {
+          ...this.pendingAnnotation,
+          text: commentData.text,
+          id: Date.now(),
+          createdAt: new Date(),
+        };
+
+        this.selectedFile.annotations.push(newComment);
+        this.pendingAnnotation = null;
+      }
+
+      // 🔥 MUDANÇA AQUI: use redrawAnnotationsOnly em vez de rerenderAllPages
+      // Isso apenas redesenha os círculos, sem recriar o PDF
+      this.$refs.pdfViewerRef?.redrawAnnotationsOnly();
+    },
+
+    // Deleta um comentário
+    deleteComment(commentId) {
+      if (!this.selectedFile) return;
+
+      const index = this.selectedFile.annotations.findIndex(
+        (a) => a.id === commentId,
+      );
+      if (index !== -1) {
+        this.selectedFile.annotations.splice(index, 1);
+
+        // Fecha o sidebar se estiver aberto
+        this.$refs.commentSidebar.closeSidebar();
+
+        // Força re-renderização das anotações
+        tthis.$refs.pdfViewerRef?.redrawAnnotationsOnly();
+      }
+    },
+
+    updateZoom() {
+      // O zoom é gerenciado pelo PdfViewer via prop
+      // Força re-renderização se necessário
+      this.$refs.pdfViewerRef?.redrawAnnotationsOnly();
+    },
+
     resetZoom() {
       this.zoomLevel = 1.0;
-      if (this.$refs.pdfViewerRef) {
-        this.$refs.pdfViewerRef.updateZoom(1.0);
-      }
+      this.$refs.pdfViewerRef?.redrawAnnotationsOnly();
     },
   },
 };
@@ -269,6 +337,12 @@ button {
 
 .z-50 {
   z-index: 50;
+}
+
+.comment-preview {
+  word-wrap: break-word;
+  white-space: normal;
+  line-height: 1.3;
 }
 
 /* Estilização do slider (input range) */
