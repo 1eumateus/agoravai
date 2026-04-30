@@ -1,70 +1,170 @@
 <template>
-  <div class="bg-indigo-100 w-full h-screen grid grid-flow-col-dense grid-cols-12">
-    <div class="main-direito col-span-8 border-2 border-black flex flex-col items-center justify-center">
-      <h3>Seu progresso</h3>
-      <div class="p-4 sm:w-[200px] md:w-[400px] lg:w-[850px]">
-        <div class="overflow-x-auto border-2 border-black h-[650px]">
-          <h3 class="mx-20">Arquivos enviados</h3>
-          <div class="bg-white overflow-y-auto max-h-[450px]">
-            <table class="min-w-full table-auto">
-              <tbody>
-                <tr v-for="(file, index) in file" :key="index" class="hover:bg-gray-300 cursor-pointer">
-                  <td v-if="isDocx(file)" class="p-5">
-                    <img src="/pdf.png" alt="Ícone DOCX" class="w-10 h-10" />
-                  </td>
-                  <td class="p-5 flex border-b-2 border-gray-400">{{ file.name }}</td>
-                  <td class="p-5">{{ file.date }}</td>
-                  <td class="p-5">
-                    <button @click="removeFile(index)">
-                      Remover
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            
-            <!-- Mostrar conteúdo editável do DOCX -->
-            <div v-if="docxContent">
-              <textarea v-model="docxContent" class="w-full h-[300px]" placeholder="Edite o conteúdo aqui..."></textarea>
-              <button @click="generateDoc" class="bg-green-500 text-white py-2 px-4 mt-2 rounded-md">Gerar Documento Editado</button>
-            </div>
-            
-            <!-- Mostrar link para download do documento editado -->
-            <div v-if="docxUrl">
-              <a :href="docxUrl" target="_blank">Baixar Documento Editado</a>
-            </div>
-          </div>
+  <div class="bg-indigo-100 w-full h-screen grid grid-cols-12">
+    <!-- 🔹 TABELA CENTRALIZADA -->
+    <div
+      v-if="!viewing"
+      class="col-span-12 flex items-center justify-center p-4"
+    >
+      <div class="w-full max-w-md bg-white rounded-lg shadow-lg">
+        <div class="p-4 border-b border-indigo-200">
+          <h3 class="text-lg font-semibold text-center">Seu progresso</h3>
+        </div>
 
-          <div class="col-span-1 p-4 justify-center items-center flex flex-col">
-            <label for="upload" class="cursor-pointer flex items-center">
-              <img src="/nuvem.png" alt="Ícone PDF" class="w-10 h-10 cursor-pointer"/>
-              <span class="ml-2 self-center">Clique aqui para enviar um novo arquivo</span>
-            </label>
-            <input type="file" id="upload" @change="handleFileUpload" class="hidden" accept=".docx"/>
+        <div class="p-4">
+          <div
+            class="border border-black rounded-md h-[500px] flex flex-col w-full"
+          >
+            <h3 class="text-center text-sm bg-indigo-200 py-2">
+              Arquivos enviados
+            </h3>
+
+            <div class="bg-white overflow-y-auto flex-1">
+              <table class="w-full text-sm">
+                <tbody>
+                  <tr
+                    v-for="(item, index) in file"
+                    :key="index"
+                    class="hover:bg-gray-200 border-b"
+                  >
+                    <td class="p-2 truncate max-w-[150px]" :title="item.name">
+                      {{ item.name }}
+                    </td>
+                    <td class="p-2 text-xs">{{ item.date }}</td>
+                    <td class="p-2 text-center">
+                      <button @click="removeFile(index)" class="text-red-600">
+                        🗑️
+                      </button>
+                    </td>
+                    <td class="p-2 text-center">
+                      <button @click="viewPdf(item)" class="text-blue-600">
+                        👁️
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="p-3 border-t text-center">
+              <label
+                for="upload"
+                class="cursor-pointer inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+              >
+                <img src="/nuvem.png" class="w-5 h-5" />
+                <span>Enviar PDF</span>
+              </label>
+              <input
+                type="file"
+                id="upload"
+                @change="handleFileChange"
+                class="hidden"
+                accept=".pdf"
+              />
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Lado Esquerdo: Chat -->
-    <div class="lado-esquerdo col-span-4 bg-indigo-200 border-2 border-black justify-center items-center flex">
-      <div class="flex flex-col bg-white shadow-lg rounded-lg p-5 border-2 border-black w-[500px] overflow-y-auto h-[500px]">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-semibold">Chat - Professor & Aluno</h2>
-          <span class="text-sm text-gray-500">Professor: João</span>
-        </div>
+    <!-- 🔹 VISUALIZADOR EM TELA CHEIA -->
+    <div
+      v-if="selectedPdfUrl"
+      class="col-span-12 bg-gray-100 flex flex-col h-screen fixed inset-0 z-50"
+    >
+      <div
+        class="flex justify-between items-center p-3 bg-indigo-600 text-white shadow-lg"
+      >
+        <div class="flex items-center gap-4">
+          <span class="font-bold text-lg">{{
+            selectedFile?.name || "Visualizador PDF"
+          }}</span>
 
-        <div class="flex-1 overflow-y-auto mb-4" id="messages-container">
-          <div v-for="(message, index) in messages" :key="index" :class="{'text-right': message.sender === 'aluno', 'text-left': message.sender === 'professor'}" class="mb-3">
-            <div :class="{'bg-blue-200': message.sender === 'aluno', 'bg-green-200': message.sender === 'professor'}" class="inline-block p-3 rounded-lg max-w-xs">
-              <p>{{ message.text }}</p>
-            </div>
+          <!-- Controle de zoom discreto com slider -->
+          <div class="flex items-center gap-3 ml-4">
+            <span class="text-sm opacity-75">🔍</span>
+            <input
+              type="range"
+              v-model="zoomLevel"
+              min="0.5"
+              max="1.5"
+              step="0.01"
+              @input="updateZoom"
+              class="w-32 h-1 bg-indigo-300 rounded-lg appearance-none cursor-pointer"
+              :style="{
+                background: `linear-gradient(to right, white 0%, white ${(zoomLevel - 0.5) * 100}%, #818cf8 ${(zoomLevel - 0.5) * 100}%, #818cf8 100%)`,
+              }"
+            />
+            <span class="text-sm min-w-[45px]"
+              >{{ Math.round(zoomLevel * 100) }}%</span
+            >
+            <button
+              @click="resetZoom"
+              class="text-xs bg-indigo-500 hover:bg-indigo-400 px-2 py-1 rounded transition-colors"
+              title="Resetar zoom"
+            >
+              Resetar
+            </button>
           </div>
         </div>
+        <button
+          @click="closePdfViewer"
+          class="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded"
+        >
+          Fechar
+        </button>
+      </div>
 
-        <div class="flex items-center">
-          <input v-model="newMessage" @keyup.enter="sendMessage" class="border border-gray-300 p-2 rounded-md w-full mr-2" placeholder="Digite sua mensagem..." />
-          <button @click="sendMessage" class="bg-blue-500 text-white py-2 px-4 rounded-md">Enviar</button>
+      <div class="flex flex-1 overflow-hidden">
+        <!-- PDF Viewer com zoom controlado -->
+        <div class="flex-1 h-full overflow-auto">
+          <PdfViewer
+            ref="pdfViewerRef"
+            :key="selectedPdfUrl"
+            :pdfUrl="selectedPdfUrl"
+            :comments="selectedFile?.comments || {}"
+            :zoomLevel="zoomLevel"
+          />
+        </div>
+
+        <!-- Painel de comentários (sidebar fixa) -->
+        <div
+          class="w-80 bg-white border-l flex flex-col shadow-lg flex-shrink-0"
+        >
+          <div class="p-3 bg-indigo-50 border-b">
+            <h3 class="font-semibold text-indigo-900 flex items-center gap-2">
+              <span>💬</span> Comentários
+            </h3>
+          </div>
+          <div class="flex-1 overflow-y-auto p-3">
+            <div
+              v-if="(selectedFile?.commentsList || []).length === 0"
+              class="text-gray-400 text-center text-sm py-4"
+            >
+              Nenhum comentário ainda
+            </div>
+            <div
+              v-for="(c, index) in selectedFile?.commentsList || []"
+              :key="index"
+              class="text-sm border-b py-2 mb-2"
+            >
+              <p class="text-gray-800">{{ c.text }}</p>
+              <span class="text-gray-400 text-[10px]">{{ c.date }}</span>
+            </div>
+          </div>
+          <div class="p-3 border-t bg-white">
+            <textarea
+              v-model="newComment"
+              placeholder="Digite um comentário..."
+              rows="3"
+              class="w-full border border-gray-300 p-2 rounded text-sm focus:outline-none focus:border-indigo-500"
+            ></textarea>
+            <button
+              @click="addComment"
+              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded mt-2 transition-colors"
+            >
+              Enviar comentário
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -72,108 +172,127 @@
 </template>
 
 <script>
-// Importar as bibliotecas necessárias
-import PizZip from 'pizzip';
-import Docxtemplater from 'docxtemplater';
+import PdfViewer from "../../components/pdfViewer.vue";
 
 export default {
-  name: 'Acompanhamento',
+  name: "Acompanhamento",
+  components: { PdfViewer },
   data() {
     return {
       file: [],
-      messages: [],
-      docxContent: '', // Conteúdo do arquivo docx editável
-      docxUrl: null,   // URL do arquivo gerado
-      newMessage: "",
-      path: [],
+      selectedPdfUrl: null,
+      selectedFile: null,
+      viewing: false,
+      newComment: "",
+      zoomLevel: 1.0,
     };
   },
   methods: {
-    // Função para fazer o upload do arquivo DOCX
-    handleFileUpload(event) {
+    handleFileChange(event) {
       const file = event.target.files[0];
-      const currentDate = new Date().toLocaleDateString();
-      if (file) {
+      if (file && file.type === "application/pdf") {
         this.file.push({
           name: file.name,
-          date: currentDate,
+          date: new Date().toLocaleString(),
+          url: URL.createObjectURL(file),
+          comments: {},
+          commentsList: [],
+          annotations: [],
         });
-
-        if (file.name.endsWith('.docx')) {
-          // Carregar e exibir o conteúdo do arquivo DOCX
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const zip = new PizZip(e.target.result);  // Lê o arquivo docx
-            const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-
-            // Aqui assumimos que o documento tem algum marcador de texto, por exemplo: {{name}}
-            // Obtemos os dados do documento e mostramos para edição
-            const data = doc.getData();
-            this.docxContent = `Conteúdo original: ${data.name || "Nenhum conteúdo encontrado"}`; // Ajuste conforme seu documento
-          };
-          reader.readAsArrayBuffer(file);
-        }
+      } else {
+        alert("Selecione um PDF válido.");
       }
+      event.target.value = "";
     },
-
-    // Função para remover um arquivo
     removeFile(index) {
-      this.file.splice(index, 1);
-    },
-
-    // Função para gerar o arquivo editado
-    generateDoc() {
-      if (this.docxContent) {
-        const zip = new PizZip();
-        const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-
-        // Substituir o conteúdo editado na variável
-        doc.setData({ name: this.docxContent });
-
-        try {
-          doc.render();
-          const out = doc.getZip().generate({ type: 'blob' });
-          this.docxUrl = URL.createObjectURL(out); // Criar uma URL do arquivo editado
-        } catch (error) {
-          console.log('Erro ao gerar documento:', error);
+      const removed = this.file.splice(index, 1)[0];
+      if (removed?.url) {
+        if (this.selectedPdfUrl === removed.url) {
+          this.closePdfViewer();
         }
+        URL.revokeObjectURL(removed.url);
       }
     },
-
-    // Função para enviar mensagens no chat
-    sendMessage() {
-      if (this.newMessage.trim() !== "") {
-        this.messages.push({
-          sender: "aluno",
-          text: this.newMessage,
-        });
-        this.newMessage = ""; 
-        this.scrollToBottom();
-
-        setTimeout(() => {
-          this.messages.push({
-            sender: "professor",
-            text: "Entendido, vou te ajudar com isso! aguarde um momento enquanto analiso o arquivo.",
-          });
-          this.scrollToBottom();
-        }, 1500);
+    viewPdf(file) {
+      this.selectedPdfUrl = file.url;
+      this.selectedFile = file;
+      this.viewing = true;
+      this.zoomLevel = 1.0;
+    },
+    closePdfViewer() {
+      this.selectedPdfUrl = null;
+      this.selectedFile = null;
+      this.viewing = false;
+      this.zoomLevel = 1.0;
+    },
+    addComment() {
+      if (!this.newComment.trim() || !this.selectedFile) return;
+      const comment = {
+        text: this.newComment,
+        date: new Date().toLocaleString(),
+      };
+      this.selectedFile.commentsList.push(comment);
+      this.newComment = "";
+    },
+    updateZoom() {
+      // Apenas atualiza o valor, o componente PdfViewer reage ao zoomLevel via watch
+      if (this.$refs.pdfViewerRef) {
+        this.$refs.pdfViewerRef.updateZoom(this.zoomLevel);
       }
     },
-
-    // Função para rolar até o final das mensagens
-    scrollToBottom() {
-      const container = document.getElementById("messages-container");
-      container.scrollTop = container.scrollHeight;
-    },
-
-    // Função para verificar se o arquivo é DOCX
-    isDocx(file) {
-      return file.name.endsWith('.docx');
+    resetZoom() {
+      this.zoomLevel = 1.0;
+      if (this.$refs.pdfViewerRef) {
+        this.$refs.pdfViewerRef.updateZoom(1.0);
+      }
     },
   },
 };
 </script>
 
 <style scoped>
-/* Estilos do componente */
+button {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ajustes para tela cheia */
+.fixed {
+  position: fixed;
+}
+
+.z-50 {
+  z-index: 50;
+}
+
+/* Estilização do slider (input range) */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
 </style>

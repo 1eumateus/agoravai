@@ -88,8 +88,9 @@
                                     class="cursor-pointer flex flex-col justify-center items-center gap-[4px] p-[4px] border border-blue-400 hover:bg-blue-100 rounded-md w-full"
                                     v-if="orientacao.situacao === 'confirmado'"
                                 >
-                                    Detalhes
+                                    Detalhes 
                                 </router-link>
+                                 
                             </td>
                         </tr>
                     </tbody>
