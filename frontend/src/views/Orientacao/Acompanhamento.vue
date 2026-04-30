@@ -200,15 +200,18 @@ export default {
       }
     },
 
+    // Acompanhamento.vue - Modifique o método viewPdf
     viewPdf(file) {
-      this.selectedPdfUrl = file.url;
+      // Abre o PDF no overlay
       this.selectedFile = file;
+      this.selectedPdfUrl = file.url;
       this.viewing = true;
-      this.zoomLevel = 1.0;
+      this.zoomLevel = 1.0; // Reset zoom ao abrir
+      this.pendingAnnotation = null; // Limpa pending
 
-      // Garante que o arquivo tenha a estrutura de anotações
-      if (!this.selectedFile.annotations) {
-        this.selectedFile.annotations = [];
+      // Fecha sidebar se estiver aberto
+      if (this.$refs.commentSidebar) {
+        this.$refs.commentSidebar.closeSidebar();
       }
     },
 

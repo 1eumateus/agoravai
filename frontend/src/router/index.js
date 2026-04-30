@@ -60,6 +60,16 @@ const routes = [
       ],
     },
   },
+  {
+  path: '/ui/pdf',
+  name: 'PdfViewer',
+  component: () => import('@/views/PdfViewerPage.vue'),
+},
+ {
+    path: '/:pathMatch(.*)*',  // Captura qualquer rota não encontrada
+    name: 'NotFound',
+    component: () => import('../views/NotFound.vue'), // Crie este componente
+  },
 ]
 
 const router = createRouter({
