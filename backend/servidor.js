@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import "./conectiondb.js";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from 'url';
 import usuario from "./app/Usuario/Router.js";
 import orientacao from "./app/Orientacao/Router.js";
@@ -10,6 +11,10 @@ import lotacao from "./app/Lotacao/Router.js";
 
 const __filename = fileURLToPath (import.meta.url);
 const __dirname = path.dirname (__filename);
+
+for (const pasta of ['uploads', 'temp']) {
+    fs.mkdirSync (path.join (process.cwd (), pasta), { recursive: true });
+}
 
 const app = express ();
 app.use (express.static (__dirname + '/public'));

@@ -6,11 +6,11 @@ async function login (req, res) {
     try {
         const { email, senha } = req.body;
         const usuario = await Usuario.findOne ({ ativo:true, email});
-        if (!usuario?.verificado) {
-            return res.status (400).json ({ msg: 'Confirme o seu endereço de email clicando no link  do email enviado na hora do cadstrato'});
-        }
         if (!usuario) {
             return res.status (400).json ({ msg: 'Email incorreto.' });
+        }
+        if (!usuario.verificado) {
+            return res.status (400).json ({ msg: 'Confirme o seu endereço de email clicando no link  do email enviado na hora do cadstrato'});
         }
         const valido = await bcrypt.compare (senha, usuario.senha);
         if (!valido) {

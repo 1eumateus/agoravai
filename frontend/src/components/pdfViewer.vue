@@ -25,9 +25,10 @@
 
 <script>
 import * as pdfjsLib from "pdfjs-dist";
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { markRaw } from "vue";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 export default {
   name: "PdfViewer",
@@ -75,7 +76,7 @@ export default {
       this.pages = [];
 
       try {
-        const loadingTask = pdfjsLib.getDocument(url);
+        const loadingTask = pdfjsLib.getDocument({ url });
         const pdf = await loadingTask.promise;
         if (!this.isMounted) return;
 

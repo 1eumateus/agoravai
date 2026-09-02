@@ -83,14 +83,22 @@
                                 >  
                                     Confirmar orientação
                                 </button>
-                                <router-link 
-                                    :to="`/ui/orientacao/${orientacao._id}`" 
+                                <router-link
+                                    :to="`/ui/orientacao/${orientacao._id}`"
                                     class="cursor-pointer flex flex-col justify-center items-center gap-[4px] p-[4px] border border-blue-400 hover:bg-blue-100 rounded-md w-full"
                                     v-if="orientacao.situacao === 'confirmado'"
                                 >
-                                    Detalhes 
+                                    Detalhes
                                 </router-link>
-                                 
+                                <router-link
+                                    :to="`/ui/acompanhamento/${orientacao._id}`"
+                                    class="cursor-pointer flex items-center justify-center gap-[4px] p-[4px] border border-orange-400 hover:bg-orange-100 rounded-md w-full"
+                                    v-if="orientacao.situacao === 'confirmado'"
+                                >
+                                    Acompanhar
+                                    <span v-if="orientacao.notificacao" class="w-[8px] h-[8px] rounded-full bg-red-500"></span>
+                                </router-link>
+
                             </td>
                         </tr>
                     </tbody>

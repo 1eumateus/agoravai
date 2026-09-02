@@ -1,6 +1,36 @@
 import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
+const arquivoFaseSchema = new Schema ({
+    originalname: String,
+    filename: String,
+    path: String,
+    size: Number,
+    dataEnvio: {
+        type: Date,
+        default: Date.now,
+    },
+});
+
+const comentarioFaseSchema = new Schema ({
+    autor: String,
+    texto: String,
+    data: {
+        type: Date,
+        default: Date.now,
+    },
+});
+
+const faseSchema = new Schema ({
+    nome: String,
+    situacao: {
+        type: String,
+        default: 'pendente',
+    },
+    arquivos: [arquivoFaseSchema],
+    comentarios: [comentarioFaseSchema],
+});
+
 const modelSchema = new Schema ({
     ativo: {
         type: Boolean,
@@ -61,7 +91,24 @@ const modelSchema = new Schema ({
     horaDefesa:{
         type: String,
         default: null,
-    }
+    },
+    fases: {
+        type: [faseSchema],
+        default: () => ([
+            { nome: 'Proposta' },
+            { nome: 'Desenvolvimento' },
+            { nome: 'Pré-defesa' },
+            { nome: 'Versão final' },
+        ]),
+    },
+    ultimaVisualizacaoAluno: {
+        type: Date,
+        default: null,
+    },
+    ultimaVisualizacaoProfessor: {
+        type: Date,
+        default: null,
+    },
 });
 
 export default model ("Orientacao", modelSchema);

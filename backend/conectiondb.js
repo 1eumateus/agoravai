@@ -4,5 +4,5 @@ import { start as createUserAdmin } from "./seeds/createUserAdmin.js";
 
 mongoose.connect(process.env.DATABASE_URL).then(() => {
     console.log('Connected to MongoDB');
-    createUserAdmin();
+    createUserAdmin().catch(err => console.error('Erro ao criar usuário admin:', err));
 }).catch(err => console.error('Error connecting to MongoDB:', err));

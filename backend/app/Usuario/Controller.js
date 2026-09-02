@@ -184,18 +184,22 @@ async function criar (req, res) {
             novo.senha = hashSenha;
             novo.subunidades = req.body.subunidades;
         }
-        if(userTipo !== 'admin'){
-            let err = sendEmail (
-                req.body.email, 
+        const smtpConfigurado = !!(process.env.SMTP_EMAIL && process.env.SMTP_SENHA);
+        if (userTipo !== 'admin' && smtpConfigurado) {
+            let err = await sendEmail (
+                req.body.email,
                 'SOTCC - Email de confirmação',
                 `<h3>Confirme seu email para entrar no sistema.<h3/><a href='${process.env.HOST_ROOT}/ui/login?user=${novo._id}'>Clique para confirmar email.</a>`);
             if (err == true) {
                 return res.status (400).json ({ msg: "Erro ao enviar email de confirmação. Confere o endereço." })
             }
+        } else if (userTipo !== 'admin') {
+            console.warn ('SMTP não configurado: pulando confirmação por email e ativando o usuário automaticamente (modo dev).');
+            novo.verificado = true;
         }
         await novo.save ();
-        res.json ({ 
-            msg: 'Email de confirmação enviado.' 
+        res.json ({
+            msg: smtpConfigurado ? 'Email de confirmação enviado.' : 'Usuário cadastrado com sucesso.'
         });
     } catch (error) {
         console.log (error)

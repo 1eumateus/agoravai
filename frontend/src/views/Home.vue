@@ -126,13 +126,14 @@
                         <PhCaretRight :size="18" class="fill-blue-700 hover:fill-blue-900" />
                     </router-link>
                     <router-link
-                        to="/ui/acompanhamento"
-                        class="text-blue-600 hover:underline"
+                        :to="`/ui/acompanhamento/${orientacaoConfirmada(professor._id)}`"
+                        class="text-blue-600 hover:underline flex items-center gap-[4px]"
+                        v-if="props?.usuario?.tipo === 'aluno' && orientacaoConfirmada(professor._id)"
                         >
                         <Texto as="button" color="blue">
                             Acompanhar
                         </Texto>
-                        
+                        <span v-if="temNotificacao(professor._id)" class="w-[8px] h-[8px] rounded-full bg-red-500"></span>
                         <PhCaretRight :size="18" class="fill-blue-700 hover:fill-blue-900" />
                     </router-link>
 
@@ -206,6 +207,16 @@ function limparFiltro(){
     procurar.value = '';
     procurarDisponibilidade.value = '';
     procurarInteresse.value = '';
+}
+
+function orientacaoConfirmada(professorId) {
+    const encontrada = orientacoes.find((item) => item?.professor?._id === professorId && item.situacao === 'confirmado');
+    return encontrada?._id || null;
+}
+
+function temNotificacao(professorId) {
+    const encontrada = orientacoes.find((item) => item?.professor?._id === professorId && item.situacao === 'confirmado');
+    return !!encontrada?.notificacao;
 }
 
 async function listarOrientacao(){

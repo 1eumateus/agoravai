@@ -5,6 +5,11 @@ import bcrypt from "bcryptjs";
 import {UnidadeModel, SubunidadeModel} from '../app/Lotacao/Model.js'
 
 export async function start() {
+    if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_SENHA) {
+        console.warn('Aviso: ADMIN_EMAIL/ADMIN_SENHA não definidos no .env — criação do usuário admin ignorada.');
+        return;
+    }
+
     let isNew = await Usuario.findOne({ email: process.env.ADMIN_EMAIL });
     if (!isNew) {
         const novo = new Usuario({

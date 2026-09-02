@@ -3,10 +3,15 @@ import { checkToken } from '../stores/checkToken'
 
 const routes = [
   {
-    path: '/ui/acompanhamento',
+    path: '/ui/acompanhamento/:id',
     name: 'Acompanhamento',
     component: () => import('../views/Orientacao/Acompanhamento.vue'),
-
+    meta: {
+      breadcrumb: [
+        { name: 'Perfil', href: '/ui/perfil', current: false },
+        { name: 'Acompanhamento', href: '/ui/acompanhamento/:id', current: true },
+      ],
+    },
   },
   {
     path: '/ui/',
@@ -70,12 +75,6 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const confirmandoEmail = to.query?.user || null
 
-  // exceção: acompanhamento sem login
-  if (to.name === 'Acompanhamento') {
-    next()
-    return
-  }
-
   const res = await checkToken(confirmandoEmail)
 
   if (confirmandoEmail) {
@@ -92,6 +91,12 @@ router.beforeEach(async (to, from, next) => {
     next({ name: 'Login' })
   } else if (tokenValido && to.name === 'Login') {
     next({ name: 'Home' })
+  } else if (to.name === 'Acompanhamento') {
+    if (tokenValido && (userType === 'aluno' || userType === 'professor')) {
+      next()
+    } else {
+      next({ name: 'Home' })
+    }
   } else if (tokenValido && userType !== 'admin') {
     const routesForUser = [
       'Home',
@@ -104,7 +109,7 @@ router.beforeEach(async (to, from, next) => {
     if (routesForUser.includes(to.name)) {
       next()
     } else {
-      next({ name: 'NotFound' })
+      next({ name: 'Home' })
     }
   } else {
     next()
