@@ -1,222 +1,342 @@
 <template>
+    <SolicitarOrientacao
+        @modal:open="recarregarAposSolicitar($event)"
+        :professor="professorSelecionado._id"
+        :emailProfessor="professorSelecionado.email"
+        :nomeAluno="props?.usuario?.nome"
+        :aluno="props?.usuario?.id"
+        v-if="openSolicitarOrientacao"
+    />
+    <RespostaOrientacao
+        @modal:open="recarregarAposNegar($event)"
+        :orientacao="orientacaoParaNegar"
+        situacao="negado"
+        :usuario="props?.usuario"
+        v-if="openNegarOrientacao"
+    />
     <main class="flex-grow relative " >
         <section class="mx-auto max-w-7xl p-[14px] flex flex-col gap-[24px]">
-            <ListaOrientacao :usuario="props?.usuario"></ListaOrientacao>
-            <section class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-[12px] items-center">
-                <div class="flex flex-col gap-[4px] col-span-1 md:col-span-3 lg:col-span-4">
-                    <div>
-                        <Texto as="body" for="pesquisar">
-                            Pesquisar
+            <ListaOrientacao :usuario="props?.usuario" @atualizado="listarOrientacao" v-if="props?.usuario?.tipo !== 'professor' || temPendente"></ListaOrientacao>
+
+            <section v-if="props?.usuario?.tipo === 'professor'" class="grid grid-cols-1 gap-[10px] border border-secundaria-opaco rounded-md bg-white p-[14px]">
+                <div class="flex items-center justify-between flex-wrap gap-[8px] border-b border-secundaria-opaco pb-[8px]">
+                    <div class="flex items-center gap-[8px]">
+                        <PhUserCircle :size="22" class="fill-principal" />
+                        <Texto as="h4" color="principal">
+                            <template v-if="!procurar">Meus alunos</template>
+                            <template v-else>Resultados para "{{ procurar }}" ({{ alunosOrientados.length }})</template>
                         </Texto>
                     </div>
-                    <input 
-                        v-model="procurar" 
-                        type="text" 
-                        id="pesquisar" 
-                        class="p-[8px] border h-11 border-principal rounded-md focus:outline-principal" 
-                        placeholder="Pesquise pelo nome do professor"
-                        maxlength="50"
-                    />
-                </div>
-                <div class="flex flex-col gap-[4px]">
-                    <div>
-                        <Texto as="body" for="pesquisar">
-                            Disponibilidade
-                        </Texto>
-                    </div>
-                    <select 
-                        v-model="procurarDisponibilidade" 
-                        class="p-[8px] border border-principal rounded-md h-11 focus:outline-principal " >
-                        <option 
-                            :value="disponi.value" 
-                            v-for="disponi in disponibilidades">
-                            {{ disponi.nome }}
-                        </option>
-                    </select>
-                </div>
-                <div class="flex flex-col gap-[4px]">
-                    <div>
-                        <Texto as="body" for="pesquisar">
-                            Área
-                        </Texto>
-                    </div>
-                    <select 
-                        v-model="procurarInteresse" 
-                        class="p-[8px] border border-principal rounded-md h-11 focus:outline-principal" >
-                        <option value="" selected>Não aplicado</option>
-                        <option 
-                            :value="area" 
-                            v-for="area in areaProfessores">
-                            {{ area?.substring(0, 40) }}...
-                        </option>
-                    </select>
-                </div>
-               <div class="flex flex-col h-full justify-end">
-                    <button 
-                        type="button" 
-                        class="text-[16px] font-normal bg-white border border-gray-400 hover:bg-gray-200 rounded-md py-[10px]" 
-                        @click="limparFiltro" 
-                    >
-                        Limpar filtro
+                    <button v-if="procurar" type="button" class="cursor-pointer text-[13px] font-bold text-principal hover:underline" @click="limparBusca">
+                        Limpar busca
                     </button>
                 </div>
-            </section>
-            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[24px]">
-                <section class="flex items-end flex-col gap-[16px] border border-secundaria-opaco rounded-md p-[10px] justify-between bg-white" v-for="(professor, index) in professores" :key="index">
-                    <div class="flex items-center gap-[16px]">
-                        <section class="h-full flex items-center justify-center bg-gray-100">
-                            <img 
-                                v-if="professor?.imagem?.filename"
-                                :src="`${urlApi}/uploads/${professor?.imagem?.filename}`" 
-                                :alt="professor?.imagem?.originalname" 
-                                class="h-[80px] min-w-[80px] max-w-[80px] rounded-md"
+
+                <Texto as="body" color="gray" v-if="alunosOrientados.length === 0 && !procurar">
+                    Você ainda não está orientando nenhum aluno.
+                </Texto>
+                <Texto as="body" color="gray" v-else-if="alunosOrientados.length === 0">
+                    Nenhum aluno encontrado para "{{ procurar }}".
+                </Texto>
+                <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[10px]">
+                    <section
+                        v-for="aluno in alunosOrientados"
+                        :key="aluno.orientacaoId"
+                        class="flex flex-col gap-[6px] border border-secundaria-opaco rounded-md p-[8px] bg-white hover:shadow-md transition-shadow"
+                    >
+                        <div class="flex items-center gap-[8px]">
+                            <img
+                                v-if="aluno?.imagem?.filename"
+                                :src="`${urlApi}/uploads/${aluno.imagem.filename}`"
+                                :alt="aluno.imagem.originalname"
+                                class="h-[40px] w-[40px] object-cover rounded-md border border-secundaria-opaco flex-shrink-0"
                             />
-                            <img 
+                            <img
                                 v-else
-                                :src="`/ui/Sem_imagem.jpg`" 
-                                :alt="'sem imagem'" 
-                                class="h-[80px] min-w-[80px] rounded-md"
+                                :src="`/ui/Sem_imagem.jpg`"
+                                :alt="'sem imagem'"
+                                class="h-[40px] w-[40px] object-cover rounded-md border border-secundaria-opaco flex-shrink-0"
                             />
-                        </section>
-                        <section class="flex flex-col gap-[6px]">
-                            <Texto as="body-bold">
-                                {{ professor.nome }}  {{ professor.sobrenome }}
+                            <Texto as="label" class="truncate font-bold">
+                                {{ aluno.nome }} {{ aluno.sobrenome }}
                             </Texto>
-                            <div class="flex flex-wrap">
-                                <div :class="`
-                                    ${disponibilidades.find((item)=> item.value === professor.disponibilidade).color} flex justify-center rounded-2xl p-1`" 
-                                    v-if="orientacoes.findIndex((item)=> item?.professor?._id === professor._id) === -1">
-                                    <Texto as="label">
-                                        Disponibilidade {{ professor.disponibilidade || '-' }} 
-                                    </Texto>
-                                </div>
-                                <div class="bg-orange-200 flex justify-center rounded-2xl p-1" v-else>
-                                    <Texto as="label" >
-                                        {{ 
-                                            (orientacoes.find((item)=> item?.professor?._id === professor._id) !== -1 )
-                                            ?   (
-                                                    orientacoes.find((item)=> item?.professor?._id === professor._id).situacao==='confirmado' 
-                                                        ? 'Em orientação'
-                                                        :'Orientação solicitada'
-                                                ) 
-                                            : (professor.disponibilidade || '-') 
-                                        }} 
-                                    </Texto>
-                                </div>
+                        </div>
+
+                        <div class="border-t border-secundaria pt-[6px]">
+                            <Texto as="small" color="gray">Proposta</Texto>
+                            <Texto as="label" class="line-clamp-2">
+                                {{ aluno.proposta?.trim() || 'Não informado' }}
+                            </Texto>
+                        </div>
+
+                        <div
+                            v-if="aluno.cancelamento?.solicitadoPor === 'aluno'"
+                            class="border border-orange-300 bg-orange-50 rounded-md p-[8px] flex flex-col gap-[4px]"
+                        >
+                            <Texto as="small" color="orange">Solicitação de cancelamento</Texto>
+                            <Texto as="label" class="line-clamp-2">
+                                {{ aluno.cancelamento.motivo }}
+                            </Texto>
+                            <div class="flex gap-[4px]">
+                                <button
+                                    type="button"
+                                    class="flex-1 cursor-pointer px-[8px] py-[5px] bg-green-600 hover:bg-green-700 text-white rounded-md font-bold text-[11px]"
+                                    @click="aceitarCancelamento(aluno.orientacaoId)"
+                                >
+                                    Aceitar
+                                </button>
+                                <button
+                                    type="button"
+                                    class="flex-1 cursor-pointer px-[8px] py-[5px] border border-gray-300 hover:bg-gray-100 rounded-md font-bold text-[11px]"
+                                    @click="recusarCancelamento(aluno.orientacaoId)"
+                                >
+                                    Recusar
+                                </button>
                             </div>
- 
-                            <div class="flex flex-col">
-                                <Texto as="body">
-                                    {{
-                                        professor.interesse?.length > 90 
-                                            ? professor.interesse.substring(0, 90)+' ...'
-                                            : (professor.interesse || '-')
-                                    }}
+                        </div>
+
+                        <div class="flex flex-col gap-[4px] mt-auto pt-[4px]">
+                            <router-link
+                                :to="`/ui/orientacao/${aluno.orientacaoId}`"
+                                class="cursor-pointer w-full flex items-center justify-center gap-[4px] px-[8px] py-[5px] border border-principal text-principal hover:bg-secundaria rounded-md font-bold text-[11px]"
+                            >
+                                <PhInfo :size="13" />
+                                Detalhes
+                            </router-link>
+                            <router-link
+                                :to="`/ui/acompanhamento/${aluno.orientacaoId}`"
+                                class="cursor-pointer w-full flex items-center justify-center gap-[4px] px-[8px] py-[5px] bg-terciaria text-white hover:bg-terciaria-opaco rounded-md font-bold text-[11px]"
+                            >
+                                <PhChartLineUp :size="13" />
+                                Acompanhar
+                                <span v-if="aluno.notificacao" class="w-[8px] h-[8px] rounded-full bg-red-500 border border-white"></span>
+                            </router-link>
+                            <button
+                                type="button"
+                                class="cursor-pointer w-full flex items-center justify-center gap-[4px] px-[8px] py-[5px] border border-red-300 text-red-600 hover:bg-red-50 rounded-md font-bold text-[11px]"
+                                @click="abrirNegarOrientacao(aluno.orientacaoId)"
+                            >
+                                <PhX :size="13" />
+                                Negar
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            </section>
+
+            <section v-else class="grid grid-cols-1 gap-[10px] border border-secundaria-opaco rounded-md bg-white p-[14px]">
+                <div class="flex items-center justify-between flex-wrap gap-[8px] border-b border-secundaria-opaco pb-[8px]">
+                    <div class="flex items-center gap-[8px]">
+                        <PhUserCircle :size="22" class="fill-principal" />
+                        <Texto as="h4" color="principal">
+                            <template v-if="!procurar">Professores disponíveis</template>
+                            <template v-else-if="professoresDisponiveis.length > 0 && !mostrandoParecidos">
+                                Resultados para "{{ procurar }}" ({{ professoresDisponiveis.length }})
+                            </template>
+                            <template v-else>
+                                Nenhum professor encontrado para "{{ procurar }}" — veja professores parecidos
+                            </template>
+                        </Texto>
+                    </div>
+                    <button v-if="procurar" type="button" class="cursor-pointer text-[13px] font-bold text-principal hover:underline" @click="limparBusca">
+                        Limpar busca
+                    </button>
+                </div>
+
+                <Texto as="body" color="gray" v-if="professoresDisponiveis.length === 0">
+                    Nenhum professor disponível encontrado no momento.
+                </Texto>
+                <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[10px]">
+                    <section
+                        v-for="professor in professoresDisponiveis"
+                        :key="professor._id"
+                        class="flex flex-col gap-[6px] border border-secundaria-opaco rounded-md p-[8px] bg-white hover:shadow-md transition-shadow"
+                    >
+                        <div class="flex items-center gap-[8px]">
+                            <img
+                                v-if="professor?.imagem?.filename"
+                                :src="`${urlApi}/uploads/${professor?.imagem?.filename}`"
+                                :alt="professor?.imagem?.originalname"
+                                class="h-[40px] w-[40px] object-cover rounded-md border border-secundaria-opaco flex-shrink-0"
+                            />
+                            <img
+                                v-else
+                                :src="`/ui/Sem_imagem.jpg`"
+                                :alt="'sem imagem'"
+                                class="h-[40px] w-[40px] object-cover rounded-md border border-secundaria-opaco flex-shrink-0"
+                            />
+                            <div class="flex flex-col gap-[2px] min-w-0">
+                                <Texto as="label" class="truncate font-bold">
+                                    {{ professor.nome }} {{ professor.sobrenome }}
+                                </Texto>
+                                <span class="self-start text-[10px] font-bold px-[6px] py-[1px] rounded-full bg-secundaria-opaco text-principal">
+                                    {{ professor.disponibilidade }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-[4px] border-t border-secundaria pt-[6px]">
+                            <div>
+                                <Texto as="small" color="gray">Formação</Texto>
+                                <Texto as="label" class="line-clamp-2">
+                                    {{ professor.formacao?.trim() || 'Não informado' }}
                                 </Texto>
                             </div>
-                        </section>
-                    </div>
-                    <router-link 
-                        :to="`/ui/professor/${professor._id}`" 
-                        class="flex items-center gap-[2px] cursor-pointer"
-                    >
-                        <Texto as="button" color="blue">
-                         mais informações 
-                        </Texto>
-                        <PhCaretRight :size="18" class="fill-blue-700 hover:fill-blue-900" />
-                    </router-link>
-                    <router-link
-                        :to="`/ui/acompanhamento/${orientacaoConfirmada(professor._id)}`"
-                        class="text-blue-600 hover:underline flex items-center gap-[4px]"
-                        v-if="props?.usuario?.tipo === 'aluno' && orientacaoConfirmada(professor._id)"
-                        >
-                        <Texto as="button" color="blue">
-                            Acompanhar
-                        </Texto>
-                        <span v-if="temNotificacao(professor._id)" class="w-[8px] h-[8px] rounded-full bg-red-500"></span>
-                        <PhCaretRight :size="18" class="fill-blue-700 hover:fill-blue-900" />
-                    </router-link>
+                            <div>
+                                <Texto as="small" color="gray">Áreas de interesse</Texto>
+                                <Texto as="label" class="line-clamp-2">
+                                    {{ professor.interesse?.trim() || 'Não informado' }}
+                                </Texto>
+                            </div>
+                        </div>
 
-                </section>
-
+                        <div class="flex flex-col gap-[4px] mt-auto pt-[4px]">
+                            <router-link
+                                v-if="props?.usuario?.tipo !== 'aluno'"
+                                :to="`/ui/professor/${professor._id}`"
+                                class="cursor-pointer w-full flex items-center justify-center gap-[4px] px-[8px] py-[5px] border border-principal text-principal hover:bg-secundaria rounded-md font-bold text-[11px]"
+                            >
+                                <PhInfo :size="13" />
+                                Mais informações
+                            </router-link>
+                            <button
+                                v-if="props?.usuario?.tipo === 'aluno'"
+                                type="button"
+                                class="cursor-pointer w-full flex items-center justify-center gap-[4px] px-[8px] py-[5px] bg-principal text-white hover:bg-principal-opaco rounded-md font-bold text-[11px]"
+                                @click="iniciarSolicitacao(professor)"
+                            >
+                                <PhRocketLaunch :size="13" />
+                                Iniciar orientação
+                            </button>
+                        </div>
+                    </section>
+                </div>
             </section>
-
-
         </section>
-        
     </main>
-      <div class="p-4">
-
-  </div> 
 </template>
 <script setup>
-import { PhCaretRight } from '@phosphor-icons/vue';
-import { onMounted, ref, watch, reactive } from "vue";
+import { PhInfo, PhUserCircle, PhRocketLaunch, PhChartLineUp, PhX } from '@phosphor-icons/vue';
+import { computed, onMounted, ref, watch, reactive } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import api from "@/api.js";
 import { popupInfo } from '../stores/util.js';
 import Texto from '@components/Texto.vue'
 import { useLoaderState } from "../stores/isLoading";
 import ListaOrientacao from './Orientacao/ListaOrientacao.vue';
+import SolicitarOrientacao from './Orientacao/SolicitarOrientacao.vue';
+import RespostaOrientacao from './Orientacao/RespostaOrientacao.vue';
 const isLoading = useLoaderState();
+const route = useRoute();
+const router = useRouter();
 
 const professores = ref([])
-const procurar = ref('')
-const procurarDisponibilidade = ref('')
-const procurarInteresse = ref('')
+const procurar = ref(route.query.procurar || '')
+const mostrandoParecidos = ref(false)
 const orientacoes = reactive([])
 const urlApi = import.meta.env.VITE_URL;
 const props = defineProps({
     usuario: {
         type: [Object],
-        required: false, 
+        required: false,
     },
 })
 
-const disponibilidades = [
-    { value: "", nome: "Não aplicado", color:'bg-blue-200' },
-    { value: "matutino", nome: "Matutino", color:'bg-blue-200' },
-    { value: "vespertino", nome: "Vespertino", color:'bg-blue-200' },
-    { value: "noturno", nome: "Noturno", color:'bg-blue-200' },
-    { value: "integral", nome: "Integral", color:'bg-blue-200' },
-    { value: "flexivel", nome: "Flexível", color:'bg-blue-100' },
-];
+const openSolicitarOrientacao = ref(false);
+const professorSelecionado = reactive({ _id: '', email: '' });
 
-const areaProfessores = reactive([])
+const professoresDisponiveis = computed(() =>
+    professores.value.filter((p) => p.disponibilidade && p.disponibilidade !== 'indisponível' && !orientacaoDoProfessor(p._id))
+);
+
+const alunosOrientados = computed(() => {
+    const busca = procurar.value.trim().toLowerCase();
+    return orientacoes
+        .filter((o) => o.situacao === 'confirmado')
+        .filter((o) => !busca || `${o.aluno?.nome} ${o.aluno?.sobrenome}`.toLowerCase().includes(busca))
+        .map((o) => ({
+            ...o.aluno,
+            orientacaoId: o._id,
+            proposta: o.proposta,
+            notificacao: o.notificacao,
+            cancelamento: o.cancelamento,
+        }));
+});
+
+const temPendente = computed(() => orientacoes.some((o) => o.situacao === 'pendente'));
+
+const openNegarOrientacao = ref(false);
+const orientacaoParaNegar = reactive({});
 
 async function start() {
-    await api.get(`/usuario/professores?procurar=${procurar.value}&&procurarDisponibilidade=${procurarDisponibilidade.value}&&procurarInteresse=${procurarInteresse.value}`)
+    if (props?.usuario?.tipo === 'professor') {
+        await listarOrientacao();
+        return;
+    }
+    mostrandoParecidos.value = false;
+    await api.get(`/usuario/professores?procurar=${procurar.value}`)
     .then((res)=>{
         professores.value = res.data.item;
-        for(let i=0;i<professores.value?.length;i++){
-            const professor = professores.value[i]
-            if (professor.interesse) {
-                if (!areaProfessores.includes(professor.interesse)) {
-                    areaProfessores.push(professor.interesse);
-                }
-            }
-        }
     }).catch((e)=>{
         popupInfo().warning('Erro ao pesquisar usuários.');
     })
     if(props?.usuario.tipo === 'aluno'){
-        listarOrientacao()
+        await listarOrientacao()
+    }
+    if (procurar.value && professoresDisponiveis.value.length === 0) {
+        mostrandoParecidos.value = true;
+        await api.get('/usuario/professores')
+        .then((res)=>{
+            professores.value = res.data.item;
+        }).catch((e)=>{
+            popupInfo().warning('Erro ao pesquisar usuários.');
+        })
     }
 }
 
-function limparFiltro(){
-    procurar.value = '';
-    procurarDisponibilidade.value = '';
-    procurarInteresse.value = '';
+function limparBusca() {
+    router.push({ name: 'Home' });
 }
 
-function orientacaoConfirmada(professorId) {
-    const encontrada = orientacoes.find((item) => item?.professor?._id === professorId && item.situacao === 'confirmado');
-    return encontrada?._id || null;
+function iniciarSolicitacao(professor) {
+    professorSelecionado._id = professor._id;
+    professorSelecionado.email = professor.email;
+    openSolicitarOrientacao.value = true;
 }
 
-function temNotificacao(professorId) {
-    const encontrada = orientacoes.find((item) => item?.professor?._id === professorId && item.situacao === 'confirmado');
-    return !!encontrada?.notificacao;
+async function recarregarAposSolicitar(event) {
+    openSolicitarOrientacao.value = event;
+    await listarOrientacao();
+}
+
+function abrirNegarOrientacao(orientacaoId) {
+    const original = orientacoes.find((o) => o._id === orientacaoId);
+    if (!original) return;
+    Object.assign(orientacaoParaNegar, original);
+    openNegarOrientacao.value = true;
+}
+
+async function recarregarAposNegar(event) {
+    openNegarOrientacao.value = event;
+    await listarOrientacao();
+}
+
+async function aceitarCancelamento(orientacaoId) {
+    await api.put(`/orientacao/${orientacaoId}/responderCancelamento`, { aceitar: true })
+        .then((res) => popupInfo().success(res?.data?.msg))
+        .catch((e) => popupInfo().warning(e?.response?.data?.msg || e))
+        .finally(() => listarOrientacao());
+}
+
+async function recusarCancelamento(orientacaoId) {
+    await api.put(`/orientacao/${orientacaoId}/responderCancelamento`, { aceitar: false })
+        .then((res) => popupInfo().success(res?.data?.msg))
+        .catch((e) => popupInfo().warning(e?.response?.data?.msg || e))
+        .finally(() => listarOrientacao());
+}
+
+function orientacaoDoProfessor(professorId) {
+    return orientacoes.find((item) => item?.professor?._id === professorId) || null;
 }
 
 async function listarOrientacao(){
@@ -228,7 +348,8 @@ async function listarOrientacao(){
     })
 }
 
-watch([procurar, procurarDisponibilidade, procurarInteresse], () => {
+watch(() => route.query.procurar, (valor) => {
+    procurar.value = valor || '';
     start();
 });
 

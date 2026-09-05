@@ -110,7 +110,7 @@ async function listarProfessores (req, res) {
             { $match: filtro },  
             {
                 $project: {    
-                    _id: 1,       
+                    _id: 1,
                     nome: 1,
                     sobrenome: 1,
                     descricao: 1,
@@ -118,10 +118,12 @@ async function listarProfessores (req, res) {
                     disponibilidade: 1,
                     interesse: 1,
                     imagem: 1,
+                    formacao: 1,
+                    email: 1,
                 }
             },
-            { 
-                $sort: { nome: 1 } 
+            {
+                $sort: { nome: 1 }
             }
         ]);
         res.status (200).json ({ item });

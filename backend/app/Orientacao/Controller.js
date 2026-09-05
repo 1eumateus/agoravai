@@ -26,8 +26,8 @@ async function listar (req, res) {
         const item = await Model.aggregate ([
             { $match: filtro },  
             {
-                $project: {    
-                    _id: 1,       
+                $project: {
+                    _id: 1,
                     professor: 1,
                     aluno: 1,
                     ativo: 1,
@@ -37,9 +37,11 @@ async function listar (req, res) {
                     coorientador: 1,
                     dataDefesa: 1,
                     horaDefesa: 1,
+                    dataCriacao: 1,
                     fases: 1,
                     ultimaVisualizacaoAluno: 1,
                     ultimaVisualizacaoProfessor: 1,
+                    cancelamento: 1,
                 }
             },
             {
@@ -49,7 +51,7 @@ async function listar (req, res) {
                     foreignField: '_id',
                     as: 'professor',
                     pipeline: [
-                        { $project: { nome: 1, sobrenome: 1, email:1, interesse: 1, _id: 1 } }
+                        { $project: { nome: 1, sobrenome: 1, email:1, interesse: 1, imagem: 1, _id: 1 } }
                     ]
                 },
             },
@@ -60,7 +62,7 @@ async function listar (req, res) {
                     foreignField: '_id',
                     as: 'aluno',
                     pipeline: [
-                        { $project: { nome: 1, sobrenome: 1, email: 1,  _id: 1 } }
+                        { $project: { nome: 1, sobrenome: 1, email: 1, imagem: 1, _id: 1 } }
                     ]
                 },
             },
@@ -78,7 +80,9 @@ async function listar (req, res) {
             },
         ]);
         item.forEach ((o) => {
-            o.notificacao = temNovidade (o, userTipo);
+            const notificacao = novidadeMaisRecente (o, userTipo);
+            o.notificacao = !!notificacao;
+            o.notificacaoDetalhe = notificacao;
             delete o.fases;
             delete o.ultimaVisualizacaoAluno;
             delete o.ultimaVisualizacaoProfessor;
@@ -90,20 +94,27 @@ async function listar (req, res) {
     }
 }
 
-function temNovidade (orientacao, userTipo) {
+function novidadeMaisRecente (orientacao, userTipo) {
     const desde = userTipo === 'aluno' ? orientacao.ultimaVisualizacaoAluno : orientacao.ultimaVisualizacaoProfessor;
     const dataDesde = desde ? new Date (desde) : new Date (0);
+    let maisRecente = null;
     for (const fase of orientacao.fases || []) {
         if (userTipo === 'professor') {
             for (const arquivo of fase.arquivos || []) {
-                if (new Date (arquivo.dataEnvio) > dataDesde) return true;
+                const data = new Date (arquivo.dataEnvio);
+                if (data > dataDesde && (!maisRecente || data > maisRecente.data)) {
+                    maisRecente = { tipo: 'arquivo', texto: arquivo.originalname, fase: fase.nome, data };
+                }
             }
         }
         for (const comentario of fase.comentarios || []) {
-            if (comentario.autor !== userTipo && new Date (comentario.data) > dataDesde) return true;
+            const data = new Date (comentario.data);
+            if (comentario.autor !== userTipo && data > dataDesde && (!maisRecente || data > maisRecente.data)) {
+                maisRecente = { tipo: 'comentario', texto: comentario.texto, fase: fase.nome, data };
+            }
         }
     }
-    return false;
+    return maisRecente;
 }
 
 async function criar (req, res) {
@@ -192,11 +203,17 @@ async function alterarSituacao (req, res) {
         }
         let msg= ''
         if (userTipo === 'professor') {
+            if (req.body.situacao === 'negado' && !req.body.resposta?.trim ()) {
+                return res.status (400).json ({ msg: 'Justifique o motivo.' });
+            }
             orientacao.situacao = req.body.situacao;
             orientacao.resposta = req.body.resposta;
             msg = 'Resposta enviada.'
         }
         if (userTipo === 'aluno') {
+            if (orientacao.situacao === 'confirmado') {
+                return res.status (400).json ({ msg: 'Para uma orientação confirmada, solicite o cancelamento.' });
+            }
             orientacao.ativo = false;
             msg = 'Pedido de orientação cancelada.'
         }
@@ -204,6 +221,70 @@ async function alterarSituacao (req, res) {
         return res.status (200).json ({msg: msg});
     } catch (error) {
         return res.status (400).json ({msg: 'Erro ao cancelar orientação.'});
+    }
+}
+
+async function solicitarCancelamento (req, res) {
+    try {
+        const token = req.headers.authorization;
+        const {userID, userTipo} = jwt.verify (token, process.env.JWT_SECRET, (err, usuario) => {
+            if (err) return false;
+            return {userID: usuario._id, userTipo: usuario.tipo};
+        });
+        if (!userID) return res.status (400);
+        if (!req.body.motivo?.trim ()) {
+            return res.status (400).json ({ msg: 'Justifique o motivo do cancelamento.' });
+        }
+        const orientacao = await Model.findOne ({ ativo: true, situacao: 'confirmado', _id: req.params.id });
+        if (!orientacao) {
+            return res.status (404).json ({ msg: 'Orientação não encontrada.' });
+        }
+        if (userTipo !== 'aluno' || String (orientacao.aluno) !== String (userID)) {
+            return res.status (403).json ({ msg: 'Apenas o aluno desta orientação pode solicitar o cancelamento.' });
+        }
+        orientacao.cancelamento = {
+            solicitadoPor: 'aluno',
+            motivo: req.body.motivo.trim (),
+            data: new Date (),
+        };
+        await orientacao.save ();
+        res.status (200).json ({ msg: 'Solicitação de cancelamento enviada ao orientador.' });
+    } catch (error) {
+        console.log (error);
+        return res.status (400).json ({ msg: 'Erro ao solicitar cancelamento.' });
+    }
+}
+
+async function responderCancelamento (req, res) {
+    try {
+        const token = req.headers.authorization;
+        const {userID, userTipo} = jwt.verify (token, process.env.JWT_SECRET, (err, usuario) => {
+            if (err) return false;
+            return {userID: usuario._id, userTipo: usuario.tipo};
+        });
+        if (!userID) return res.status (400);
+        const orientacao = await Model.findOne ({ ativo: true, _id: req.params.id });
+        if (!orientacao) {
+            return res.status (404).json ({ msg: 'Orientação não encontrada.' });
+        }
+        if (userTipo !== 'professor' || String (orientacao.professor) !== String (userID)) {
+            return res.status (403).json ({ msg: 'Apenas o orientador desta orientação pode responder ao cancelamento.' });
+        }
+        if (orientacao.cancelamento?.solicitadoPor !== 'aluno') {
+            return res.status (400).json ({ msg: 'Não há cancelamento pendente para esta orientação.' });
+        }
+        if (req.body.aceitar) {
+            orientacao.ativo = false;
+            orientacao.cancelamento = null;
+            await orientacao.save ();
+            return res.status (200).json ({ msg: 'Cancelamento aceito. A orientação foi encerrada.' });
+        }
+        orientacao.cancelamento = null;
+        await orientacao.save ();
+        res.status (200).json ({ msg: 'Solicitação de cancelamento recusada.' });
+    } catch (error) {
+        console.log (error);
+        return res.status (400).json ({ msg: 'Erro ao responder ao cancelamento.' });
     }
 }
 
@@ -240,7 +321,7 @@ async function pegarPorId (req, res) {
                     foreignField: '_id',
                     as: 'aluno',
                     pipeline: [
-                        { $project: { nome: 1, sobrenome: 1, email: 1,  _id: 1 } }
+                        { $project: { nome: 1, sobrenome: 1, email: 1, imagem: 1, _id: 1 } }
                     ]
                 },
             },
@@ -259,6 +340,9 @@ async function pegarPorId (req, res) {
         ]);
         if (!orientacao [0]) {
             return res.status (404).json ({ msg: "Orientação não encontrada." });
+        }
+        if (!orientacao [0].coorientador) {
+            orientacao [0].coorientador = { nome: '', instituicao: '' };
         }
 
         res.json ({ orientacao: orientacao [0] });
@@ -500,4 +584,4 @@ function formatarData (value) {
     return `${dia}/${mes}/${ano}`;
 }
 
-export { listar, criar, deletar, alterarSituacao, editar, pegarPorId, gerarConvite, orientacaoPorProfessor, enviarArquivoFase, removerArquivoFase, comentarFase, avaliarFase, visualizarFases };
+export { listar, criar, deletar, alterarSituacao, editar, pegarPorId, gerarConvite, orientacaoPorProfessor, enviarArquivoFase, removerArquivoFase, comentarFase, avaliarFase, visualizarFases, solicitarCancelamento, responderCancelamento };

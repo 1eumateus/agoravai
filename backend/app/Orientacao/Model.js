@@ -109,6 +109,20 @@ const modelSchema = new Schema ({
         type: Date,
         default: null,
     },
+    cancelamento: {
+        solicitadoPor: {
+            type: String,
+            default: null,
+        },
+        motivo: {
+            type: String,
+            default: null,
+        },
+        data: {
+            type: Date,
+            default: null,
+        },
+    },
 });
 
 export default model ("Orientacao", modelSchema);

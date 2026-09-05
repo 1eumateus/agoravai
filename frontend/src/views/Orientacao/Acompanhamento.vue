@@ -1,4 +1,16 @@
 <template>
+  <RespostaOrientacao
+    @modal:open="fecharNegarOrientacao($event)"
+    :orientacao="orientacao"
+    situacao="negado"
+    :usuario="props.usuario"
+    v-if="openNegarOrientacao"
+  />
+  <GerarCartaz
+    :form="orientacao"
+    @modal:open="openGerarCartaz = $event"
+    v-if="openGerarCartaz"
+  />
   <main class="flex-grow relative">
     <section class="mx-auto max-w-6xl p-[14px] flex flex-col gap-[14px]">
       <template v-if="!viewing">
@@ -6,32 +18,74 @@
           <Texto as="h3" color="principal">
             {{ ehProfessor ? 'Progresso do aluno' : 'Seu progresso' }}
           </Texto>
-          <Texto as="body" color="gray" v-if="orientacao.aluno?.nome">
-            {{
-              ehProfessor
-                ? `Aluno: ${orientacao.aluno.nome} ${orientacao.aluno.sobrenome || ''}`
-                : `Orientador: ${orientacao.professor?.nome || ''} ${orientacao.professor?.sobrenome || ''}`
-            }}
+          <div class="flex items-center gap-[12px]">
+            <Texto as="body" color="gray" v-if="orientacao.aluno?.nome">
+              {{
+                ehProfessor
+                  ? `Aluno: ${orientacao.aluno.nome} ${orientacao.aluno.sobrenome || ''}`
+                  : `Orientador: ${orientacao.professor?.nome || ''} ${orientacao.professor?.sobrenome || ''}`
+              }}
+            </Texto>
+            <button
+              v-if="!orientacao.cancelamento?.solicitadoPor"
+              type="button"
+              class="cursor-pointer flex items-center gap-[4px] px-[10px] py-[6px] border border-red-300 text-red-600 hover:bg-red-50 rounded-md font-bold text-[13px]"
+              @click="openNegarOrientacao = true"
+            >
+              <PhX :size="16" />
+              {{ ehProfessor ? 'Encerrar orientação' : 'Solicitar cancelamento' }}
+            </button>
+          </div>
+        </div>
+
+        <div
+          v-if="orientacao.cancelamento?.solicitadoPor === 'aluno'"
+          class="border border-orange-300 bg-orange-50 rounded-md p-[12px] flex items-center justify-between flex-wrap gap-[8px]"
+        >
+          <div class="flex flex-col gap-[2px]">
+            <Texto as="body-bold" color="orange">
+              {{ ehProfessor ? 'O aluno solicitou o cancelamento desta orientação' : 'Cancelamento solicitado' }}
+            </Texto>
+            <Texto as="body">
+              {{ orientacao.cancelamento.motivo }}
+            </Texto>
+          </div>
+          <div class="flex gap-[8px]" v-if="ehProfessor">
+            <button
+              type="button"
+              class="cursor-pointer px-[14px] py-[8px] bg-green-600 hover:bg-green-700 text-white rounded-md font-bold text-[13px]"
+              @click="aceitarCancelamento"
+            >
+              Aceitar
+            </button>
+            <button
+              type="button"
+              class="cursor-pointer px-[14px] py-[8px] border border-gray-300 hover:bg-gray-100 rounded-md font-bold text-[13px]"
+              @click="recusarCancelamento"
+            >
+              Recusar
+            </button>
+          </div>
+          <Texto as="label" color="gray" v-else>
+            Aguardando resposta do orientador.
           </Texto>
         </div>
 
         <template v-if="orientacao.fases?.length">
-          <div class="grid grid-cols-4 gap-1 mt-2">
-            <div v-for="(fase, index) in orientacao.fases" :key="fase._id || index" class="flex flex-col items-center gap-[4px]">
-              <Texto
-                as="label"
-                :color="faseStatus(index) === 'locked' ? 'gray' : 'principal'"
-                class="text-center justify-center truncate max-w-full"
-              >
-                {{ fase.nome }}
-              </Texto>
-              <button
-                type="button"
-                :disabled="faseStatus(index) === 'locked'"
-                :class="`${abaClass(index)} p-1 min-w-full border rounded-md`"
-                @click="abaSelecionada = index"
-              ></button>
-            </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-[8px] mt-2">
+            <button
+              v-for="(fase, index) in orientacao.fases"
+              :key="fase._id || index"
+              type="button"
+              :disabled="faseStatus(index) === 'locked'"
+              :class="abaClass(index)"
+              @click="abaSelecionada = index"
+            >
+              <PhCheck v-if="faseStatus(index) === 'completed'" :size="18" class="fill-white flex-shrink-0" />
+              <PhLockSimple v-else-if="faseStatus(index) === 'locked'" :size="18" class="fill-gray-400 flex-shrink-0" />
+              <PhLockSimpleOpen v-else :size="18" class="fill-white flex-shrink-0" />
+              <span class="truncate">{{ fase.nome }}</span>
+            </button>
           </div>
 
           <div class="flex flex-col gap-[10px]">
@@ -52,6 +106,25 @@
               >
                 {{ faseSelecionada.situacao === 'aprovada' ? 'Aprovada' : 'Aguardando aprovação' }}
               </span>
+            </div>
+
+            <div
+              v-if="ehProfessor && abaSelecionada === orientacao.fases.length - 1 && faseSelecionada.situacao === 'aprovada'"
+              class="border border-terciaria rounded-md bg-terciaria/10 p-[12px] flex items-center justify-between flex-wrap gap-[8px]"
+            >
+              <div class="flex items-center gap-[8px]">
+                <PhFilePdf :size="20" class="fill-terciaria-opaco" />
+                <Texto as="body-bold" color="principal">
+                  TCC concluído! Prepare o cartaz de divulgação da defesa.
+                </Texto>
+              </div>
+              <button
+                type="button"
+                class="cursor-pointer flex items-center gap-[6px] px-[14px] py-[8px] bg-terciaria hover:bg-terciaria-opaco text-white rounded-md font-bold text-[13px]"
+                @click="openGerarCartaz = true"
+              >
+                Gerar cartaz de divulgação
+              </button>
             </div>
 
             <div class="border border-secundaria-opaco rounded-md overflow-hidden" v-if="faseSelecionada.arquivos?.length > 0">
@@ -257,10 +330,12 @@ import { onMounted, reactive, ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   PhTrash, PhEye, PhCloudArrowUp, PhFilePdf, PhMagnifyingGlass,
-  PhCaretLeft, PhCheck, PhCheckCircle,
+  PhCaretLeft, PhCheck, PhCheckCircle, PhLockSimple, PhLockSimpleOpen, PhX,
 } from '@phosphor-icons/vue';
 import Texto from '@components/Texto.vue';
 import PdfViewer from "../../components/pdfViewer.vue";
+import RespostaOrientacao from './RespostaOrientacao.vue';
+import GerarCartaz from './GerarCartaz.vue';
 import api from "@/api.js";
 import { popupInfo, formatMask } from '../../stores/util.js';
 import { useLoaderState } from "../../stores/isLoading.js";
@@ -274,6 +349,8 @@ const props = defineProps({
 
 const route = useRoute();
 const router = useRouter();
+const openNegarOrientacao = ref(false);
+const openGerarCartaz = ref(false);
 const isLoading = useLoaderState();
 const urlApi = import.meta.env.VITE_URL;
 
@@ -314,8 +391,31 @@ function faseStatus(index) {
 }
 
 function abaClass(index) {
-  if (index === abaSelecionada.value) return 'bg-principal border-terciaria';
-  return 'bg-gray-300 border-white';
+  const status = faseStatus(index);
+  const base = 'flex items-center justify-center gap-[6px] px-[10px] py-[10px] rounded-md border font-bold text-[13px] transition-all ';
+  let cor = 'bg-secundaria border-secundaria-opaco text-gray-400 cursor-not-allowed';
+  if (status === 'completed') cor = 'bg-gradient-to-br from-green-400 to-green-600 border-green-600 text-white hover:shadow-md';
+  if (status === 'current') cor = 'bg-gradient-to-br from-principal to-terciaria border-terciaria text-white shadow-md hover:shadow-lg hover:scale-[1.02]';
+  const selecionada = index === abaSelecionada.value ? ' ring-2 ring-offset-1 ring-terciaria' : '';
+  return base + cor + selecionada;
+}
+
+function faseComNovidade() {
+  const meuAutor = ehProfessor.value ? 'professor' : 'aluno';
+  const desde = ehProfessor.value ? orientacao.ultimaVisualizacaoProfessor : orientacao.ultimaVisualizacaoAluno;
+  const dataDesde = desde ? new Date(desde) : new Date(0);
+  for (let i = 0; i < orientacao.fases.length; i++) {
+    const fase = orientacao.fases[i];
+    if (ehProfessor.value) {
+      for (const arquivo of fase.arquivos || []) {
+        if (new Date(arquivo.dataEnvio) > dataDesde) return i;
+      }
+    }
+    for (const comentario of fase.comentarios || []) {
+      if (comentario.autor !== meuAutor && new Date(comentario.data) > dataDesde) return i;
+    }
+  }
+  return null;
 }
 
 let primeiraCarga = true;
@@ -325,8 +425,12 @@ async function start() {
   await api.get(`/orientacao/${route.params.id}`)
     .then((res) => {
       Object.assign(orientacao, res.data.orientacao);
+      orientacao.dataDefesa = formatMask.date(orientacao.dataDefesa);
+      if (!orientacao.coorientador) orientacao.coorientador = { nome: '', instituicao: '' };
+      if (!orientacao.banca) orientacao.banca = [];
       if (primeiraCarga) {
-        abaSelecionada.value = Math.min(faseAtualIndex.value, orientacao.fases.length - 1);
+        const novidade = faseComNovidade();
+        abaSelecionada.value = novidade ?? Math.min(faseAtualIndex.value, orientacao.fases.length - 1);
         primeiraCarga = false;
       }
       api.put(`/orientacao/${orientacao._id}/visualizar`).catch(() => {});
@@ -420,6 +524,37 @@ function updateZoom() {
 function resetZoom() {
   zoomLevel.value = 1.0;
   updateZoom();
+}
+
+async function fecharNegarOrientacao(event) {
+  openNegarOrientacao.value = event;
+  await start();
+  if (orientacao.situacao !== 'confirmado') {
+    popupInfo().info('Orientação encerrada.');
+    router.push({ name: 'Home' });
+  }
+}
+
+async function aceitarCancelamento() {
+  isLoading.changeStateTrue();
+  await api.put(`/orientacao/${orientacao._id}/responderCancelamento`, { aceitar: true })
+    .then((res) => {
+      popupInfo().success(res.data?.msg);
+      router.push({ name: 'Home' });
+    })
+    .catch((e) => popupInfo().warning(e.response?.data?.msg || e))
+    .finally(() => isLoading.changeStateFalse());
+}
+
+async function recusarCancelamento() {
+  isLoading.changeStateTrue();
+  await api.put(`/orientacao/${orientacao._id}/responderCancelamento`, { aceitar: false })
+    .then(async (res) => {
+      popupInfo().success(res.data?.msg);
+      await start();
+    })
+    .catch((e) => popupInfo().warning(e.response?.data?.msg || e))
+    .finally(() => isLoading.changeStateFalse());
 }
 
 onMounted(start);
