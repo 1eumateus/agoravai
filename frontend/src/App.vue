@@ -1,14 +1,11 @@
 <template>
-  
   <Menu v-if="tokenValid" :user="usuario"></Menu>
   <Breadcumbs v-if="tokenValid"></Breadcumbs>
-  
 
   <router-view :usuario="usuario"/>
-  
+
   <Rodape v-if="tokenValid"></Rodape>
   <loading v-model:active="isLoading.state" :color="'blue'" :width="100" :height="100" class="mt-12 mb-10 z-30" />
-
 </template>
 
 <script setup>
@@ -26,15 +23,11 @@ const isLoading = useLoaderState();
 const tokenValid = ref(false);
 const usuario = ref(null);
 
-function start() {
-  verifyToken()
-}
-
 async function verifyToken() {
-  const res = await checkToken();
-  tokenValid.value = res.valid;
-  usuario.value = res
+  const { valid, tipo, id, nome } = await checkToken();
+  tokenValid.value = valid;
+  usuario.value = { tipo, id, nome };
 }
 
-onMounted(start);
+onMounted(verifyToken);
 </script>

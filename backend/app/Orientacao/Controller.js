@@ -2,10 +2,6 @@ import Model from "./Model.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 const { ObjectId } = mongoose.Types;
-import PDFDocument from 'pdfkit';
-import axios from "axios";
-import { pipeline } from 'stream';
-import fs from 'fs';
 import { sendEmail } from '../shared/Mailer.js';
 
 async function listar (req, res) {
@@ -24,7 +20,7 @@ async function listar (req, res) {
             filtro.professor = new ObjectId (String (userID));
         }
         const item = await Model.aggregate ([
-            { $match: filtro },  
+            { $match: filtro },
             {
                 $project: {
                     _id: 1,
@@ -135,7 +131,7 @@ async function criar (req, res) {
                 'SOTCC - Solicitação de orientação',
                 `<h3>O aluno ${req.body.nomeAluno} deseja ser orientado por você, entre para ver mais detalhes.<h3/><a href='${process.env.HOST_ROOT}/ui/login'>Clique aqui para entrar no sistema.</a>`,
             );
-            if (err == true){ 
+            if (err == true){
                 return res.status (400).json ({ msg: "Erro ao enviar email de confirmação." });
             }
         }
@@ -224,70 +220,6 @@ async function alterarSituacao (req, res) {
     }
 }
 
-async function solicitarCancelamento (req, res) {
-    try {
-        const token = req.headers.authorization;
-        const {userID, userTipo} = jwt.verify (token, process.env.JWT_SECRET, (err, usuario) => {
-            if (err) return false;
-            return {userID: usuario._id, userTipo: usuario.tipo};
-        });
-        if (!userID) return res.status (400);
-        if (!req.body.motivo?.trim ()) {
-            return res.status (400).json ({ msg: 'Justifique o motivo do cancelamento.' });
-        }
-        const orientacao = await Model.findOne ({ ativo: true, situacao: 'confirmado', _id: req.params.id });
-        if (!orientacao) {
-            return res.status (404).json ({ msg: 'Orientação não encontrada.' });
-        }
-        if (userTipo !== 'aluno' || String (orientacao.aluno) !== String (userID)) {
-            return res.status (403).json ({ msg: 'Apenas o aluno desta orientação pode solicitar o cancelamento.' });
-        }
-        orientacao.cancelamento = {
-            solicitadoPor: 'aluno',
-            motivo: req.body.motivo.trim (),
-            data: new Date (),
-        };
-        await orientacao.save ();
-        res.status (200).json ({ msg: 'Solicitação de cancelamento enviada ao orientador.' });
-    } catch (error) {
-        console.log (error);
-        return res.status (400).json ({ msg: 'Erro ao solicitar cancelamento.' });
-    }
-}
-
-async function responderCancelamento (req, res) {
-    try {
-        const token = req.headers.authorization;
-        const {userID, userTipo} = jwt.verify (token, process.env.JWT_SECRET, (err, usuario) => {
-            if (err) return false;
-            return {userID: usuario._id, userTipo: usuario.tipo};
-        });
-        if (!userID) return res.status (400);
-        const orientacao = await Model.findOne ({ ativo: true, _id: req.params.id });
-        if (!orientacao) {
-            return res.status (404).json ({ msg: 'Orientação não encontrada.' });
-        }
-        if (userTipo !== 'professor' || String (orientacao.professor) !== String (userID)) {
-            return res.status (403).json ({ msg: 'Apenas o orientador desta orientação pode responder ao cancelamento.' });
-        }
-        if (orientacao.cancelamento?.solicitadoPor !== 'aluno') {
-            return res.status (400).json ({ msg: 'Não há cancelamento pendente para esta orientação.' });
-        }
-        if (req.body.aceitar) {
-            orientacao.ativo = false;
-            orientacao.cancelamento = null;
-            await orientacao.save ();
-            return res.status (200).json ({ msg: 'Cancelamento aceito. A orientação foi encerrada.' });
-        }
-        orientacao.cancelamento = null;
-        await orientacao.save ();
-        res.status (200).json ({ msg: 'Solicitação de cancelamento recusada.' });
-    } catch (error) {
-        console.log (error);
-        return res.status (400).json ({ msg: 'Erro ao responder ao cancelamento.' });
-    }
-}
-
 async function orientacaoPorProfessor (req, res) {
     try {
         const filtro = { ativo: true, professor: req.params.id, situacao: 'confirmado' };
@@ -302,7 +234,7 @@ async function pegarPorId (req, res) {
     try {
         const filtro = { ativo: true,  _id: new ObjectId (String (req.params.id)) };
         const orientacao = await Model.aggregate ([
-            { $match: filtro },  
+            { $match: filtro },
             {
                 $lookup: {
                     from: 'usuarios',
@@ -351,237 +283,53 @@ async function pegarPorId (req, res) {
     }
 }
 
-async function gerarConvite (req, res) {
+async function listarPublicas (req, res) {
     try {
-        const form = req.body;
-        const doc = new PDFDocument ({
-            size: 'A4', 
-            margin: 20  
-        });
-        res.setHeader ('Content-Type', 'application/pdf');
-        res.setHeader ('Content-Disposition', 'attachment; filename=convite.pdf');
-        const pathFundo = 'public/fundoCartaz.jpg';
-        doc.image (pathFundo, 0, 0, { width: doc.page.width, height: doc.page.height });
-        doc.moveDown ();
-        for (let i = 0; i < 15; i ++) {
-            doc.moveDown ();  // Para espaçamento
-        }
-        doc.fontSize (16).text ('UNIVERSIDADE FEDERAL DO PARÁ', { align: 'center', lineGap: 8 });
-        doc.text ('CAMPUS UNIVERSITÁRIO DE TUCURUÍ', { align: 'center', lineGap: 8 });
-        doc.text ('FACULDADE DE ENGENHARIA DE COMPUTAÇÃO', { align: 'center', lineGap: 8 });
-        doc.moveDown ();
-        doc.moveDown ();
-        doc.fontSize (16).text (`${form.tema}`, { align: 'center' });
-        doc.fontSize (16).text (`${form.aluno.nome} ${form.aluno.sobrenome}`, { align: 'center' });
-        doc.moveDown ();
-        doc.moveDown ();
-        doc.fontSize (16).text (`BANCA EXAMINADORA:`, { align: 'center', lineGap: 4 });
-        doc.fontSize (16).text (`${form.professor.nome} ${form.professor.sobrenome} (UFPA/FECOMP)`, { align: 'center' });
-        doc.fontSize (16).text (`Orientador`, { align: 'center' });
-        if (form.coorientador.nome) {
-            doc.moveDown ();
-            doc.fontSize (16).text (`${form.coorientador.nome?.trim()} ${form.coorientador.instituicao ? `(${form.coorientador.instituicao})` : ''}`, { align: 'center' });
-            doc.fontSize (16).text (`Coorientador`, { align: 'center' });
-        }
-        form.banca.forEach ((membro) => {
-            doc.moveDown ();
-            doc.fontSize (16).text (`${membro.nome?.trim()} ${membro.instituicao ? `(${membro.instituicao?.trim()})` : ''}`, { align: 'center' });
-            doc.fontSize (16).text (`Examinador`, { align: 'center' });
-        });
-        doc.moveDown ();
-        doc.moveDown ();
-        doc.moveDown ();
-        doc.fontSize (16).text (`DATA E HORA: (${formatarData(form.dataDefesa)} às ${form.horaDefesa})`, { align: 'left' });
-        if (form.presencial && form.local?.trim ()){
-            doc.moveDown ();
-            doc.fontSize (16).text (`LOCAL: ${form.local}`, { align: 'left', lineGap: 8 });
-        }
-        if (form.link?.trim () && !form.presencial) {
-            const qrCodeResponse = await axios.get (`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(form.link)}`, { responseType: 'arraybuffer' });
-            const qrCodeBuffer = Buffer.from (qrCodeResponse.data, 'binary');
-            const qrCodePath = 'temp/qrcode.png';
-            fs.writeFileSync (qrCodePath, qrCodeBuffer);
-            const qrCodeWidth = 100;
-            const qrCodeHeight = 100;
-            doc.moveDown ();
-            doc.fontSize (16).text (`LOCAL VIRTUAL: ${form.link}`, { align: 'left', lineGap: 8 });
-            doc.fontSize (16).text (`Acesse também pelo QRCode`, { align: 'left', lineGap: 8 });
-            doc.image (qrCodePath, doc.page.width - qrCodeWidth - doc.page.margins.right, doc.y - qrCodeHeight, { width: qrCodeWidth, height: qrCodeHeight });
-        }    
-        doc.end ();
-        pipeline (doc, res, (err) => {
-            if (err) {
-                console.error ('Erro ao gerar o PDF:', err);
-                return res.status (500).json ({ msg: "Erro ao gerar convite." });
-            }
-            console.log ("Cartaz gerado com sucesso.");
-        });
-    } catch (error) {
-        console.error ('error:', error);
-        return res.status (400).json ({ msg: "Erro ao gerar convite." });
-    }
-}
-
-async function visualizarFases (req, res) {
-    try {
-        const token = req.headers.authorization;
-        const {userID, userTipo} = jwt.verify (token, process.env.JWT_SECRET, (err, usuario) => {
-            if (err) return false;
-            return {userID: usuario._id, userTipo: usuario.tipo};
-        });
-        if (!userID) return res.status (400);
-        const orientacao = await Model.findOne ({ ativo: true, _id: req.params.id });
-        if (!orientacao) return res.status (404).json ({ msg: 'Orientação não encontrada.' });
-        if (userTipo === 'aluno' && String (orientacao.aluno) === String (userID)) {
-            orientacao.ultimaVisualizacaoAluno = new Date ();
-        } else if (userTipo === 'professor' && String (orientacao.professor) === String (userID)) {
-            orientacao.ultimaVisualizacaoProfessor = new Date ();
-        } else {
-            return res.status (403).json ({ msg: 'Você não faz parte desta orientação.' });
-        }
-        await orientacao.save ();
-        res.status (200).json ({});
+        const filtro = { ativo: true, situacao: 'confirmado', dataDefesa: { $gte: new Date () } };
+        const item = await Model.aggregate ([
+            { $match: filtro },
+            { $sort: { dataDefesa: 1, horaDefesa: 1 } },
+            {
+                $lookup: {
+                    from: 'usuarios',
+                    localField: 'professor',
+                    foreignField: '_id',
+                    as: 'professor',
+                    pipeline: [{ $project: { nome: 1, sobrenome: 1, _id: 0 } }]
+                },
+            },
+            {
+                $lookup: {
+                    from: 'usuarios',
+                    localField: 'aluno',
+                    foreignField: '_id',
+                    as: 'aluno',
+                    pipeline: [{ $project: { nome: 1, sobrenome: 1, _id: 0 } }]
+                },
+            },
+            { $unwind: { path: '$aluno', preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: '$professor', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    _id: 0,
+                    tema: 1,
+                    aluno: 1,
+                    professor: 1,
+                    banca: 1,
+                    coorientador: 1,
+                    dataDefesa: 1,
+                    horaDefesa: 1,
+                    local: 1,
+                    presencial: 1,
+                    link: 1,
+                }
+            },
+        ]);
+        res.status (200).json ({ item });
     } catch (error) {
         console.log (error);
-        return res.status (400).json ({});
+        return res.status (400).json ({ msg: 'Erro ao buscar defesas.' });
     }
 }
 
-async function enviarArquivoFase (req, res) {
-    try {
-        const token = req.headers.authorization;
-        const {userID, userTipo} = jwt.verify (token, process.env.JWT_SECRET, (err, usuario) => {
-            if (err) return false;
-            return {userID: usuario._id, userTipo: usuario.tipo};
-        });
-        if (!userID) return res.status (400);
-        const orientacao = await Model.findOne ({ ativo: true, _id: req.params.id });
-        if (!orientacao) return res.status (404).json ({ msg: 'Orientação não encontrada.' });
-        if (userTipo !== 'aluno' || String (orientacao.aluno) !== String (userID)) {
-            return res.status (403).json ({ msg: 'Apenas o aluno desta orientação pode enviar arquivos.' });
-        }
-        if (orientacao.situacao !== 'confirmado') {
-            return res.status (400).json ({ msg: 'Orientação ainda não confirmada.' });
-        }
-        const faseIndex = Number (req.params.faseIndex);
-        const fase = orientacao.fases [faseIndex];
-        if (!fase) return res.status (404).json ({ msg: 'Fase não encontrada.' });
-        const faseAtualIndex = orientacao.fases.findIndex ((f) => f.situacao !== 'aprovada');
-        if (faseAtualIndex !== -1 && faseIndex !== faseAtualIndex) {
-            return res.status (400).json ({ msg: 'Você só pode enviar arquivos para a fase atual.' });
-        }
-        if (!req.file) return res.status (400).json ({ msg: 'Nenhum arquivo enviado.' });
-        fase.arquivos.push ({
-            originalname: req.file.originalname,
-            filename: req.file.filename,
-            path: req.file.path,
-            size: req.file.size,
-        });
-        await orientacao.save ();
-        res.status (200).json ({ msg: 'Arquivo enviado com sucesso.' });
-    } catch (error) {
-        console.log (error);
-        return res.status (400).json ({ msg: 'Erro ao enviar arquivo.' });
-    }
-}
-
-async function removerArquivoFase (req, res) {
-    try {
-        const token = req.headers.authorization;
-        const {userID, userTipo} = jwt.verify (token, process.env.JWT_SECRET, (err, usuario) => {
-            if (err) return false;
-            return {userID: usuario._id, userTipo: usuario.tipo};
-        });
-        if (!userID) return res.status (400);
-        const orientacao = await Model.findOne ({ ativo: true, _id: req.params.id });
-        if (!orientacao) return res.status (404).json ({ msg: 'Orientação não encontrada.' });
-        if (userTipo !== 'aluno' || String (orientacao.aluno) !== String (userID)) {
-            return res.status (403).json ({ msg: 'Apenas o aluno desta orientação pode remover arquivos.' });
-        }
-        const faseIndex = Number (req.params.faseIndex);
-        const fase = orientacao.fases [faseIndex];
-        if (!fase) return res.status (404).json ({ msg: 'Fase não encontrada.' });
-        if (fase.situacao === 'aprovada') {
-            return res.status (400).json ({ msg: 'Fase já aprovada, não é possível remover arquivos.' });
-        }
-        const arquivo = fase.arquivos.id (req.params.arquivoId);
-        if (!arquivo) return res.status (404).json ({ msg: 'Arquivo não encontrado.' });
-        if (arquivo.path && fs.existsSync (arquivo.path)) {
-            fs.unlinkSync (arquivo.path);
-        }
-        arquivo.deleteOne ();
-        await orientacao.save ();
-        res.status (200).json ({ msg: 'Arquivo removido.' });
-    } catch (error) {
-        console.log (error);
-        return res.status (400).json ({ msg: 'Erro ao remover arquivo.' });
-    }
-}
-
-async function comentarFase (req, res) {
-    try {
-        const token = req.headers.authorization;
-        const {userID, userTipo} = jwt.verify (token, process.env.JWT_SECRET, (err, usuario) => {
-            if (err) return false;
-            return {userID: usuario._id, userTipo: usuario.tipo};
-        });
-        if (!userID) return res.status (400);
-        const orientacao = await Model.findOne ({ ativo: true, _id: req.params.id });
-        if (!orientacao) return res.status (404).json ({ msg: 'Orientação não encontrada.' });
-        const dono = userTipo === 'aluno' ? orientacao.aluno : orientacao.professor;
-        if (userTipo === 'admin' || String (dono) !== String (userID)) {
-            return res.status (403).json ({ msg: 'Você não faz parte desta orientação.' });
-        }
-        if (!req.body.texto?.trim ()) return res.status (400).json ({ msg: 'Escreva um comentário.' });
-        const fase = orientacao.fases [Number (req.params.faseIndex)];
-        if (!fase) return res.status (404).json ({ msg: 'Fase não encontrada.' });
-        fase.comentarios.push ({ autor: userTipo, texto: req.body.texto.trim () });
-        await orientacao.save ();
-        res.status (200).json ({ msg: 'Comentário enviado.' });
-    } catch (error) {
-        console.log (error);
-        return res.status (400).json ({ msg: 'Erro ao enviar comentário.' });
-    }
-}
-
-async function avaliarFase (req, res) {
-    try {
-        const token = req.headers.authorization;
-        const {userID, userTipo} = jwt.verify (token, process.env.JWT_SECRET, (err, usuario) => {
-            if (err) return false;
-            return {userID: usuario._id, userTipo: usuario.tipo};
-        });
-        if (!userID) return res.status (400);
-        const orientacao = await Model.findOne ({ ativo: true, _id: req.params.id });
-        if (!orientacao) return res.status (404).json ({ msg: 'Orientação não encontrada.' });
-        if (userTipo !== 'professor' || String (orientacao.professor) !== String (userID)) {
-            return res.status (403).json ({ msg: 'Apenas o orientador desta orientação pode aprovar fases.' });
-        }
-        const faseIndex = Number (req.params.faseIndex);
-        const fase = orientacao.fases [faseIndex];
-        if (!fase) return res.status (404).json ({ msg: 'Fase não encontrada.' });
-        if (fase.arquivos.length === 0) {
-            return res.status (400).json ({ msg: 'O aluno ainda não enviou nenhum arquivo nesta fase.' });
-        }
-        fase.situacao = 'aprovada';
-        if (req.body.texto?.trim ()) {
-            fase.comentarios.push ({ autor: 'professor', texto: req.body.texto.trim () });
-        }
-        await orientacao.save ();
-        res.status (200).json ({ msg: 'Fase aprovada.' });
-    } catch (error) {
-        console.log (error);
-        return res.status (400).json ({ msg: 'Erro ao aprovar fase.' });
-    }
-}
-
-function formatarData (value) {
-    if (!value) return '';
-    const data = new Date (value);
-    const ano = data.getUTCFullYear ();
-    const mes = String (data.getUTCMonth () + 1).padStart (2, '0');
-    const dia = String (data.getUTCDate ()).padStart (2, '0');
-    return `${dia}/${mes}/${ano}`;
-}
-
-export { listar, criar, deletar, alterarSituacao, editar, pegarPorId, gerarConvite, orientacaoPorProfessor, enviarArquivoFase, removerArquivoFase, comentarFase, avaliarFase, visualizarFases, solicitarCancelamento, responderCancelamento };
+export { listar, criar, deletar, alterarSituacao, editar, pegarPorId, orientacaoPorProfessor, listarPublicas };
