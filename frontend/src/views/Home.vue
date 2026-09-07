@@ -7,13 +7,6 @@
         :aluno="props?.usuario?.id"
         v-if="openSolicitarOrientacao"
     />
-    <RespostaOrientacao
-        @modal:open="recarregarAposNegar($event)"
-        :orientacao="orientacaoParaNegar"
-        situacao="negado"
-        :usuario="props?.usuario"
-        v-if="openNegarOrientacao"
-    />
     <main class="flex-grow relative " >
         <section class="mx-auto max-w-7xl p-[14px] flex flex-col gap-[24px]">
             <ListaOrientacao :usuario="props?.usuario" @atualizado="listarOrientacao" v-if="props?.usuario?.tipo !== 'professor' || temPendente"></ListaOrientacao>
@@ -57,9 +50,13 @@
                                 :alt="'sem imagem'"
                                 class="h-[40px] w-[40px] object-cover rounded-md border border-secundaria-opaco flex-shrink-0"
                             />
-                            <Texto as="label" class="truncate font-bold">
+                            <Texto as="label" class="truncate font-bold flex-1">
                                 {{ aluno.nome }} {{ aluno.sobrenome }}
                             </Texto>
+                            <div class="relative flex-shrink-0" :title="aluno.notificacao ? 'Tem novidade' : 'Sem novidade'">
+                                <PhBell :size="18" :class="aluno.notificacao ? 'fill-red-500' : 'fill-gray-300'" />
+                                <span v-if="aluno.notificacao" class="absolute -top-[2px] -right-[2px] w-[7px] h-[7px] rounded-full bg-red-500 border border-white"></span>
+                            </div>
                         </div>
 
                         <div class="border-t border-secundaria pt-[6px]">
@@ -69,31 +66,16 @@
                             </Texto>
                         </div>
 
-                        <div
-                            v-if="aluno.cancelamento?.solicitadoPor === 'aluno'"
-                            class="border border-orange-300 bg-orange-50 rounded-md p-[8px] flex flex-col gap-[4px]"
+                        <router-link
+                            v-if="aluno.cancelamento?.solicitadoPor && !aluno.cancelamento?.resposta?.data"
+                            :to="`/ui/acompanhamento/${aluno.orientacaoId}`"
+                            class="cursor-pointer border border-orange-300 bg-orange-50 hover:bg-orange-100 rounded-md p-[8px] flex items-center gap-[6px]"
                         >
-                            <Texto as="small" color="orange">Solicitação de cancelamento</Texto>
-                            <Texto as="label" class="line-clamp-2">
-                                {{ aluno.cancelamento.motivo }}
+                            <PhWarning :size="16" class="fill-orange-500 flex-shrink-0" />
+                            <Texto as="label" color="orange" class="line-clamp-1" :cursorPointer="true">
+                                Cancelamento solicitado, veja em "Acompanhar".
                             </Texto>
-                            <div class="flex gap-[4px]">
-                                <button
-                                    type="button"
-                                    class="flex-1 cursor-pointer px-[8px] py-[5px] bg-green-600 hover:bg-green-700 text-white rounded-md font-bold text-[11px]"
-                                    @click="aceitarCancelamento(aluno.orientacaoId)"
-                                >
-                                    Aceitar
-                                </button>
-                                <button
-                                    type="button"
-                                    class="flex-1 cursor-pointer px-[8px] py-[5px] border border-gray-300 hover:bg-gray-100 rounded-md font-bold text-[11px]"
-                                    @click="recusarCancelamento(aluno.orientacaoId)"
-                                >
-                                    Recusar
-                                </button>
-                            </div>
-                        </div>
+                        </router-link>
 
                         <div class="flex flex-col gap-[4px] mt-auto pt-[4px]">
                             <router-link
@@ -101,7 +83,7 @@
                                 class="cursor-pointer w-full flex items-center justify-center gap-[4px] px-[8px] py-[5px] border border-principal text-principal hover:bg-secundaria rounded-md font-bold text-[11px]"
                             >
                                 <PhInfo :size="13" />
-                                Detalhes
+                                Detalhes da proposta
                             </router-link>
                             <router-link
                                 :to="`/ui/acompanhamento/${aluno.orientacaoId}`"
@@ -109,16 +91,7 @@
                             >
                                 <PhChartLineUp :size="13" />
                                 Acompanhar
-                                <span v-if="aluno.notificacao" class="w-[8px] h-[8px] rounded-full bg-red-500 border border-white"></span>
                             </router-link>
-                            <button
-                                type="button"
-                                class="cursor-pointer w-full flex items-center justify-center gap-[4px] px-[8px] py-[5px] border border-red-300 text-red-600 hover:bg-red-50 rounded-md font-bold text-[11px]"
-                                @click="abrirNegarOrientacao(aluno.orientacaoId)"
-                            >
-                                <PhX :size="13" />
-                                Negar
-                            </button>
                         </div>
                     </section>
                 </div>
@@ -140,6 +113,19 @@
                     </div>
                     <button v-if="procurar" type="button" class="cursor-pointer text-[13px] font-bold text-principal hover:underline" @click="limparBusca">
                         Limpar busca
+                    </button>
+                </div>
+
+                <div v-if="props?.usuario?.tipo === 'aluno' && areasDisponiveis.length > 0" class="flex flex-wrap items-center gap-[6px]">
+                    <Texto as="small" color="gray">Área:</Texto>
+                    <button
+                        v-for="area in areasDisponiveis"
+                        :key="area"
+                        type="button"
+                        :class="`text-[11px] font-bold px-[8px] py-[3px] rounded-full border cursor-pointer ${areasSelecionadas.includes(area) ? 'bg-principal text-white border-principal' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'}`"
+                        @click="toggleArea(area)"
+                    >
+                        {{ area }}
                     </button>
                 </div>
 
@@ -172,6 +158,9 @@
                                 <span class="self-start text-[10px] font-bold px-[6px] py-[1px] rounded-full bg-secundaria-opaco text-principal">
                                     {{ professor.disponibilidade }}
                                 </span>
+                                <span v-if="orientacaoDoProfessor(professor._id)?.situacao === 'confirmado'" class="self-start text-[10px] font-bold px-[6px] py-[1px] rounded-full bg-terciaria text-white">
+                                    Seu orientador
+                                </span>
                             </div>
                         </div>
 
@@ -199,8 +188,16 @@
                                 <PhInfo :size="13" />
                                 Mais informações
                             </router-link>
+                            <router-link
+                                v-if="props?.usuario?.tipo === 'aluno' && orientacaoDoProfessor(professor._id)?.situacao === 'confirmado'"
+                                :to="`/ui/acompanhamento/${orientacaoDoProfessor(professor._id)._id}`"
+                                class="cursor-pointer w-full flex items-center justify-center gap-[4px] px-[8px] py-[5px] bg-terciaria text-white hover:bg-terciaria-opaco rounded-md font-bold text-[11px]"
+                            >
+                                <PhChartLineUp :size="13" />
+                                Acompanhar
+                            </router-link>
                             <button
-                                v-if="props?.usuario?.tipo === 'aluno'"
+                                v-else-if="props?.usuario?.tipo === 'aluno'"
                                 type="button"
                                 class="cursor-pointer w-full flex items-center justify-center gap-[4px] px-[8px] py-[5px] bg-principal text-white hover:bg-principal-opaco rounded-md font-bold text-[11px]"
                                 @click="iniciarSolicitacao(professor)"
@@ -216,7 +213,7 @@
     </main>
 </template>
 <script setup>
-import { PhInfo, PhUserCircle, PhRocketLaunch, PhChartLineUp, PhX } from '@phosphor-icons/vue';
+import { PhInfo, PhUserCircle, PhRocketLaunch, PhChartLineUp, PhBell, PhWarning } from '@phosphor-icons/vue';
 import { computed, onMounted, ref, watch, reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import api from "@/api.js";
@@ -225,7 +222,6 @@ import Texto from '@components/Texto.vue'
 import { useLoaderState } from "../stores/isLoading";
 import ListaOrientacao from './Orientacao/ListaOrientacao.vue';
 import SolicitarOrientacao from './Orientacao/SolicitarOrientacao.vue';
-import RespostaOrientacao from './Orientacao/RespostaOrientacao.vue';
 const isLoading = useLoaderState();
 const route = useRoute();
 const router = useRouter();
@@ -245,8 +241,37 @@ const props = defineProps({
 const openSolicitarOrientacao = ref(false);
 const professorSelecionado = reactive({ _id: '', email: '' });
 
+const areasSelecionadas = ref([]);
+
+const areasDisponiveis = computed(() => {
+    const areas = new Set();
+    professores.value.forEach((p) => {
+        (p.interesse || '').split(',').forEach((area) => {
+            const nome = area.trim();
+            if (nome) areas.add(nome);
+        });
+    });
+    return [...areas].sort();
+});
+
+function toggleArea(area) {
+    const index = areasSelecionadas.value.indexOf(area);
+    if (index === -1) areasSelecionadas.value.push(area);
+    else areasSelecionadas.value.splice(index, 1);
+}
+
 const professoresDisponiveis = computed(() =>
-    professores.value.filter((p) => p.disponibilidade && p.disponibilidade !== 'indisponível' && !orientacaoDoProfessor(p._id))
+    professores.value
+        .filter((p) => p.disponibilidade && p.disponibilidade !== 'indisponível')
+        .filter((p) => {
+            const orientacao = orientacaoDoProfessor(p._id);
+            return !orientacao || orientacao.situacao === 'confirmado';
+        })
+        .filter((p) => {
+            if (areasSelecionadas.value.length === 0) return true;
+            const interesse = (p.interesse || '').toLowerCase();
+            return areasSelecionadas.value.some((area) => interesse.includes(area.toLowerCase()));
+        })
 );
 
 const alunosOrientados = computed(() => {
@@ -264,9 +289,6 @@ const alunosOrientados = computed(() => {
 });
 
 const temPendente = computed(() => orientacoes.some((o) => o.situacao === 'pendente'));
-
-const openNegarOrientacao = ref(false);
-const orientacaoParaNegar = reactive({});
 
 async function start() {
     if (props?.usuario?.tipo === 'professor') {
@@ -307,32 +329,6 @@ function iniciarSolicitacao(professor) {
 async function recarregarAposSolicitar(event) {
     openSolicitarOrientacao.value = event;
     await listarOrientacao();
-}
-
-function abrirNegarOrientacao(orientacaoId) {
-    const original = orientacoes.find((o) => o._id === orientacaoId);
-    if (!original) return;
-    Object.assign(orientacaoParaNegar, original);
-    openNegarOrientacao.value = true;
-}
-
-async function recarregarAposNegar(event) {
-    openNegarOrientacao.value = event;
-    await listarOrientacao();
-}
-
-async function aceitarCancelamento(orientacaoId) {
-    await api.put(`/orientacao/${orientacaoId}/responderCancelamento`, { aceitar: true })
-        .then((res) => popupInfo().success(res?.data?.msg))
-        .catch((e) => popupInfo().warning(e?.response?.data?.msg || e))
-        .finally(() => listarOrientacao());
-}
-
-async function recusarCancelamento(orientacaoId) {
-    await api.put(`/orientacao/${orientacaoId}/responderCancelamento`, { aceitar: false })
-        .then((res) => popupInfo().success(res?.data?.msg))
-        .catch((e) => popupInfo().warning(e?.response?.data?.msg || e))
-        .finally(() => listarOrientacao());
 }
 
 function orientacaoDoProfessor(professorId) {

@@ -2,7 +2,7 @@
     <div class="fixed inset-0 z-40 flex items-center justify-center bg-gray-600 bg-opacity-50">
         <main class="w-full md:w-[480px] lg:w-[480px] p-[24px] overflow-y-auto bg-white rounded-md flex flex-col gap-[24px]">
             <section class="grid grid-cols-1 gap-[14px]">
-                <div class="flex items-center justify-between border-b border-gray-300" v-if="props?.usuario.tipo === 'professor'" >
+                <div class="flex items-center justify-between border-b border-gray-300" v-if="props?.usuario.tipo === 'professor' && orientacao.situacao !== 'confirmado'" >
                     <Texto as="h3" >
                         {{situacao==='confirmado'? 'Confirmar orientação':'Negar orientação'}}
                     </Texto>
@@ -14,7 +14,7 @@
                     <PhX :size="18" class="fill-gray-700 hover:fill-black" />
                     </button>
                 </div>
-                <div class="flex flex-col gap-[4px]" v-if="props?.usuario.tipo === 'professor'">
+                <div class="flex flex-col gap-[4px]" v-if="props?.usuario.tipo === 'professor' && orientacao.situacao !== 'confirmado'">
                     <div class="flex items-center gap-[10px]">
                         <Texto as="body" for="resposta">
                             Resposta
@@ -28,6 +28,27 @@
                         id="resposta"
                         class="p-[8px] border border-principal rounded-md focus:outline-principal"
                         :placeholder="situacao === 'negado' ? 'Justifique o motivo.' : 'Escreva uma resposta para orientação.'"
+                        maxlength="200"
+                        rows="4"
+                    ></textarea>
+                </div>
+                <div class="flex flex-col gap-[4px]" v-if="props?.usuario.tipo === 'professor' && orientacao.situacao === 'confirmado'">
+                    <Texto as="h4">
+                        Encerrar orientação
+                    </Texto>
+                    <Texto as="body" color="gray">
+                        O aluno {{ orientacao.aluno?.nome }} precisa aceitar o cancelamento para a orientação ser encerrada.
+                    </Texto>
+                    <div class="flex items-center gap-[10px]">
+                        <Texto as="body" for="motivo">
+                            Motivo
+                        </Texto>
+                    </div>
+                    <textarea
+                        v-model="form.motivo"
+                        id="motivo"
+                        class="p-[8px] border border-principal rounded-md focus:outline-principal"
+                        placeholder="Justifique o motivo do cancelamento."
                         maxlength="200"
                         rows="4"
                     ></textarea>
@@ -70,7 +91,7 @@
                 <button
                     type="button"
                     :onClick="solicitar"
-                    v-if="props?.usuario.tipo === 'professor'"
+                    v-if="props?.usuario.tipo === 'professor' && orientacao.situacao !== 'confirmado'"
                     class=" font-bold text-[14px] bg-principal hover:bg-principal-opaco text-white py-[8px] px-[12px] rounded-md cursor-pointer">
                     {{situacao==='confirmado'? 'Confirmar orientação':'Negar orientação'}}
                 </button>
@@ -84,7 +105,7 @@
                 <button
                     type="button"
                     :onClick="solicitarCancelamento"
-                    v-if="props?.usuario.tipo === 'aluno' && orientacao.situacao === 'confirmado'"
+                    v-if="orientacao.situacao === 'confirmado'"
                     class=" font-bold text-[14px] bg-principal hover:bg-principal-opaco text-white py-[8px] px-[12px] rounded-md cursor-pointer">
                     Solicitar cancelamento
                 </button>

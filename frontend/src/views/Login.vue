@@ -11,6 +11,10 @@
                 <DefesasPublicas />
             </div>
 
+            <div class="md:hidden order-last px-[10px] py-[24px] border-t border-secundaria-opaco bg-secundaria">
+                <DefesasPublicas />
+            </div>
+
             <div class="flex flex-col justify-center gap-[24px] px-[10px] md:px-[10px] lg:px-[90px]">
                 <div class="flex flex-col p-[10px] gap-[12px]">
                     <section class="flex flex-col ">

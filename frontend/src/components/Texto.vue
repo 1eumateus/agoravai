@@ -67,25 +67,25 @@ const computedClass = computed(() => {
 
     switch (props.as) {
         case 'h1':
-            return `${colorText} font-bold text-[56px] `;
+            return `${colorText} font-bold text-[56px] ${cursorPointer}`;
         case 'h2':
-            return `${colorText} font-bold text-[42px] `;
+            return `${colorText} font-bold text-[42px] ${cursorPointer}`;
         case 'h3':
-            return `${colorText} font-bold text-[30px] ${cursorPointer} `;
+            return `${colorText} font-bold text-[30px] ${cursorPointer}`;
         case 'h4':
-            return `${colorText} font-bold text-[20px] `;
+            return `${colorText} font-bold text-[20px] ${cursorPointer}`;
         case 'body-bold':
-            return `${colorText}  font-bold text-[16px] `;
+            return `${colorText}  font-bold text-[16px] ${cursorPointer}`;
         case 'body':
-            return `${colorText}  font-normal text-[16px] `;
+            return `${colorText}  font-normal text-[16px] ${cursorPointer}`;
         case 'button':
             return `${colorText}  font-normal text-[16px] cursor-pointer`;
         case 'label':
-            return `${colorText}  font-normal text-[14px]`;
+            return `${colorText}  font-normal text-[14px] ${cursorPointer}`;
         case 'small':
-            return `${colorText}  font-bold text-[10px] uppercase`;
+            return `${colorText}  font-bold text-[10px] uppercase ${cursorPointer}`;
         default:
-            return `${colorText} font-normal text-[16px] `;
+            return `${colorText} font-normal text-[16px] ${cursorPointer}`;
     }
 });
 </script>

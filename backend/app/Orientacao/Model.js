@@ -19,6 +19,14 @@ const comentarioFaseSchema = new Schema ({
         type: Date,
         default: Date.now,
     },
+    anexo: {
+        type: arquivoFaseSchema,
+        default: null,
+    },
+    editado: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const faseSchema = new Schema ({
@@ -26,6 +34,30 @@ const faseSchema = new Schema ({
     situacao: {
         type: String,
         default: 'pendente',
+    },
+    aprovadaEm: {
+        type: Date,
+        default: null,
+    },
+    prazo: {
+        type: Date,
+        default: null,
+    },
+    prazoAlteradoEm: {
+        type: Date,
+        default: null,
+    },
+    descricao: {
+        type: String,
+        default: '',
+    },
+    descricaoAlteradaEm: {
+        type: Date,
+        default: null,
+    },
+    lembretePrazoEnviado: {
+        type: Boolean,
+        default: false,
     },
     arquivos: [arquivoFaseSchema],
     comentarios: [comentarioFaseSchema],
@@ -121,6 +153,20 @@ const modelSchema = new Schema ({
         data: {
             type: Date,
             default: null,
+        },
+        resposta: {
+            aceito: {
+                type: Boolean,
+                default: null,
+            },
+            motivo: {
+                type: String,
+                default: null,
+            },
+            data: {
+                type: Date,
+                default: null,
+            },
         },
     },
 });
