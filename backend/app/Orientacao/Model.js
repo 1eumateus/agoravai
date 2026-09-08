@@ -76,6 +76,10 @@ const modelSchema = new Schema ({
         type: String,
         default: 'pendente',
     },
+    confirmadoEm: {
+        type: Date,
+        default: null,
+    },
     tema: {
         type: String,
     },
@@ -119,6 +123,16 @@ const modelSchema = new Schema ({
         type: Date,
         default: null,
         required: false,
+    },
+    chamadaAoVivo: {
+        ativa: {
+            type: Boolean,
+            default: false,
+        },
+        iniciadaEm: {
+            type: Date,
+            default: null,
+        },
     },
     horaDefesa:{
         type: String,

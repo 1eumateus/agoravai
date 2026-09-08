@@ -11,6 +11,13 @@
     @modal:open="openGerarCartaz = $event"
     v-if="openGerarCartaz"
   />
+  <Videochamada
+    :orientacao-id="orientacao._id"
+    :usuario="props.usuario"
+    :eh-professor="ehProfessor"
+    @modal:open="openVideochamada = $event"
+    v-if="openVideochamada"
+  />
   <main class="flex-grow relative">
     <section class="mx-auto max-w-6xl p-[14px] flex flex-col gap-[14px]">
       <template v-if="!viewing">
@@ -27,6 +34,21 @@
               }}
             </Texto>
             <button
+              v-if="!acoesSuspensas && orientacao.situacao === 'confirmado'"
+              type="button"
+              :disabled="!ehProfessor && !orientacao.chamadaAoVivo?.ativa"
+              :class="[
+                'flex items-center gap-[4px] px-[10px] py-[6px] rounded-md font-bold text-[13px]',
+                (ehProfessor || orientacao.chamadaAoVivo?.ativa)
+                  ? 'cursor-pointer bg-principal hover:bg-principal-opaco text-white'
+                  : 'cursor-not-allowed bg-secundaria border border-secundaria-opaco text-gray-400',
+              ]"
+              @click="openVideochamada = true"
+            >
+              <PhVideoCamera :size="16" />
+              Entrar na sala
+            </button>
+            <button
               v-if="!somenteLeitura && !cancelamentoAtivo && podeSolicitarCancelamento"
               type="button"
               class="cursor-pointer flex items-center gap-[4px] px-[10px] py-[6px] border border-red-300 text-red-600 hover:bg-red-50 rounded-md font-bold text-[13px]"
@@ -35,9 +57,6 @@
               <PhX :size="16" />
               {{ ehProfessor ? 'Encerrar orientação' : 'Solicitar cancelamento' }}
             </button>
-            <Texto as="label" color="gray" v-else-if="!somenteLeitura && !cancelamentoAtivo">
-              Cancelamento disponível apenas até a fase de Desenvolvimento.
-            </Texto>
           </div>
         </div>
 
@@ -146,21 +165,84 @@
           </Texto>
         </div>
 
-        <template v-if="orientacao.fases?.length">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-[8px] mt-2">
+        <div
+          v-if="ehProfessor && tccConcluido"
+          class="border border-terciaria rounded-md bg-terciaria/10 p-[12px] flex items-center justify-between flex-wrap gap-[8px]"
+        >
+          <div class="flex items-center gap-[8px]">
+            <PhFilePdf :size="20" class="fill-terciaria-opaco" />
+            <Texto as="body-bold" color="principal">
+              TCC concluído! Prepare o cartaz de divulgação da defesa.
+            </Texto>
+          </div>
+          <button
+            type="button"
+            class="cursor-pointer flex items-center gap-[6px] px-[14px] py-[8px] bg-terciaria hover:bg-terciaria-opaco text-white rounded-md font-bold text-[13px]"
+            @click="openGerarCartaz = true"
+          >
+            Gerar cartaz de divulgação
+          </button>
+        </div>
+
+        <div
+          v-if="!ehProfessor && !acoesSuspensas && orientacao.dataDefesa && orientacao.situacao === 'confirmado'"
+          class="border border-terciaria rounded-md bg-terciaria/10 p-[12px] flex flex-col gap-[8px]"
+        >
+          <div class="flex items-center justify-between flex-wrap gap-[8px]">
+            <div class="flex items-center gap-[8px]">
+              <PhVideoCamera :size="20" class="fill-terciaria-opaco" />
+              <Texto as="body-bold" color="principal">
+                {{ ehDiaDaDefesa ? 'Hoje é o dia da sua defesa!' : 'Defesa agendada' }}
+              </Texto>
+            </div>
             <button
-              v-for="(fase, index) in orientacao.fases"
-              :key="fase._id || index"
+              v-if="ehDiaDaDefesa"
               type="button"
-              :disabled="faseStatus(index) === 'locked'"
-              :class="abaClass(index)"
-              @click="abaSelecionada = index"
+              class="cursor-pointer flex items-center gap-[6px] px-[14px] py-[8px] bg-terciaria hover:bg-terciaria-opaco text-white rounded-md font-bold text-[13px]"
+              @click="openVideochamada = true"
             >
-              <PhCheck v-if="faseStatus(index) === 'completed'" :size="18" class="fill-white flex-shrink-0" />
-              <PhLockSimple v-else-if="faseStatus(index) === 'locked'" :size="18" class="fill-gray-400 flex-shrink-0" />
-              <PhLockSimpleOpen v-else :size="18" class="fill-white flex-shrink-0" />
-              <span class="truncate">{{ fase.nome }}</span>
+              Entrar na sala
             </button>
+          </div>
+          <div class="flex items-center gap-[4px]">
+            <PhClock :size="16" class="fill-gray-600" />
+            <Texto as="small" color="gray">
+              {{ formatMask.viewDate(orientacao.dataDefesa) }}{{ orientacao.horaDefesa ? ` às ${orientacao.horaDefesa}` : '' }}
+            </Texto>
+          </div>
+          <Texto as="small" color="gray" v-if="orientacao.banca?.length">
+            Banca examinadora: {{ orientacao.banca.map((membro) => membro.instituicao ? `${membro.nome} (${membro.instituicao})` : membro.nome).join(', ') }}
+          </Texto>
+        </div>
+
+        <template v-if="orientacao.fases?.length">
+          <div class="flex items-start overflow-x-auto pb-[4px] mt-2">
+            <template v-for="(fase, index) in orientacao.fases" :key="fase._id || index">
+              <button
+                type="button"
+                :disabled="faseStatus(index) === 'locked'"
+                class="flex flex-col items-center gap-[4px] flex-shrink-0 w-[92px] md:w-[120px] group"
+                @click="abaSelecionada = index"
+              >
+                <span :class="noFaseClass(index)">
+                  <PhCheck v-if="faseStatus(index) === 'completed'" :size="18" class="fill-white" />
+                  <PhLockSimple v-else-if="faseStatus(index) === 'locked'" :size="16" class="fill-gray-400" />
+                  <span v-else class="text-white font-bold text-[13px]">{{ index + 1 }}</span>
+                </span>
+                <Texto
+                  as="small"
+                  class="text-center leading-tight line-clamp-2"
+                  :color="index === abaSelecionada ? 'principal' : 'gray'"
+                >
+                  {{ fase.nome }}
+                </Texto>
+              </button>
+              <div
+                v-if="index < orientacao.fases.length - 1"
+                class="flex-1 h-[2px] mt-[19px] min-w-[16px]"
+                :class="index < faseAtualIndex ? 'bg-principal' : 'bg-secundaria-opaco'"
+              ></div>
+            </template>
           </div>
 
           <div class="flex flex-col gap-[10px]">
@@ -227,13 +309,13 @@
               </span>
             </div>
 
-            <div v-if="abaSelecionada === 0" class="flex flex-col gap-[6px] border-t border-secundaria-opaco pt-[10px]">
-              <Texto as="body-bold" color="principal">Descrição da proposta</Texto>
+            <div v-if="abaSelecionada === 0 || souFaseTema" class="flex flex-col gap-[6px] border-t border-secundaria-opaco pt-[10px]">
+              <Texto as="body-bold" color="principal">{{ souFaseTema ? 'Tema do TCC' : 'Descrição da proposta' }}</Texto>
               <template v-if="!ehProfessor && !acoesSuspensas && faseSelecionada.situacao !== 'aprovada' && editandoDescricao">
                 <textarea
                   v-model="descricaoProposta"
                   rows="3"
-                  placeholder="Descreva sua ideia de TCC, referências, links úteis etc."
+                  :placeholder="souFaseTema ? 'Digite o tema final do TCC, que será usado no cartaz de divulgação.' : 'Descreva sua ideia de TCC, referências, links úteis etc.'"
                   class="w-full border border-principal focus:outline-principal p-[8px] rounded-md text-sm"
                 ></textarea>
                 <div class="flex items-center gap-[10px]">
@@ -243,7 +325,7 @@
                     @click="salvarDescricaoProposta"
                   >
                     <PhFloppyDisk :size="18" class="fill-white" />
-                    Salvar proposta
+                    {{ souFaseTema ? 'Salvar tema' : 'Salvar proposta' }}
                   </button>
                   <button
                     type="button"
@@ -256,14 +338,14 @@
               </template>
               <template v-else>
                 <div class="w-full border border-secundaria-opaco rounded-md p-[8px]">
-                  <Texto as="body" v-if="faseSelecionada.descricao">
-                    <template v-for="(parte, i) in linkify(faseSelecionada.descricao)" :key="i">
+                  <Texto as="body" v-if="souFaseTema ? temaAtual : faseSelecionada.descricao">
+                    <template v-for="(parte, i) in linkify(souFaseTema ? temaAtual : faseSelecionada.descricao)" :key="i">
                       <a v-if="parte.link" :href="parte.link" target="_blank" rel="noopener noreferrer" class="underline text-principal hover:text-principal-opaco break-all">{{ parte.texto }}</a>
                       <template v-else>{{ parte.texto }}</template>
                     </template>
                   </Texto>
                   <Texto as="label" color="gray" v-else>
-                    O aluno ainda não descreveu a proposta.
+                    {{ souFaseTema ? 'O aluno ainda não definiu o tema.' : 'O aluno ainda não descreveu a proposta.' }}
                   </Texto>
                 </div>
                 <button
@@ -365,25 +447,6 @@
                   Você pode enviar quantos arquivos quiser. A fase avança quando o orientador aprovar.
                 </Texto>
               </div>
-            </div>
-
-            <div
-              v-if="ehProfessor && abaSelecionada === orientacao.fases.length - 1 && faseSelecionada.situacao === 'aprovada'"
-              class="border border-terciaria rounded-md bg-terciaria/10 p-[12px] flex items-center justify-between flex-wrap gap-[8px]"
-            >
-              <div class="flex items-center gap-[8px]">
-                <PhFilePdf :size="20" class="fill-terciaria-opaco" />
-                <Texto as="body-bold" color="principal">
-                  TCC concluído! Prepare o cartaz de divulgação da defesa.
-                </Texto>
-              </div>
-              <button
-                type="button"
-                class="cursor-pointer flex items-center gap-[6px] px-[14px] py-[8px] bg-terciaria hover:bg-terciaria-opaco text-white rounded-md font-bold text-[13px]"
-                @click="openGerarCartaz = true"
-              >
-                Gerar cartaz de divulgação
-              </button>
             </div>
 
             <div class="flex flex-col gap-[8px] border-t border-secundaria-opaco pt-[10px]">
@@ -618,12 +681,13 @@ import { onMounted, onUnmounted, reactive, ref, computed, watch, defineAsyncComp
 import { useRoute, useRouter } from "vue-router";
 import {
   PhTrash, PhEye, PhCloudArrowUp, PhFilePdf, PhMagnifyingGlass,
-  PhCaretLeft, PhCheck, PhCheckCircle, PhLockSimple, PhLockSimpleOpen, PhX, PhPaperclip, PhPencilSimple, PhFloppyDisk, PhClock,
+  PhCaretLeft, PhCheck, PhCheckCircle, PhLockSimple, PhLockSimpleOpen, PhX, PhPaperclip, PhPencilSimple, PhFloppyDisk, PhClock, PhVideoCamera,
 } from '@phosphor-icons/vue';
 import Texto from '@components/Texto.vue';
 const PdfViewer = defineAsyncComponent(() => import("../../components/pdfViewer.vue"));
 import RespostaOrientacao from './RespostaOrientacao.vue';
 import GerarCartaz from './GerarCartaz.vue';
+import Videochamada from './Videochamada.vue';
 import api from "@/api.js";
 import { popupInfo, formatMask } from '../../stores/util.js';
 import { useLoaderState } from "../../stores/isLoading.js";
@@ -639,6 +703,7 @@ const route = useRoute();
 const router = useRouter();
 const openNegarOrientacao = ref(false);
 const openGerarCartaz = ref(false);
+const openVideochamada = ref(false);
 const recusandoCancelamento = ref(false);
 const motivoRecusaCancelamento = ref('');
 const isLoading = useLoaderState();
@@ -702,6 +767,16 @@ const comentarioEdicaoTexto = ref('');
 const abaSelecionada = ref(0);
 
 const faseSelecionada = computed(() => orientacao.fases[abaSelecionada.value] || {});
+// o aluno define o tema na Pré-defesa e ainda pode ajustar na Versão final
+// (antes do cartaz ser gerado de vez). Guarda sempre na descrição da
+// Pré-defesa — a aba de Versão final é só outra porta de entrada pro mesmo
+// campo, não um tema separado.
+const indiceFaseTema = computed(() => orientacao.fases.findIndex((f) => f.nome === 'Pré-defesa'));
+const souFaseTema = computed(() => {
+  const fase = orientacao.fases?.[abaSelecionada.value];
+  return fase?.nome === 'Pré-defesa' || abaSelecionada.value === orientacao.fases.length - 1;
+});
+const temaAtual = computed(() => orientacao.fases?.[indiceFaseTema.value]?.descricao || '');
 
 const prazoEditando = ref('');
 const editandoPrazo = ref(false);
@@ -713,7 +788,7 @@ const editandoDescricao = ref(false);
 watch(abaSelecionada, () => {
   const fase = faseSelecionada.value;
   prazoEditando.value = fase?.prazo ? formatMask.date(fase.prazo) : '';
-  descricaoProposta.value = fase?.descricao || '';
+  descricaoProposta.value = souFaseTema.value ? temaAtual.value : (fase?.descricao || '');
   editandoPrazo.value = false;
   editandoDescricao.value = false;
 }, { immediate: true });
@@ -735,6 +810,13 @@ const faseAtualIndex = computed(() => {
 
 const podeSolicitarCancelamento = computed(() => faseAtualIndex.value <= 1);
 
+const tccConcluido = computed(() => !!orientacao.fases?.length && faseAtualIndex.value === orientacao.fases.length);
+
+const ehDiaDaDefesa = computed(() => {
+  if (!orientacao.dataDefesa) return false;
+  return formatMask.date(orientacao.dataDefesa) === formatMask.date(new Date());
+});
+
 const cancelamentoSolicitadoPorMim = computed(() => {
   const solicitadoPor = orientacao.cancelamento?.solicitadoPor;
   return (solicitadoPor === 'aluno' && !ehProfessor.value) || (solicitadoPor === 'professor' && ehProfessor.value);
@@ -746,17 +828,17 @@ function faseStatus(index) {
   return 'locked';
 }
 
-function abaClass(index) {
+function noFaseClass(index) {
   const status = faseStatus(index);
-  const base = 'flex items-center justify-center gap-[6px] px-[10px] py-[10px] rounded-md border font-bold text-[13px] transition-all ';
-  let cor = 'bg-secundaria border-secundaria-opaco text-gray-400 cursor-not-allowed';
-  if (status === 'completed') cor = 'bg-principal border-principal-opaco text-white hover:bg-principal-opaco';
+  const base = 'w-[36px] h-[36px] rounded-full flex items-center justify-center flex-shrink-0 transition-all ';
+  let cor = 'bg-secundaria border-2 border-secundaria-opaco cursor-not-allowed';
+  if (status === 'completed') cor = 'bg-principal border-2 border-principal cursor-pointer';
   if (status === 'current') {
     cor = faseAtrasada(index)
-      ? 'bg-red-600 border-red-700 text-white shadow-md hover:bg-red-700'
-      : 'bg-terciaria border-terciaria-opaco text-white shadow-md hover:bg-terciaria-opaco';
+      ? 'bg-red-600 border-2 border-red-700 shadow-md cursor-pointer'
+      : 'bg-terciaria border-2 border-terciaria shadow-md cursor-pointer';
   }
-  const selecionada = index === abaSelecionada.value ? ' ring-2 ring-offset-1 ring-principal' : '';
+  const selecionada = index === abaSelecionada.value ? ' ring-2 ring-offset-2 ring-principal' : '';
   return base + cor + selecionada;
 }
 
@@ -958,13 +1040,14 @@ async function removerComentario(faseIndex, comentarioId) {
 }
 
 function iniciarEdicaoDescricao() {
-  descricaoProposta.value = faseSelecionada.value?.descricao || '';
+  descricaoProposta.value = souFaseTema.value ? temaAtual.value : (faseSelecionada.value?.descricao || '');
   editandoDescricao.value = true;
 }
 
 async function salvarDescricaoProposta() {
   isLoading.changeStateTrue();
-  await api.put(`/orientacao/${orientacao._id}/fases/${abaSelecionada.value}/descricao`, {
+  const indiceDestino = souFaseTema.value ? indiceFaseTema.value : abaSelecionada.value;
+  await api.put(`/orientacao/${orientacao._id}/fases/${indiceDestino}/descricao`, {
     descricao: descricaoProposta.value,
   })
     .then(async (res) => {
@@ -1153,7 +1236,20 @@ async function verificarMudancasFase() {
             .forEach((arquivo) => notificarNovoArquivo(fase, arquivo));
         }
       });
-      Object.assign(orientacao, res.data.orientacao);
+      const dadosNovos = { ...res.data.orientacao };
+      if (openGerarCartaz.value) {
+        // ponytail: enquanto o cartaz está aberto, não sobrescreve os campos
+        // que o formulário edita — senão o poll apaga o que a pessoa digitou.
+        delete dadosNovos.tema;
+        delete dadosNovos.coorientador;
+        delete dadosNovos.dataDefesa;
+        delete dadosNovos.horaDefesa;
+        delete dadosNovos.local;
+        delete dadosNovos.presencial;
+        delete dadosNovos.link;
+        delete dadosNovos.banca;
+      }
+      Object.assign(orientacao, dadosNovos);
     })
     .catch(() => {});
 }

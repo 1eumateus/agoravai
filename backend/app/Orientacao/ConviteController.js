@@ -24,7 +24,7 @@ async function gerarConvite (req, res) {
         doc.moveDown ();
         doc.moveDown ();
         doc.fontSize (16).text (`${form.tema}`, { align: 'center' });
-        doc.fontSize (16).text (`${form.aluno.nome} ${form.aluno.sobrenome}`, { align: 'center' });
+        doc.fontSize (16).text (`${form.aluno.nome} ${form.aluno.sobrenome}${form.aluno.instituicao ? ` (${form.aluno.instituicao})` : ''}`, { align: 'center' });
         doc.moveDown ();
         doc.moveDown ();
         doc.fontSize (16).text (`BANCA EXAMINADORA:`, { align: 'center', lineGap: 4 });

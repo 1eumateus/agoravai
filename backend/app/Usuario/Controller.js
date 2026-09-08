@@ -107,9 +107,28 @@ async function listarProfessores (req, res) {
             filtro.interesse = { $regex: procurarInteresse, $options: "i" } 
         }
         const item = await Model.aggregate ([
-            { $match: filtro },  
+            { $match: filtro },
             {
-                $project: {    
+                $lookup: {
+                    from: 'orientacaos',
+                    let: { profId: '$_id' },
+                    pipeline: [
+                        { $match: { $expr: { $and: [
+                            { $eq: ['$professor', '$$profId'] },
+                            { $eq: ['$situacao', 'concluido'] },
+                        ] } } },
+                        { $count: 'total' },
+                    ],
+                    as: 'historicoConcluido',
+                },
+            },
+            {
+                $addFields: {
+                    totalOrientados: { $ifNull: [{ $arrayElemAt: ['$historicoConcluido.total', 0] }, 0] },
+                },
+            },
+            {
+                $project: {
                     _id: 1,
                     nome: 1,
                     sobrenome: 1,
@@ -120,6 +139,7 @@ async function listarProfessores (req, res) {
                     imagem: 1,
                     formacao: 1,
                     email: 1,
+                    totalOrientados: 1,
                 }
             },
             {

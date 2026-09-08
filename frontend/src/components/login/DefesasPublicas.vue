@@ -26,6 +26,9 @@
                     {{ formatMask.viewDate (defesa.dataDefesa) }} às {{ defesa.horaDefesa }}
                 </Texto>
             </div>
+            <Texto as="small" color="gray" v-if="defesa.banca?.length">
+                Banca examinadora: {{ defesa.banca.map((membro) => membro.instituicao ? `${membro.nome} (${membro.instituicao})` : membro.nome).join(', ') }}
+            </Texto>
             <div class="flex items-center gap-[4px]" v-if="defesa.presencial && defesa.local">
                 <PhMapPin :size="16" class="fill-gray-600" />
                 <Texto as="small" color="gray">
@@ -38,6 +41,19 @@
                     Acessar defesa online
                 </a>
             </div>
+            <button
+                v-else-if="!defesa.presencial"
+                type="button"
+                :class="[
+                    'cursor-pointer w-fit flex items-center gap-[6px] mt-[4px] px-[10px] py-[6px] rounded-md font-bold text-[11px] uppercase',
+                    defesa.chamadaAoVivo?.ativa ? 'bg-red-600 hover:bg-red-700 text-white' : 'border border-principal text-principal hover:bg-secundaria',
+                ]"
+                @click="entrarAoVivo(defesa)"
+            >
+                <span v-if="defesa.chamadaAoVivo?.ativa" class="w-[8px] h-[8px] rounded-full bg-white animate-pulse"></span>
+                <PhVideoCamera v-else :size="14" />
+                {{ defesa.chamadaAoVivo?.ativa ? 'Ao vivo — entrar na defesa' : 'Acessar defesa online' }}
+            </button>
         </div>
     </section>
 </template>
@@ -47,7 +63,7 @@ import { PhCalendarBlank, PhClock, PhMapPin, PhVideoCamera } from '@phosphor-ico
 import { onMounted, ref } from "vue";
 import Texto from '@components/Texto.vue';
 import api from "@/api.js";
-import { formatMask } from '@/stores/util.js';
+import { formatMask, popupInfo } from '@/stores/util.js';
 
 const defesas = ref ([]);
 
@@ -58,6 +74,17 @@ async function start () {
         })
         .catch ((e) => {
             console.log (e);
+        });
+}
+
+async function entrarAoVivo (defesa) {
+    await api.post (`/orientacao/${defesa._id}/videochamada/token/publico`)
+        .then ((res) => {
+            const { token, roomName, appId } = res.data;
+            window.open (`https://8x8.vc/${appId}/${roomName}?jwt=${token}#config.startWithAudioMuted=true`, '_blank');
+        })
+        .catch ((e) => {
+            popupInfo ().warning (e?.response?.data?.msg || 'Erro ao entrar na defesa ao vivo.');
         });
 }
 
