@@ -20,17 +20,6 @@
             </router-link>
         </section>
 
-        <div class="hidden md:flex flex-1 max-w-md relative" v-if="user.tipo === 'aluno' || user.tipo === 'professor'">
-            <PhMagnifyingGlass :size="18" class="fill-white opacity-70 absolute left-[10px] top-1/2 -translate-y-1/2" />
-            <input
-                v-model="buscaProfessor"
-                type="text"
-                :placeholder="user.tipo === 'professor' ? 'Buscar aluno...' : 'Buscar professor...'"
-                class="w-full pl-[34px] pr-[10px] py-[8px] rounded-md bg-principal-opaco text-white placeholder-white/60 border border-terciaria/40 focus:outline-none focus:border-terciaria text-sm"
-                @keyup.enter="buscarProfessor"
-            />
-        </div>
-
         <section class="flex items-center gap-[16px]">
             <dropdown-menu mode="click" :overlay="false" v-if="user.tipo !== 'admin'">
                 <template #trigger>
@@ -143,30 +132,20 @@
 </template>
 
 <script setup>
-import { PhGear, PhBell, PhMagnifyingGlass, PhWarning } from '@phosphor-icons/vue';
+import { PhGear, PhBell, PhWarning } from '@phosphor-icons/vue';
 import Texto from '@components/Texto.vue'
 import dropdownMenu from 'v-dropdown-menu';
-import { reactive, ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { reactive, computed, onMounted, onUnmounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import api from '@/api.js';
 import { formatMask } from '@/stores/util.js';
 
 const props = defineProps(["user"]);
 const route = useRoute();
-const router = useRouter();
 const urlApi = import.meta.env.VITE_URL;
 
 const orientacoesComNotificacao = reactive([]);
-const buscaProfessor = ref('');
 const naoLidasCount = computed(() => orientacoesComNotificacao.filter(ehNaoLida).length);
-
-watch(() => route.query.procurar, (valor) => {
-    buscaProfessor.value = valor || '';
-}, { immediate: true });
-
-function buscarProfessor() {
-    router.push({ name: 'Home', query: { procurar: buscaProfessor.value || undefined } });
-}
 
 function nomeCompleto(pessoa) {
     return `${pessoa?.nome || ''} ${pessoa?.sobrenome || ''}`.trim();
@@ -187,6 +166,9 @@ function resumoNotificacao(detalhe) {
     }
     if (detalhe.tipo === 'aprovacao') {
         return `O orientador aprovou a fase "${detalhe.fase}".`;
+    }
+    if (detalhe.tipo === 'confirmacao') {
+        return 'O orientador aceitou sua solicitação de orientação! 🎉';
     }
     if (detalhe.tipo === 'cancelamento-resposta') {
         return detalhe.texto.aceito

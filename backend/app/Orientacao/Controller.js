@@ -28,9 +28,11 @@ async function listar (req, res) {
                     aluno: 1,
                     ativo: 1,
                     situacao: 1,
+                    confirmadoEm: 1,
                     proposta: 1,
                     resposta:1,
                     coorientador: 1,
+                    tema: 1,
                     dataDefesa: 1,
                     horaDefesa: 1,
                     dataCriacao: 1,
@@ -80,6 +82,15 @@ async function listar (req, res) {
             o.notificacaoDetalhe = atividade?.detalhe || null;
             o.notificacaoLida = atividade ? atividade.lida : true;
             o.notificacao = atividade ? !atividade.lida : false;
+            const faseEmAndamentoIndex = (o.fases || []).findIndex ((f) => f.situacao !== 'aprovada');
+            const faseEmAndamento = faseEmAndamentoIndex === -1 ? null : o.fases [faseEmAndamentoIndex];
+            o.faseAtual = faseEmAndamento ? { nome: faseEmAndamento.nome, prazo: faseEmAndamento.prazo } : null;
+            // mesma regra do CancelamentoController: só até a fase de Desenvolvimento (índice <= 1).
+            const indiceFase = faseEmAndamentoIndex === -1 ? (o.fases?.length || 0) : faseEmAndamentoIndex;
+            o.podeSolicitarCancelamento = indiceFase <= 1;
+            // rascunho do tema (definido pelo aluno na Pré-defesa) — mostra na
+            // vitrine/tela de orientações mesmo antes do professor gerar o cartaz.
+            o.temaRascunho = (o.fases || []).find ((f) => f.nome === 'Pré-defesa')?.descricao || '';
             delete o.fases;
             delete o.ultimaVisualizacaoAluno;
             delete o.ultimaVisualizacaoProfessor;
@@ -167,6 +178,9 @@ async function historico (req, res) {
 
 function atividadeMaisRecente (orientacao, userTipo) {
     let maisRecente = null;
+    if (userTipo === 'aluno' && orientacao.situacao === 'confirmado' && orientacao.confirmadoEm) {
+        maisRecente = { tipo: 'confirmacao', texto: '', fase: '', data: new Date (orientacao.confirmadoEm) };
+    }
     for (const fase of orientacao.fases || []) {
         if (userTipo === 'professor') {
             for (const arquivo of fase.arquivos || []) {
@@ -307,6 +321,9 @@ async function alterarSituacao (req, res) {
             }
             orientacao.situacao = req.body.situacao;
             orientacao.resposta = req.body.resposta;
+            if (req.body.situacao === 'confirmado') {
+                orientacao.confirmadoEm = new Date ();
+            }
             msg = 'Resposta enviada.'
         }
         if (userTipo === 'aluno') {
@@ -318,6 +335,14 @@ async function alterarSituacao (req, res) {
             msg = 'Pedido de orientação cancelada.'
         }
         await orientacao.save ();
+        if (userTipo === 'professor' && req.body.situacao === 'confirmado') {
+            // o aluno pode ter solicitado orientação a vários professores ao mesmo
+            // tempo — ao ser aceito por um, as outras solicitações pendentes caem.
+            await Model.updateMany (
+                { ativo: true, aluno: orientacao.aluno, situacao: 'pendente', _id: { $ne: orientacao._id } },
+                { $set: { ativo: false, situacao: 'cancelado', resposta: 'Cancelado automaticamente: você foi aceito por outro professor.' } }
+            );
+        }
         return res.status (200).json ({msg: msg});
     } catch (error) {
         return res.status (400).json ({msg: 'Erro ao cancelar orientação.'});
@@ -395,7 +420,7 @@ async function pegarPorId (req, res) {
                     foreignField: '_id',
                     as: 'aluno',
                     pipeline: [
-                        { $project: { nome: 1, sobrenome: 1, email: 1, imagem: 1, _id: 1 } }
+                        { $project: { nome: 1, sobrenome: 1, email: 1, imagem: 1, instituicao: 1, _id: 1 } }
                     ]
                 },
             },
@@ -430,7 +455,9 @@ async function pegarPorId (req, res) {
 
 async function listarPublicas (req, res) {
     try {
-        const filtro = { ativo: true, situacao: 'confirmado', dataDefesa: { $gte: new Date () } };
+        const inicioDoDia = new Date ();
+        inicioDoDia.setHours (0, 0, 0, 0);
+        const filtro = { ativo: true, situacao: 'confirmado', dataDefesa: { $gte: inicioDoDia } };
         const item = await Model.aggregate ([
             { $match: filtro },
             { $sort: { dataDefesa: 1, horaDefesa: 1 } },
@@ -456,7 +483,7 @@ async function listarPublicas (req, res) {
             { $unwind: { path: '$professor', preserveNullAndEmptyArrays: true } },
             {
                 $project: {
-                    _id: 0,
+                    _id: 1,
                     tema: 1,
                     aluno: 1,
                     professor: 1,
@@ -467,6 +494,7 @@ async function listarPublicas (req, res) {
                     local: 1,
                     presencial: 1,
                     link: 1,
+                    chamadaAoVivo: 1,
                 }
             },
         ]);

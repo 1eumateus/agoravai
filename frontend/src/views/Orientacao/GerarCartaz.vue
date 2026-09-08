@@ -14,6 +14,13 @@
                 </button>
             </div>
 
+            <div class="border border-secundaria-opaco rounded-md bg-secundaria p-[12px] flex items-center gap-[8px]" v-if="!form.presencial">
+                <PhVideoCamera :size="20" class="fill-principal flex-shrink-0" />
+                <Texto as="body" color="gray">
+                    A defesa será transmitida automaticamente pela plataforma quando o orientador iniciar a videochamada — não precisa informar link.
+                </Texto>
+            </div>
+
             <div class="grid grid-cols-2 md:grid-cols-12 gap-[12px] items-end">
                 <div class="col-span-1 md:col-span-6 lg:col-span-6">
                     <Campo
@@ -70,17 +77,6 @@
                         type="text"
                         :obrigatorio="false"
                         placeholder="ex.: R. Augusto Corrêa, 01 - Guamá"
-                        :maxLength="200"
-                    />
-                </div>
-                <div class="col-span-2 md:col-span-12 lg:col-span-12" v-else>
-                    <Campo
-                        v-model="form.link"
-                        label="Local virtual (link)"
-                        id="link"
-                        type="text"
-                        :obrigatorio="false"
-                        placeholder="ex.: https://meet.google.com/"
                         :maxLength="200"
                     />
                 </div>
@@ -209,7 +205,7 @@
 </template>
 
 <script setup>
-import { PhTrash, PhPencilSimple, PhX } from '@phosphor-icons/vue';
+import { PhTrash, PhPencilSimple, PhX, PhVideoCamera } from '@phosphor-icons/vue';
 import Texto from '@components/Texto.vue'
 import Campo from '@components/Campo.vue'
 import { reactive, ref } from "vue";
@@ -233,6 +229,14 @@ const participanteBanca = reactive({
     instituicao: '',
 })
 const editandoParticipante = ref(-1);
+
+// ponytail: o aluno define o tema na fase de Pré-defesa (editável até a
+// Versão final); se o professor ainda não digitou um tema aqui, puxa de lá
+// pra não retrabalhar.
+if (!props.form.tema?.trim()) {
+    const temaDoAluno = props.form.fases?.find((f) => f.nome === 'Pré-defesa')?.descricao;
+    if (temaDoAluno?.trim()) props.form.tema = temaDoAluno;
+}
 
 function removerParticipante(index){
     props.form.banca.splice(index, 1);
@@ -288,8 +292,22 @@ async function gerarConvite(){
     if(props.form.banca.length<2){
         return popupInfo().warning('Informe ao menos 2 examinadores.');
     }
+    if (props.form.link?.trim() && !props.form.link?.startsWith('https://')) {
+        return popupInfo().warning('Informe um link válido.');
+    }
 
     isLoading.changeStateTrue()
+    // ponytail: gerar o cartaz precisa salvar antes — senão a defesa fica
+    // com data/tema atualizados só no PDF, sem aparecer na vitrine pública.
+    const salvouAntes = await api.put(`/orientacao/editar`, props.form)
+        .then(() => true)
+        .catch((e) => {
+            popupInfo().warning(e?.response?.data?.msg || e);
+            return false;
+        });
+    if (!salvouAntes) {
+        return isLoading.changeStateFalse();
+    }
     await api.post(`/orientacao/gerarConvite`, props.form, {
         responseType: 'blob'
     })

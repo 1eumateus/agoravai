@@ -19,93 +19,170 @@
                     {{ mostrarHistorico ? 'Ver ativas' : 'Ver histórico' }}
                 </button>
             </div>
-            <div class="flex flex-col" v-if="!mostrarHistorico && props?.usuario?.tipo === 'aluno'">
-                <Texto as="body" color="gray" v-if="linhasExibidas.length === 0">
-                    Nenhuma solicitação de orientação ainda.
-                </Texto>
-                <div
-                    v-for="item in linhasExibidas"
-                    :key="item._id"
-                    class="flex items-center gap-[10px] py-[10px] border-b border-secundaria last:border-b-0"
-                >
-                    <div class="relative flex-shrink-0">
-                        <img
-                            v-if="item.professor?.imagem?.filename"
-                            :src="`${urlApi}/uploads/${item.professor.imagem.filename}`"
-                            :alt="item.professor.imagem.originalname"
-                            class="h-[44px] w-[44px] object-cover rounded-full border border-secundaria-opaco"
-                        />
-                        <img
-                            v-else
-                            :src="`/ui/Sem_imagem.jpg`"
-                            :alt="'sem imagem'"
-                            class="h-[44px] w-[44px] object-cover rounded-full border border-secundaria-opaco"
-                        />
-                        <span :class="`absolute -bottom-[2px] -right-[2px] w-[18px] h-[18px] rounded-full flex items-center justify-center border-2 border-white ${situacaoBadgeClass(item.situacao)}`">
-                            <PhCheck v-if="item.situacao === 'confirmado'" :size="11" class="fill-white" />
-                            <PhClock v-else-if="item.situacao === 'pendente'" :size="11" class="fill-white" />
-                            <PhX v-else :size="11" class="fill-white" />
-                        </span>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <Texto as="body">
-                            <b>{{ item.professor?.nome }} {{ item.professor?.sobrenome }}</b> {{ mensagemFeed(item.situacao) }}
+            <div class="flex flex-col gap-[8px]" v-if="!mostrarHistorico && props?.usuario?.tipo === 'aluno'">
+                <div v-if="linhasExibidas.length === 0" class="flex flex-col items-center gap-[6px] py-[24px]">
+                    <PhUsersThree :size="32" class="fill-secundaria-opaco" />
+                    <Texto as="body" color="gray">
+                        Nenhuma solicitação de orientação ainda.
+                    </Texto>
+                </div>
+                <div class="flex gap-[12px] overflow-x-auto pb-[6px]" v-else>
+                    <div
+                        v-for="item in linhasExibidas"
+                        :key="item._id"
+                        class="relative flex-shrink-0 w-[250px] flex flex-col gap-[8px] bg-white border border-secundaria-opaco rounded-md p-[12px] shadow-sm hover:shadow-md transition-shadow"
+                    >
+                        <span :class="`absolute left-0 top-[10px] bottom-[10px] w-[3px] rounded-r-[3px] ${situacaoBadgeClass(item.situacao)}`"></span>
+                        <div class="flex items-center gap-[8px] pl-[8px]">
+                            <img
+                                v-if="item.professor?.imagem?.filename"
+                                :src="`${urlApi}/uploads/${item.professor.imagem.filename}`"
+                                :alt="item.professor.imagem.originalname"
+                                class="h-[32px] w-[32px] object-cover rounded-full border border-secundaria-opaco flex-shrink-0"
+                            />
+                            <img
+                                v-else
+                                :src="`/ui/Sem_imagem.jpg`"
+                                :alt="'sem imagem'"
+                                class="h-[32px] w-[32px] object-cover rounded-full border border-secundaria-opaco flex-shrink-0"
+                            />
+                            <div class="min-w-0 flex-1">
+                                <Texto as="label" class="truncate font-bold">{{ item.professor?.nome }} {{ item.professor?.sobrenome }}</Texto>
+                                <Texto as="small" color="gray" class="normal-case font-normal truncate">
+                                    {{ item.tema?.trim() || item.temaRascunho?.trim() || 'orientador(a)' }}
+                                </Texto>
+                            </div>
+                            <span
+                                v-if="item.situacao !== 'pendente'"
+                                :class="`flex-shrink-0 whitespace-nowrap self-start text-[9px] font-bold uppercase tracking-wide px-[7px] py-[2px] rounded-full ${situacaoClass(item.situacao)}`"
+                            >
+                                {{ situacaoPillLabel(item.situacao) }}
+                            </span>
+                        </div>
+                        <Texto as="label" class="pl-[8px]">
+                            {{ mensagemFeed(item.situacao) }}
                         </Texto>
-                        <Texto as="small" color="gray">
+                        <Texto as="small" color="gray" class="pl-[8px] normal-case font-normal">
                             {{ item.dataCriacao ? formatMask.viewDate(item.dataCriacao) : '' }}
                         </Texto>
+                        <div class="flex items-center gap-[6px] pl-[8px] mt-auto pt-[2px]">
+                            <button
+                                type="button"
+                                :onClick="()=> cancelarPedido(item)"
+                                class="cursor-pointer flex items-center gap-[4px] px-[10px] py-[6px] border border-red-300 text-red-600 hover:bg-red-50 rounded-md font-bold text-[12px]"
+                                v-if="item.situacao === 'pendente'"
+                            >
+                                <PhX :size="14" />
+                                Cancelar pedido
+                            </button>
+                            <router-link
+                                :to="`/ui/acompanhamento/${item._id}`"
+                                class="cursor-pointer flex items-center gap-[4px] px-[10px] py-[6px] bg-terciaria text-white hover:bg-terciaria-opaco rounded-md font-bold text-[12px]"
+                                v-if="item.situacao === 'confirmado'"
+                            >
+                                <PhChartLineUp :size="14" />
+                                Acompanhar
+                                <span v-if="item.notificacao" class="w-[7px] h-[7px] rounded-full bg-red-500 border border-white"></span>
+                            </router-link>
+                            <router-link
+                                :to="`/ui/acompanhamento/${item._id}`"
+                                v-if="item.situacao === 'confirmado' && item.cancelamento?.solicitadoPor === 'aluno' && !item.cancelamento?.resposta?.data"
+                                class="cursor-pointer text-[11px] font-bold px-[10px] py-[6px] rounded-md bg-orange-100 text-orange-700 hover:bg-orange-200"
+                            >
+                                Cancelamento solicitado
+                            </router-link>
+                            <router-link
+                                :to="`/ui/acompanhamento/${item._id}`"
+                                v-else-if="item.situacao === 'confirmado' && item.cancelamento?.solicitadoPor === 'professor' && !item.cancelamento?.resposta?.data"
+                                class="cursor-pointer text-[11px] font-bold px-[10px] py-[6px] rounded-md bg-orange-100 text-orange-700 hover:bg-orange-200"
+                            >
+                                Orientador solicitou cancelamento
+                            </router-link>
+                            <button
+                                type="button"
+                                :onClick="()=> cancelarPedido(item)"
+                                class="cursor-pointer flex items-center gap-[4px] px-[10px] py-[6px] border border-red-300 text-red-600 hover:bg-red-50 rounded-md font-bold text-[12px]"
+                                v-else-if="item.situacao === 'confirmado' && item.podeSolicitarCancelamento"
+                            >
+                                <PhX :size="14" />
+                                Cancelar
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-[6px] flex-shrink-0">
-                        <button
-                            type="button"
-                            :onClick="()=> cancelarPedido(item)"
-                            class="cursor-pointer flex items-center gap-[4px] px-[10px] py-[6px] border border-red-300 text-red-600 hover:bg-red-50 rounded-md font-bold text-[13px]"
-                            v-if="item.situacao === 'pendente'"
-                        >
-                            <PhTrash :size="16" />
-                            Deletar
-                        </button>
-                        <router-link
-                            :to="`/ui/acompanhamento/${item._id}`"
-                            class="cursor-pointer flex items-center gap-[4px] px-[10px] py-[6px] bg-terciaria text-white hover:bg-terciaria-opaco rounded-md font-bold text-[13px]"
-                            v-if="item.situacao === 'confirmado'"
-                        >
-                            <PhChartLineUp :size="16" />
-                            Acompanhar
-                            <span v-if="item.notificacao" class="w-[8px] h-[8px] rounded-full bg-red-500 border border-white"></span>
-                        </router-link>
-                        <router-link
-                            :to="`/ui/acompanhamento/${item._id}`"
-                            v-if="item.situacao === 'confirmado' && item.cancelamento?.solicitadoPor === 'aluno' && !item.cancelamento?.resposta?.data"
-                            class="cursor-pointer text-xs font-bold px-[10px] py-[6px] rounded-md bg-orange-100 text-orange-700 hover:bg-orange-200"
-                        >
-                            Cancelamento solicitado
-                        </router-link>
-                        <router-link
-                            :to="`/ui/acompanhamento/${item._id}`"
-                            v-else-if="item.situacao === 'confirmado' && item.cancelamento?.solicitadoPor === 'professor' && !item.cancelamento?.resposta?.data"
-                            class="cursor-pointer text-xs font-bold px-[10px] py-[6px] rounded-md bg-orange-100 text-orange-700 hover:bg-orange-200"
-                        >
-                            Orientador solicitou cancelamento — responda em Acompanhar
-                        </router-link>
-                        <button
-                            type="button"
-                            :onClick="()=> cancelarPedido(item)"
-                            class="cursor-pointer flex items-center gap-[4px] px-[10px] py-[6px] border border-red-300 text-red-600 hover:bg-red-50 rounded-md font-bold text-[13px]"
-                            v-else-if="item.situacao === 'confirmado'"
-                        >
-                            <PhX :size="16" />
-                            Solicitar cancelamento
-                        </button>
+                </div>
+            </div>
+            <div class="flex flex-col gap-[8px]" v-else-if="!mostrarHistorico && props?.usuario?.tipo === 'professor'">
+                <div v-if="linhasExibidas.length === 0" class="flex flex-col items-center gap-[6px] py-[24px]">
+                    <PhUsersThree :size="32" class="fill-secundaria-opaco" />
+                    <Texto as="body" color="gray">
+                        Nenhum pedido de orientação pendente.
+                    </Texto>
+                </div>
+                <div class="flex gap-[12px] overflow-x-auto pb-[6px]">
+                    <div
+                        v-for="(item, index) in linhasExibidas"
+                        :key="item._id"
+                        class="relative flex-shrink-0 w-[250px] flex flex-col gap-[8px] bg-white border border-secundaria-opaco rounded-md p-[12px] shadow-sm hover:shadow-md transition-shadow"
+                    >
+                        <span class="absolute left-0 top-[10px] bottom-[10px] w-[3px] rounded-r-[3px] bg-orange-500"></span>
+                        <div class="flex items-center gap-[8px] pl-[8px]">
+                            <img
+                                v-if="item.aluno?.imagem?.filename"
+                                :src="`${urlApi}/uploads/${item.aluno.imagem.filename}`"
+                                :alt="item.aluno.imagem.originalname"
+                                class="h-[32px] w-[32px] object-cover rounded-full border border-secundaria-opaco flex-shrink-0"
+                            />
+                            <img
+                                v-else
+                                :src="`/ui/Sem_imagem.jpg`"
+                                :alt="'sem imagem'"
+                                class="h-[32px] w-[32px] object-cover rounded-full border border-secundaria-opaco flex-shrink-0"
+                            />
+                            <div class="min-w-0 flex-1">
+                                <Texto as="label" class="truncate font-bold">{{ item.aluno?.nome }} {{ item.aluno?.sobrenome }}</Texto>
+                                <Texto as="small" color="gray" class="normal-case font-normal">quer sua orientação</Texto>
+                            </div>
+                            <span
+                                v-if="index === 0"
+                                title="Aguardando resposta há mais tempo"
+                                class="flex-shrink-0 flex items-center gap-[3px] text-[9px] font-bold uppercase tracking-wide px-[7px] py-[2px] rounded-full bg-orange-100 text-orange-700"
+                            >
+                                <PhClock :size="10" class="fill-orange-700" />
+                                +antigo
+                            </span>
+                        </div>
+                        <Texto as="label" class="pl-[8px] line-clamp-2 italic">
+                            "{{ item.proposta?.trim() || 'Sem proposta escrita.' }}"
+                        </Texto>
+                        <Texto as="small" color="gray" class="pl-[8px] normal-case font-normal">
+                            {{ item.dataCriacao ? formatMask.viewDate(item.dataCriacao) : '' }}
+                        </Texto>
+                        <div class="flex items-center gap-[6px] pl-[8px] mt-auto pt-[2px]">
+                            <router-link
+                                :to="`/ui/orientacao/${item._id}`"
+                                class="cursor-pointer flex items-center gap-[4px] px-[10px] py-[6px] border border-principal text-principal hover:bg-secundaria rounded-md font-bold text-[12px]"
+                            >
+                                <PhInfo :size="14" />
+                                Detalhes
+                            </router-link>
+                            <button
+                                type="button"
+                                :onClick="()=> responderOrientacao(item, 'confirmado')"
+                                class="cursor-pointer flex items-center gap-[4px] px-[10px] py-[6px] bg-green-600 hover:bg-green-700 text-white rounded-md font-bold text-[12px]"
+                            >
+                                <PhCheck :size="14" />
+                                Confirmar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="flex flex-col" v-else-if="mostrarHistorico">
-                <Texto as="body" color="gray" v-if="historicoItens.length === 0">
-                    Nenhuma orientação no histórico ainda.
+                <Texto as="body" color="gray" v-if="historicoExibido.length === 0">
+                    {{ filtroExterno === 'concluido' ? 'Nenhuma orientação concluída ainda.' : 'Nenhuma orientação no histórico ainda.' }}
                 </Texto>
                 <div
-                    v-for="item in historicoItens"
+                    v-for="item in historicoExibido"
                     :key="item._id"
                     class="flex items-center gap-[12px] py-[12px] border-b border-secundaria last:border-b-0"
                 >
@@ -122,7 +199,7 @@
                             {{ historicoResumo(item) }}
                         </Texto>
                         <Texto as="small" color="gray">
-                            {{ item.dataCriacao ? formatMask.viewDate(item.dataCriacao) : '' }}
+                            {{ historicoData(item) }}
                         </Texto>
                     </div>
                     <span :class="`text-xs font-bold px-[10px] py-[3px] rounded-full flex-shrink-0 ${situacaoClass(item.situacao)}`">
@@ -190,15 +267,6 @@
                             <td class="p-[10px]">
                                 <div class="flex flex-col gap-[6px] min-w-[170px]">
                                     <button
-                                            type="button"
-                                            :onClick="()=> cancelarPedido(orientacao)"
-                                            class="cursor-pointer w-full flex items-center justify-center gap-[6px] px-[10px] py-[6px] border border-red-300 text-red-600 hover:bg-red-50 rounded-md font-bold text-[13px]"
-                                            v-if="props.usuario.tipo === 'aluno'"
-                                        >
-                                        <PhTrash :size="16" />
-                                        Deletar
-                                    </button>
-                                    <button
                                         type="button"
                                         :onClick="()=> responderOrientacao(orientacao, 'confirmado')"
                                         v-if="props.usuario.tipo === 'professor' && orientacao.situacao !== 'confirmado'"
@@ -238,9 +306,9 @@
 </template>
 
 <script setup>
-import { PhUsersThree, PhTrash, PhCheck, PhInfo, PhChartLineUp, PhClock, PhX, PhCheckCircle, PhXCircle, PhProhibit } from '@phosphor-icons/vue'
+import { PhUsersThree, PhCheck, PhInfo, PhChartLineUp, PhClock, PhX, PhCheckCircle, PhXCircle, PhProhibit } from '@phosphor-icons/vue'
 import Texto from '@components/Texto.vue'
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import api from "@/api.js";
 import { popupInfo, formatMask } from '../../stores/util.js';
 import RespostaOrientacao from './RespostaOrientacao.vue';
@@ -257,9 +325,13 @@ const props = defineProps({
         type: [Object],
         required: false,
     },
+    filtroExterno: {
+        type: String,
+        default: null, // null | 'confirmado' | 'concluido' | 'todas' — vem dos cards da Home
+    },
 });
 
-const emits = defineEmits(['atualizado']);
+const emits = defineEmits(['atualizado', 'historico', 'filtroManual']);
 
 function mensagemFeed (situacao) {
     if (situacao === 'pendente') return 'ainda não respondeu sua solicitação de orientação.';
@@ -274,6 +346,14 @@ function situacaoBadgeClass (situacao) {
     if (situacao === 'pendente') return 'bg-orange-500';
     if (situacao === 'concluido') return 'bg-principal';
     return 'bg-red-500';
+}
+
+function situacaoPillLabel (situacao) {
+    if (situacao === 'confirmado') return 'Confirmado';
+    if (situacao === 'pendente') return 'Solicitação enviada';
+    if (situacao === 'concluido') return 'Concluído';
+    if (situacao === 'negado') return 'Negado';
+    return 'Cancelado';
 }
 
 function outraPessoa (item) {
@@ -299,10 +379,10 @@ function historicoIconBg (situacao) {
 
 function historicoResumo (item) {
     if (item.situacao === 'concluido') {
-        return item.dataDefesa ? `Orientação concluída. Defesa em ${formatMask.viewDate(item.dataDefesa)}.` : 'Orientação concluída.';
+        return item.tema?.trim() ? `Tema: ${item.tema}` : 'Orientação concluída.';
     }
     if (item.situacao === 'cancelado') {
-        const motivo = item.cancelamento?.resposta?.motivo || item.cancelamento?.motivo;
+        const motivo = item.cancelamento?.resposta?.motivo || item.cancelamento?.motivo || item.resposta;
         return motivo ? `Cancelada. Motivo: ${motivo}` : 'Cancelada.';
     }
     if (item.situacao === 'negado') {
@@ -311,13 +391,43 @@ function historicoResumo (item) {
     return 'Orientação encerrada.';
 }
 
+function historicoData (item) {
+    if (item.situacao === 'concluido' && item.dataDefesa) {
+        return `Defendido em ${formatMask.viewDate(item.dataDefesa)}`;
+    }
+    return item.dataCriacao ? formatMask.viewDate(item.dataCriacao) : '';
+}
+
 const mostrarHistorico = ref (false);
+// avisa a Home pra esconder "Meus alunos"/"Professores disponíveis" enquanto
+// o histórico estiver em foco — não faz sentido mostrar as duas coisas juntas.
+watch (mostrarHistorico, (valor) => emits ('historico', valor), { immediate: true });
 const historicoItens = reactive ([]);
 
-const linhasExibidas = computed(() => (
-    props.usuario?.tipo === 'professor'
-        ? orientacoes.filter((item) => item.situacao === 'pendente')
-        : orientacoes
+const linhasExibidas = computed(() => {
+    if (props.usuario?.tipo === 'professor') {
+        // mais antiga primeiro — quem pediu orientação há mais tempo é
+        // respondido antes, pra ninguém ser furado por um pedido mais novo.
+        return orientacoes
+            .filter((item) => item.situacao === 'pendente')
+            .sort((a, b) => new Date(a.dataCriacao) - new Date(b.dataCriacao));
+    }
+    if (props.filtroExterno === 'confirmado') {
+        return orientacoes.filter((item) => item.situacao === 'confirmado');
+    }
+    if (props.filtroExterno === 'todas') {
+        // todos os professores que o aluno já solicitou — exceto concluídas,
+        // que têm o próprio card/botão dedicado.
+        return [...orientacoes, ...historicoItens.filter((item) => item.situacao !== 'concluido')]
+            .sort((a, b) => new Date(b.dataCriacao) - new Date(a.dataCriacao));
+    }
+    return orientacoes;
+});
+
+const historicoExibido = computed(() => (
+    props.filtroExterno === 'concluido'
+        ? historicoItens.filter((item) => item.situacao === 'concluido')
+        : historicoItens
 ));
 
 function situacaoClass (situacao) {
@@ -356,10 +466,28 @@ async function listarHistorico () {
 
 async function toggleHistorico () {
     mostrarHistorico.value = !mostrarHistorico.value;
+    // botão manual — avisa a Home pra soltar o card que estava marcado
+    // (senão o card fica destacado sem corresponder ao que está na tela).
+    emits ('filtroManual');
     if (mostrarHistorico.value && historicoItens.length === 0) {
         await listarHistorico ();
     }
 }
+
+// clique nos cards "solicitações"/"pendentes"/"concluídas" da Home pilota essa tela por fora.
+watch (() => props.filtroExterno, async (valor) => {
+    if (valor === 'concluido') {
+        mostrarHistorico.value = true;
+        if (historicoItens.length === 0) await listarHistorico ();
+    } else if (valor === 'todas') {
+        // fica na visão de cards (não na de histórico) mas precisa dos dados
+        // do histórico pra juntar com as ativas.
+        mostrarHistorico.value = false;
+        if (historicoItens.length === 0) await listarHistorico ();
+    } else if (valor === 'confirmado') {
+        mostrarHistorico.value = false;
+    }
+}, { immediate: true });
 
 async function cancelarPedido (orientacaoParaCancelar) {
     openRespostaOrientacao.value = true;
@@ -373,4 +501,6 @@ async function responderOrientacao (orientacaoParaNegar, novaSituacao) {
 }
 
 onMounted (listarOrientacao);
+
+defineExpose ({ listarOrientacao });
 </script>

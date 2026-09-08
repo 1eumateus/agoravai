@@ -3,6 +3,7 @@ import { listar, pegarPorId, alterarSituacao, criar, deletar, editar, orientacao
 import { visualizarFases, enviarArquivoFase, removerArquivoFase, comentarFase, removerComentarioFase, editarComentarioFase, avaliarFase, definirPrazoFase, definirDescricaoFase } from "./FasesController.js";
 import { solicitarCancelamento, responderCancelamento, retirarCancelamento } from "./CancelamentoController.js";
 import { gerarConvite } from "./ConviteController.js";
+import { gerarTokenVideochamada, encerrarVideochamada, gerarTokenVideochamadaPublico } from "./VideochamadaController.js";
 import { makeUpload } from "../shared/Multer.js";
 
 const router = express.Router ();
@@ -39,6 +40,9 @@ router.delete ("/:id/fases/:faseIndex/comentario/:comentarioId", removerComentar
 router.put ("/:id/fases/:faseIndex/avaliar", avaliarFase);
 router.put ("/:id/fases/:faseIndex/prazo", definirPrazoFase);
 router.put ("/:id/fases/:faseIndex/descricao", definirDescricaoFase);
+router.post ("/:id/videochamada/token", gerarTokenVideochamada);
+router.put ("/:id/videochamada/encerrar", encerrarVideochamada);
+router.post ("/:id/videochamada/token/publico", gerarTokenVideochamadaPublico);
 router.get ("/:id", pegarPorId);
 router.delete ("/:id", deletar);
 router.get ("/", listar);

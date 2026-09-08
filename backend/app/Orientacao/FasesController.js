@@ -337,4 +337,4 @@ async function definirPrazoFase (req, res) {
     }
 }
 
-export { visualizarFases, enviarArquivoFase, removerArquivoFase, comentarFase, removerComentarioFase, editarComentarioFase, avaliarFase, definirPrazoFase, definirDescricaoFase };
+export { visualizarFases, enviarArquivoFase, removerArquivoFase, comentarFase, removerComentarioFase, editarComentarioFase, avaliarFase, definirPrazoFase, definirDescricaoFase, temCancelamentoPendente, MSG_CANCELAMENTO_PENDENTE };
